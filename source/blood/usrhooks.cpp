@@ -16,11 +16,14 @@
  */
 #include "typedefs.h"
 extern "C" {
-#include "usrhooks.h"
+extern "C" {  // c4: audiolib, which calls these, is C
+#include "USRHOOKS.H"
+}
 }
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
-int USRHOOKS_GetMem(void **ptr, unsigned long size)
+int USRHOOKS_GetMem(void **ptr, uint32_t size)
 {
     void *mem = Resource::Alloc(size);
     if (!mem)
@@ -37,3 +40,4 @@ int USRHOOKS_FreeMem(void *ptr)
     Resource::Free(ptr);
     return 0;
 }
+#pragma pack(pop)  // c4: packall.py

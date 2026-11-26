@@ -20,6 +20,7 @@
 #include "typedefs.h"
 #include "db.h"
 #include "eventq.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void trTextOver(int);
 void trMessageSprite(unsigned int, EVENT);
@@ -34,4 +35,5 @@ void trInit(void);
 
 void trProcessBusy(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

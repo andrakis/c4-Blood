@@ -22,13 +22,14 @@
 #include "db.h"
 #include "error.h"
 extern "C" {
-#include "fx_man.h"
+#include "FX_MAN.H"
 }
 #include "gameutil.h"
 #include "misc.h"
 #include "player.h"
 #include "resource.h"
 #include "sound.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct AMB_CHANNEL
 {
@@ -113,7 +114,7 @@ void ambInit(void)
         if (pXSprite->at12_0 <= pXSprite->at10_0)
             continue;
         AMB_CHANNEL *pChannel = ambChannels;
-        for (int i = 0; i < nAmbChannels; i++, pChannel++)
+        int i; for (i = 0; i < nAmbChannels; i++, pChannel++)
             if (pChannel->at8 == pXSprite->at14_0)
                 break;
         if (i == nAmbChannels)
@@ -145,3 +146,4 @@ void ambInit(void)
         pSprite->owner = i;
     }
 }
+#pragma pack(pop)  // c4: packall.py

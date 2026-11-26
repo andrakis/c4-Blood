@@ -14,12 +14,13 @@
 #include "gui.h"
 #include "key.h"
 #include "misc.h"
-#include "mouse.h"
+#include "qmouse.h"  // c4: qtools' mouse, as chocolate-blood names it
 #include "screen.h"
 #include "sectorfx.h"
 #include "sound.h"
 #include "tile.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 short tempang, temptype;
@@ -4224,4 +4225,4 @@ void Check3DKeys(void)
     if (key != 0)
         keyFlushStream();
 }
-
+#pragma pack(pop)  // c4: packall.py

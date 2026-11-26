@@ -24,6 +24,7 @@
 #include "sectorfx.h"
 #include "misc.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 byte flicker1[] = {
     0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0,
@@ -263,7 +264,7 @@ void UndoSectorLighting(void)
 
 void DoSectorPanning(void)
 {
-    for (int i = 0; i < panCount; i++)
+    int i; for (i = 0; i < panCount; i++)
     {
         int nXSector = panList[i];
         XSECTOR *pXSector = &xsector[nXSector];
@@ -341,7 +342,7 @@ void InitSectorFX(void)
     shadeCount = 0;
     panCount = 0;
     wallPanCount = 0;
-    for (int i = 0; i < numsectors; i++)
+    int i; for (i = 0; i < numsectors; i++)
     {
         short nXSector = sector[i].extra;
         if (nXSector > 0)
@@ -426,3 +427,4 @@ short * CSectorListMgr::GetSectorList(int nList)
 {
     return nSectors+nListStart[nList];
 }
+#pragma pack(pop)  // c4: packall.py

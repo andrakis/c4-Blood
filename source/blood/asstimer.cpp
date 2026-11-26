@@ -22,7 +22,8 @@
 #include "error.h"
 #include "satimer.h"
 extern "C" {
-#include "task_man.h"
+#include "TASK_MAN.H"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 }
 
 struct CLIENT_INFO {
@@ -123,3 +124,4 @@ void timerSetClientRate(void(*pCall)(void), int nRate)
         return;
     TS_SetTaskRate(client[i].pTask, nRate);
 }
+#pragma pack(pop)  // c4: packall.py

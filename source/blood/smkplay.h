@@ -16,6 +16,7 @@
  */
 #ifndef _SMKPLAY_H_
 #define _SMKPLAY_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 
@@ -36,4 +37,5 @@ public:
     BOOL f_c;
 };
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_SMKPLAY_H_

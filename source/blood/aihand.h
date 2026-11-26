@@ -18,6 +18,7 @@
 #define _AIHAND_H_
 #include "typedefs.h"
 #include "db.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 extern AISTATE handIdle;
 extern AISTATE hand13A3B4;
@@ -27,4 +28,5 @@ extern AISTATE handRecoil;
 extern AISTATE handGoto;
 extern AISTATE handJump;
 
+#pragma pack(pop)  // c4: packall.py
 #endif

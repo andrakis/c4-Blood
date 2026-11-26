@@ -20,7 +20,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 #include "typedefs.h"
 #include "asound.h"
 #include "build.h"
@@ -43,6 +43,7 @@
 #include "sfx.h"
 #include "sound.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL111
 #define LDIFF1 0
@@ -158,7 +159,7 @@ void LoadSave::LoadGame(char *pzFile)
     gFrame = 0;
     gCacheMiss = 0;
     gFrameRate = 0;
-    gGameClock = 0;
+    gGameClock_set(0);
     gPaused = 0;
     gGameStarted = 1;
     if (!bNoCDAudio && gRedBookInstalled && Redbook.preprocess())
@@ -265,7 +266,7 @@ void MyLoadSave::Load(void)
     Read(&gFrameTicks, sizeof(gFrameTicks));
     Read(&gFrame, sizeof(gFrame));
     Read(&nGameClock, sizeof(nGameClock));
-    gGameClock = nGameClock;
+    gGameClock_set(nGameClock);
     Read(&gPaused, sizeof(gPaused));
     Read(&gAdultContent, sizeof(gAdultContent));
     Read(baseWall, sizeof(baseWall[0])*numwalls);
@@ -334,7 +335,7 @@ void MyLoadSave::Save(void)
     Write(&version, sizeof(version));
     id = RELEASEID;
     Write(&id, sizeof(id));
-    for (int i = 0; i < kMaxSprites; i++)
+    int i; for (i = 0; i < kMaxSprites; i++)
     {
         if (sprite[i].statnum < kMaxStatus && i > nNumSprites)
             nNumSprites = i;
@@ -501,3 +502,4 @@ void UpdateSavedInfo(int nSlot)
 }
 
 static MyLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

@@ -16,6 +16,7 @@
  */
 #ifndef _MESSAGES_H_
 #define _MESSAGES_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 class CGameMessageMgr {
 public:
@@ -136,4 +137,5 @@ extern CGameMessageMgr gGameMessageMgr;
 extern CPlayerMsg gPlayerMsg;
 extern CCheatMgr gCheatMgr;
 
+#pragma pack(pop)  // c4: packall.py
 #endif

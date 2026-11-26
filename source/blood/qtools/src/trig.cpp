@@ -21,7 +21,7 @@
 #include "resource.h"
 #include "trig.h"
 
-long costable[2048];
+int32_t costable[2048];
 
 int OctantTable[8] = { 5, 6, 2, 1, 4, 7, 3, 0 };
 
@@ -32,7 +32,7 @@ int GetOctant(int x, int y)
     return OctantTable[t];
 }
 
-void RotateVector(long *dx, long *dy, int nAngle)
+void RotateVector(int32_t *dx, int32_t *dy, int nAngle)
 {
     int ox = *dx;
     int oy = *dy;
@@ -42,7 +42,7 @@ void RotateVector(long *dx, long *dy, int nAngle)
     *dy = dmulscale30r(ox, sn, oy, cs);
 }
 
-void RotatePoint(long *x, long *y, int nAngle, int ox, int oy)
+void RotatePoint(int32_t *x, int32_t *y, int nAngle, int ox, int oy)
 {
     int dx = *x-ox;
     int dy = *y-oy;
@@ -65,7 +65,7 @@ void trigInit(Resource &Res)
     {
         costable[i] = -costable[1024-i];
     }
-    for (i = 1025; i < 2048; i++)
+    for (int i = 1025; i < 2048; i++)
     {
         costable[i] = costable[2048 - i];
     }

@@ -23,6 +23,7 @@
 #include "smack.h"
 #include "sound.h"
 #include "svga.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 CSMKPlayer::CSMKPlayer()
@@ -187,3 +188,4 @@ RCFUNC void RADLINK radfree(void PTR4* ptr)
     Resource::heap->Free(temp);
 #endif
 }
+#pragma pack(pop)  // c4: packall.py

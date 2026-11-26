@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "screen.h"
 #include "textio.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -194,7 +195,7 @@ void scrLoadPalette(void)
     if (!pTrans)
         ThrowError(238+LDIFF1)("TRANS.TLU not found");
     transluc = (byte*)gSysRes.Lock(pTrans);
-    fixtransluscence();
+    fixtransluscence((intptr_t)transluc);  // c4: as chocolate-blood's engine takes it
 }
 
 void scrSetMessage(char *pMessage)
@@ -329,3 +330,4 @@ void scrNextPage(void)
     if (vidoption == 1)
     	gPageTable[0].begin = (int)frameplace;
 }
+#pragma pack(pop)  // c4: packall.py

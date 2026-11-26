@@ -19,9 +19,9 @@
 
 #include "typedefs.h"
 
-extern char *OptArgv[16];
+extern const char *OptArgv[16];
 extern int OptArgc;
-extern char *OptFull;
+extern const char *OptFull;
 
 struct SWITCH {
     const char *name;

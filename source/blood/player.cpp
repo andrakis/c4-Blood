@@ -44,6 +44,7 @@
 #include "warp.h"
 #include "weapon.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -797,7 +798,7 @@ int defaultOrder2[] = {
 void playerReset(PLAYER *pPlayer)
 {
     dassert(pPlayer != NULL, 1271);
-    for (int i = 0; i < 14; i++)
+    int i; for (i = 0; i < 14; i++)
     {
         pPlayer->atcb[i] = gInfiniteAmmo;
         pPlayer->atd9[i] = 0;
@@ -2177,3 +2178,4 @@ void PlayerLoadSave::Save(void)
 }
 
 static PlayerLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

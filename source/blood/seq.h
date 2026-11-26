@@ -88,3 +88,5 @@ void seqProcess(int a1);
 void seqCache(int);
 
 #endif
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
+#pragma pack(pop)  // c4: packall.py

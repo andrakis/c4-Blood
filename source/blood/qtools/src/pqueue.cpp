@@ -59,7 +59,7 @@ void PriorityQueue::Delete(uint k)
     Downheap(k);
 }
 
-void PriorityQueue::Insert(ulong a1, ulong a2)
+void PriorityQueue::Insert(uint32_t a1, uint32_t a2)
 {
     dassert(fNodeCount < kPQueueSize, 84);
     fNodeCount++;
@@ -68,9 +68,9 @@ void PriorityQueue::Insert(ulong a1, ulong a2)
     Upheap();
 }
 
-ulong PriorityQueue::Remove(void)
+uint32_t PriorityQueue::Remove(void)
 {
-    ulong data = queueItems[1].at4;
+    uint32_t data = queueItems[1].at4;
     queueItems[1] = queueItems[fNodeCount--];
     Downheap(1);
     return data;

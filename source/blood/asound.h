@@ -16,9 +16,11 @@
  */
 #ifndef _ASOUND_H_
 #define _ASOUND_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void ambKillAll(void);
 void ambInit(void);
 void ambProcess(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -18,6 +18,7 @@
 #define _SCREEN_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 typedef struct {
     unsigned char red, green, blue;
@@ -45,4 +46,5 @@ void scrSetDac(void);
 void scrSetPalette(int palId);
 void scrLoadPLUs(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_SCREEN_H_

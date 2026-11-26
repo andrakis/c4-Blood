@@ -19,6 +19,7 @@
 
 #include "build.h"
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 class CViewMap {
 public:
@@ -66,4 +67,5 @@ public:
 
 extern CViewMap gViewMap;
 
+#pragma pack(pop)  // c4: packall.py
 #endif

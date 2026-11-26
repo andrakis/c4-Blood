@@ -30,3 +30,5 @@ int CheckLink(long *x, long *y, long *z, int *nSector);
 void warpInit(void);
 
 #endif
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
+#pragma pack(pop)  // c4: packall.py

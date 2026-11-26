@@ -20,6 +20,7 @@
 #include "misc.h"
 #include "qav.h"
 #include "tile.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 #define kMaxClients 64
@@ -109,3 +110,4 @@ void QAV::Preload(void)
         }
     }
 }
+#pragma pack(pop)  // c4: packall.py

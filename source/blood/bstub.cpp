@@ -11,14 +11,14 @@
 #include "db.h"
 #include "debug4g.h"
 #include "error.h"
-#include "file_lib.h"
+#include "FILE_LIB.H"
 #include "gameutil.h"
 #include "gui.h"
 #include "helix.h"
 #include "inifile.h"
 #include "key.h"
 #include "misc.h"
-#include "mouse.h"
+#include "qmouse.h"  // c4: qtools' mouse, as chocolate-blood names it
 #include "resource.h"
 #include "screen.h"
 #include "sectorfx.h"
@@ -27,6 +27,7 @@
 #include "tile.h"
 #include "satimer.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -1597,4 +1598,4 @@ void ExtUnInit(void)
     sndTerm();
     unlink("AUTOSAVE.MAP");
 }
-
+#pragma pack(pop)  // c4: packall.py

@@ -20,6 +20,7 @@
 #include "typedefs.h"
 #include "misc.h"
 #include "textio.h"
+#include "video.h"
 
 int tioScreenRows;
 int tioScreenCols;
@@ -41,7 +42,7 @@ static struct {
 
 byte nAttribute;
 
-static char* Frames[] = {
+static const char* Frames[] = {
     "\xDA\xC4\xBF\xB3\x20\xB3\xC0\xC4\xD9",
     "\xC9\xCD\xBB\xBA\x20\xBA\xC8\xCD\xBC",
     "\xDB\xDF\xDB\xDB\x20\xDB\xDB\xDC\xDB"
@@ -68,7 +69,7 @@ byte ShadeTable[] = {
 
 static inline byte * tioVideoAddress(int x,int y)
 {
-    return (byte*)0xb8000 + (x * tioScreenCols + y) * 2;
+    return (byte*)video_text_buffer + (x * tioScreenCols + y) * 2;
 }
 
 void WriteString(int a1, int a2, char *s, byte a4)
@@ -83,13 +84,19 @@ void WriteString(int a1, int a2, char *s, byte a4)
 
 void tioInit(int a1)
 {
-    tioScreenCols = *(short*)0x44a;
-    tioScreenRows = *(byte*)0x484 + 1;
+    //tioScreenCols = *(short*)0x44a;
+    //tioScreenRows = *(byte*)0x484 + 1;
+    tioScreenCols = 80;
+    tioScreenRows = 25;
     tioStride = tioScreenCols * 2;
-    cursor.f_8 = *(byte*)0x460;
-    cursor.f_9 = *(byte*)0x461;
-    cursor.f_4 = *(byte*)0x450;
-    cursor.f_0 = *(byte*)0x451;
+    //cursor.f_8 = *(byte*)0x460;
+    //cursor.f_9 = *(byte*)0x461;
+    //cursor.f_4 = *(byte*)0x450;
+    //cursor.f_0 = *(byte*)0x451;
+    cursor.f_8 = 0;
+    cursor.f_9 = 0;
+    cursor.f_4 = 0;
+    cursor.f_0 = 0;
     tioCursorOff();
     tioSetAttribute(7);
     tioWindow(0, 0, tioScreenRows, tioScreenCols);
@@ -97,25 +104,18 @@ void tioInit(int a1)
         tioClearWindow();
 }
 
-void tioCursorSet(int ch, int cl);
-#pragma aux tioCursorSet = \
-"mov ah,1" \
-"int 0x10" \
-parm nomemory [ch] [cl]
+void tioCursorSet(int ch, int cl)
+{
+}
 
 void tioCursorOff(void)
 {
     tioCursorSet(0x20, 0);
 }
 
-void tioCursorOn(void)
-{
-    tioCursorSet(cursor.f_8, cursor.f_9);
-}
-
 void tioTerm(void)
 {
-    tioCursorOn();
+    tioCursorSet(cursor.f_8, cursor.f_9);
 }
 
 void tioFill(int a1, int a2, int a3, int a4, byte a5, byte a6)
@@ -215,7 +215,7 @@ void tioFrame(int a1, int a2, int a3, int a4, byte a5, byte a6)
     *va++ = Frames[a5][6];
     *va++ = a6;
 
-    for (i = 0; i < a4 - 2; i++)
+    for (int i = 0; i < a4 - 2; i++)
     {
         *va++ = Frames[a5][7];
         *va++ = a6;
@@ -255,7 +255,7 @@ void tioLeftString(int a1, int a2, int a3, char *a4, byte a5)
     WriteString(window.f_0 + a1, window.f_4 + a2, buf, a5);
 }
 
-void tioCenterString(int a1, int a2, int a3, char *a4, byte a5)
+void tioCenterString(int a1, int a2, int a3, const char *a4, byte a5)
 {
     char buf[256];
     memset(buf, 32, tioScreenCols);
@@ -289,12 +289,10 @@ void tioWindow(int a1, int a2, int a3, int a4)
     window.f_c = a4;
 }
 
-void tioCursorPos(int dh, int dl);
-#pragma aux tioCursorPos = \
-"mov ah,2" \
-"mov bh,0" \
-"int 0x10" \
-parm nomemory [dh] [dl]
+void tioCursorPos(int dh, int dl)
+{
+    Video_Text_SetCursor(dl, dh);
+}
 
 void tioSetPos(int a1, int a2)
 {
@@ -303,11 +301,10 @@ void tioSetPos(int a1, int a2)
     tioCursorPos(a1 + window.f_0, a2 + window.f_4);
 }
 
-void tioScroll(int a1, byte a2, int a3, int a4, int a5, int a6);
-#pragma aux tioScroll = \
-"mov ah,6" \
-"int 0x10" \
-parm nomemory [al] [bh] [ch] [cl] [dh] [dl]
+void tioScroll(int a1, byte a2, int a3, int a4, int a5, int a6)
+{
+    Video_Text_Scroll(a1, a2, a4, a3, a6, a5);
+}
 
 void tioClearWindow(void)
 {
@@ -322,7 +319,7 @@ byte tioSetAttribute(byte a1)
     return old;
 }
 
-void tioPrint(char *s, ...)
+void tioPrint(const char *s, ...)
 {
     char buf[256];
     va_list arg;
@@ -358,34 +355,4 @@ int tioGauge(int a1, int a2)
 
     tioPrint("");
     return 0;
-}
-
-void tioSaveWindow(char *a1, int a2, int a3, int a4, int a5)
-{
-    a4 = ClipHigh(a4, window.f_8);
-    a5 = ClipHigh(a5, window.f_c);
-
-    byte *va = tioVideoAddress(window.f_0 + a2, window.f_4 + a3);
-
-    for (int i = 0; i < a4; i++)
-    {
-        memcpy(a1, va, a5 * 2);
-        a1 += a5 * 2;
-        va += tioStride;
-    }
-}
-
-void tioRestoreWindow(char *a1, int a2, int a3, int a4, int a5)
-{
-    a4 = ClipHigh(a4, window.f_8);
-    a5 = ClipHigh(a5, window.f_c);
-
-    byte *va = tioVideoAddress(window.f_0 + a2, window.f_4 + a3);
-
-    for (int i = 0; i < a4; i++)
-    {
-        memcpy(va, a1, a5 * 2);
-        a1 += a5 * 2;
-        va += tioStride;
-    }
 }

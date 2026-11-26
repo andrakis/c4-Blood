@@ -21,6 +21,7 @@
 #include "typedefs.h"
 #include "debug4g.h"
 #include "misc.h"
+#include "video.h"
 
 enum {
     kDebugMode0,
@@ -134,7 +135,7 @@ void monoFrame(int a1, int a2, int a3, int a4, byte a5, byte a6)
     *va++ = Frames[a5][6];
     *va++ = a6;
 
-    for (i = 0; i < a4 - 2; i++)
+    for (int i = 0; i < a4 - 2; i++)
     {
         *va++ = Frames[a5][7];
         *va++ = a6;
@@ -317,17 +318,17 @@ void monoRestoreWindow(byte *a1, int a2, int a3, int a4, int a5)
     }
 }
 
-int dprintf(char *, ...)
+int dprintf(const char *, ...)
 {
     return 0;
 }
 
-void __dassert(char *s, char *m, int l)
+void __dassert(const char *s, const char *m, int l)
 {
     switch (debugMode)
     {
         case kDebugMode0:
-            setvmode(3);
+            Video_Set(3, 0, 0);
             printf("ERROR (%i) %s%\n", l, m);
             fflush(NULL);
             break;
@@ -336,11 +337,11 @@ void __dassert(char *s, char *m, int l)
             break;
         case kDebugMode2:
             dprintf("Assertion failed: %s in file %s at line %i\n", s, m, l);
-            setvmode(3);
+            Video_Set(3, 0, 0);
             printf("ERROR #:%s%i\n", m, l);
             fflush(NULL);
             break;
     }
-    int3();
+    //int3();
     exit(1);
 }

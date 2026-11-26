@@ -18,6 +18,7 @@
 #define _DUDE_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct DUDEINFO {
     short seqStartID; // seq
@@ -51,4 +52,5 @@ struct DUDEINFO {
 extern DUDEINFO dudeInfo[];
 extern DUDEINFO gPlayerTemplate[];
 
+#pragma pack(pop)  // c4: packall.py
 #endif

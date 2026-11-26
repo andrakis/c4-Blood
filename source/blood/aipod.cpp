@@ -29,6 +29,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void func_6FF08(int, int);
 static void func_6FF54(int, int);
@@ -278,3 +279,4 @@ static void func_704D8(SPRITE *pSprite, XSPRITE *pXSprite)
     }
     pXSprite->target = -1;
 }
+#pragma pack(pop)  // c4: packall.py

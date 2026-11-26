@@ -20,7 +20,7 @@
 #include "typedefs.h"
 #include "cdrom.h"
 #include "config.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "debug4g.h"
 #include "demo.h"
 #include "gamemenu.h"
@@ -35,6 +35,7 @@
 #include "screen.h"
 #include "sound.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void SaveGame(CGameMenuItemZEditBitmap *, CGameMenuEvent *);
 
@@ -1142,3 +1143,4 @@ void func_5A828(void)
         sprintf(buffer, "%s", zNetGameTypes[gGameOptions.nGameType-1]);
     func_1EC78(2049, buffer, levelGetTitle(), NULL);
 }
+#pragma pack(pop)  // c4: packall.py

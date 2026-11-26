@@ -52,6 +52,7 @@
 #include "config.h"
 #include "view.h"
 #include "loadsave.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -2843,7 +2844,7 @@ void actKillDude(int a1, SPRITE *pSprite, DAMAGE_TYPE a3, int a4)
         }
         break;
     }
-    for (int i = connecthead; i >= 0; i = connectpoint2[i])
+    int i; for (i = connecthead; i >= 0; i = connectpoint2[i])
     {
         if (pSprite->index == gPlayer[i].at2ee && gPlayer[i].at1fe > 0)
             gPlayer[i].at2ee = -1;
@@ -3244,7 +3245,7 @@ void actKillDude(int a1, SPRITE *pSprite, DAMAGE_TYPE a3, int a4)
     if (a3 == DAMAGE_TYPE_3)
     {
         DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type-kDudeBase];
-        for (int i = 0; i < 3; i++)
+        int i; for (i = 0; i < 3; i++)
         {
             int t = pDudeInfo->at48[i];
             if (t > -1)
@@ -5272,7 +5273,7 @@ void actProcessSprites(void)
             int nWall = gAffectedXWalls[i];
             trTriggerWall(nWall, &xwall[wall[nWall].extra], 51);
         }
-        for (int nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
+        int nSprite2; for (nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
         {
             SPRITE *pDude = &sprite[nSprite2];
             if (pDude->flags & kSpriteFlag5)
@@ -6433,3 +6434,4 @@ void ActorLoadSave::Save(void)
 }
 
 static ActorLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

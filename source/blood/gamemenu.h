@@ -23,6 +23,7 @@
 #include "qav.h"
 #include "gfx.h"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxGameMenuItems 32
 #define kMaxGameCycleItems 32
@@ -473,4 +474,5 @@ public:
 extern CMenuTextMgr gMenuTextMgr;
 extern CGameMenuMgr gGameMenuMgr;
 
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -16,10 +16,12 @@
  */
 #ifndef _SECTORFX_H_
 #define _SECTORFX_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void DoSectorLighting();
 void InitSectorFX(void);
 void DoSectorPanning(void);
 void UndoSectorLighting(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

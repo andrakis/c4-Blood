@@ -20,6 +20,7 @@
 #include "controls.h"
 #include "globals.h"
 #include "levels.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct DEMOHEADER
 {
@@ -65,4 +66,5 @@ public:
 
 extern CDemo gDemo;
 
+#pragma pack(pop)  // c4: packall.py
 #endif

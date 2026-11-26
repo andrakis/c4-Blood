@@ -19,10 +19,10 @@
 #include <stdlib.h>
 #include "typedefs.h"
 extern "C" {
-#include "fx_man.h"
-#include "music.h"
+#include "FX_MAN.H"
+#include "MUSIC.H"
 }
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
 #include "debug4g.h"
 #include "error.h"
@@ -30,6 +30,7 @@ extern "C" {
 #include "misc.h"
 #include "resource.h"
 #include "sound.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 BOOL sndActive;
@@ -70,7 +71,7 @@ SAMPLE2D Channel[kMaxChannels];
 
 SAMPLE2D *FindChannel(void)
 {
-    for (int i = kMaxChannels-1; Channel[i].at5 != 0; i--)
+    int i; for (i = kMaxChannels-1; Channel[i].at5 != 0; i--)
         if (i < 0)
             ThrowError(74)("No free channel available for sample");
     return &Channel[i];
@@ -434,3 +435,4 @@ void sndInit(BOOL netgame)
     atexit(sndTerm);
     sndActive = TRUE;
 }
+#pragma pack(pop)  // c4: packall.py

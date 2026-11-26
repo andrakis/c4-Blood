@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum {
     kSurf0 = 0,
@@ -42,4 +43,5 @@ byte* tileAllocTile(int nTile, int x, int y, int ox = 0, int oy = 0);
 byte tileGetSurfType(int hit);
 int tilePick(int nTile, int a2, int a3);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_TILE_H_

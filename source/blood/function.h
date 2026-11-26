@@ -24,6 +24,7 @@
 
 #ifndef _function_public_
 #define _function_public_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,4 +93,5 @@ enum
 #ifdef __cplusplus
 };
 #endif
+#pragma pack(pop)  // c4: packall.py
 #endif

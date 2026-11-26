@@ -20,7 +20,7 @@
 #include "globals.h"
 #include "actor.h"
 #include "callback.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "debug4g.h"
 #include "demo.h"
 #include "eventq.h"
@@ -36,6 +36,7 @@
 #include "player.h"
 #include "view.h"
 #include "gui.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF2 0
@@ -692,7 +693,7 @@ BOOL CCheatMgr::Check(char *pzString)
     char buffer[80];
     strcpy(buffer, pzString);
     strupr(buffer);
-    for (int i = 0; i < strlen(pzString); i++)
+    int i; for (i = 0; i < strlen(pzString); i++)
         buffer[i]++;
     for (i = 0; i < 36UL; i++)
     {
@@ -937,3 +938,4 @@ void MessagesLoadSave::Save()
 }
 
 static MessagesLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

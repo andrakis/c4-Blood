@@ -20,6 +20,7 @@
 #include "typedefs.h"
 
 #include "weather.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #ifdef PLASMAPAK
 #define kMaxEpisodes 6
@@ -170,4 +171,5 @@ void func_269D8(char* pzIni);
 void func_26988(void);
 void levelLoadDefaults(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_LEVELS_H_

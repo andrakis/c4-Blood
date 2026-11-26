@@ -39,6 +39,7 @@
 #include "trig.h"
 #include "triggers.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -1505,7 +1506,7 @@ void OperatePath(unsigned int nSector, XSECTOR *pXSector, EVENT a3)
     SPRITE *pSprite;
     XSPRITE *pXSprite;
     int nId = pXSprite2->at12_0;
-    for (int nSprite = headspritestat[16]; nSprite >= 0; nSprite = nextspritestat[nSprite])
+    int nSprite; for (nSprite = headspritestat[16]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
         pSprite = &sprite[nSprite];
         if (pSprite->type == 15)
@@ -1627,7 +1628,7 @@ void InitPath(unsigned int nSector, XSECTOR *pXSector)
     SPRITE *pSprite;
     XSPRITE *pXSprite;
     int nId = pXSector->at4_0;
-    for (int nSprite = headspritestat[16]; nSprite >= 0; nSprite = nextspritestat[nSprite])
+    int nSprite; for (nSprite = headspritestat[16]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
         pSprite = &sprite[nSprite];
         if (pSprite->type == 15)
@@ -1837,7 +1838,7 @@ void ProcessMotion(void)
             else
                 pXSector->at38_0 += mulscale16(pXSector->at3a_0, pXSector->at1_7);
             int vdi = mulscale30(Sin(pXSector->at38_0), pXSector->at39_3<<8);
-            for (int nSprite = headspritesect[nSector]; nSprite >= 0; nSprite = nextspritesect[nSprite])
+            int nSprite; for (nSprite = headspritesect[nSector]; nSprite >= 0; nSprite = nextspritesect[nSprite])
             {
                 SPRITE *pSprite = &sprite[nSprite];
                 if (pSprite->cstat&(kSpriteStat13|kSpriteStat14))
@@ -2247,3 +2248,4 @@ void TriggersLoadSave::Save()
 }
 
 static TriggersLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

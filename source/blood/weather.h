@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "misc.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxVectors 4096
 
@@ -33,16 +34,16 @@ class CWeather {
 public:
     CWeather();
     ~CWeather();
-    RandomizeVectors(void);
-    SetDefaultBuffer(char *a1, int a2, int a3, int *a4);
-    SetParticles(short nCount, short a2, short nTile);
-    SetTranslucency(int);
-    SetColor(char a1);
-    SetColorShift(char);
-    Initialize(char *, int, int, int, int, int *, short, short, short);
-    Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile);
-    Draw(int a1, int a2, int a3, int a4, int a5, int a6);
-    SetWeatherType(WEATHERTYPE);
+    void RandomizeVectors(void);
+    void SetDefaultBuffer(char *a1, int a2, int a3, int *a4);
+    void SetParticles(short nCount, short a2, short nTile);
+    void SetTranslucency(int);
+    void SetColor(char a1);
+    void SetColorShift(char);
+    void Initialize(char *, int, int, int, int, int *, short, short, short);
+    void Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile);
+    void Draw(int a1, int a2, int a3, int a4, int a5, int a6);
+    void SetWeatherType(WEATHERTYPE);
 
     short GetCount(void) {
         return f_12d8;
@@ -80,4 +81,5 @@ public:
 extern CWeather gWeather;
 
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_WEATHER_H_

@@ -20,6 +20,7 @@
 #include "misc.h"
 #include "mpath.h"
 #include "network.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct mpathstruct4 {
     char __f_0[4];
@@ -128,3 +129,4 @@ int func_83500(void)
         gGameClock -= vc;
     return 1;
 }
+#pragma pack(pop)  // c4: packall.py

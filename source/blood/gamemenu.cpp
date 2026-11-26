@@ -19,23 +19,24 @@
 #include <string.h>
 #include <stdio.h>
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "globals.h"
 #include "build.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "config.h"
 #include "debug4g.h"
 #include "error.h"
 #include "gamemenu.h"
 #include "gui.h"
 #include "key.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 #include "levels.h"
 #include "menu.h"
 #include "misc.h"
 #include "qav.h"
 #include "resource.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -2328,3 +2329,4 @@ BOOL CGameMenuItemPassword::Event(CGameMenuEvent &event)
     }
     return r;
 }
+#pragma pack(pop)  // c4: packall.py

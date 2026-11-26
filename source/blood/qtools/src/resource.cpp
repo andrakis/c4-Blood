@@ -17,11 +17,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dos.h>
 #include <io.h>
 #include <fcntl.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 #include "typedefs.h"
-#include "..\gamever.h"
 #include "crc32.h"
 #include "debug4g.h"
 #include "error.h"
@@ -29,16 +31,10 @@
 #include "qheap.h"
 #include "resource.h"
 
-#if APPVER_QTOOLSREV >= AV_QR_QT111A
-#define LDIFF1 0
-#else
-#define LDIFF1 -4
-#endif
-
-CACHENODE Resource::purgeHead = { NULL, &purgeHead, &purgeHead, 0 };
+CACHENODE *Resource::purgeHead;// = { NULL, &purgeHead, &purgeHead, 0 };
 QHeap *Resource::heap;
 
-Resource::Resource(void)
+Resource::Resource()
 {
     dict = NULL;
     indexName = NULL;
@@ -50,7 +46,7 @@ Resource::Resource(void)
     ext[0] = 0;
 }
 
-Resource::~Resource(void)
+Resource::~Resource()
 {
     if (dict)
     {
@@ -66,14 +62,19 @@ Resource::~Resource(void)
     }
 }
 
-void Resource::Init(char *filename, char *external)
+void Resource::Init(const char *filename, const char *external)
 {
     char out[148];
+#if _WIN32
+    HANDLE h;
+    WIN32_FIND_DATAA info;
+#else
     struct find_t info;
-    char *type;
-    char *dir;
-    char *node;
-    char *fname;
+#endif
+    const char *type;
+    const char *dir;
+    const char *node;  // c4: the non-_WIN32 path needs it, as Blood-RE has it
+    const char *fname;
     RFFHeader header;
     dassert(heap != NULL, 63);
 
@@ -135,6 +136,28 @@ void Resource::Init(char *filename, char *external)
     Reindex();
     if (external)
     {
+#ifdef _WIN32
+        MySplitPath(external, out, &dir, NULL, NULL);
+        strcpy(ext, dir);
+
+
+        if ((h = FindFirstFileA(external, &info)) != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+                MySplitPath(info.cFileName, out, NULL, &fname, &type);
+                if (*type == '.')
+                {
+                    AddExternalResource(fname, (char*)(type + 1), info.nFileSizeLow);
+                }
+                else
+                {
+                    AddExternalResource(fname, "", info.nFileSizeLow);
+                }
+            } while (FindNextFileA(h, &info));
+            FindClose(h);
+        }
+#else
         _splitpath2(external, out, &dir, &node, NULL, NULL);
         _makepath(ext, dir, node, NULL, NULL);
         int status = _dos_findfirst(external, 0, &info);
@@ -152,7 +175,17 @@ void Resource::Init(char *filename, char *external)
             status = _dos_findnext(&info);
         }
         _dos_findclose(&info);
+#endif
     }
+
+    if (!purgeHead)
+    {
+        purgeHead = (CACHENODE*)heap->AllocExtra(sizeof(CACHENODE));
+        memset(purgeHead, 0, sizeof(CACHENODE));
+        purgeHead->prev = purgeHead;
+        purgeHead->next = purgeHead;
+    }
+
     for (int i = 0; i < count; i++)
     {
         if (dict[i].flags & kResourceFlag4)
@@ -160,7 +193,7 @@ void Resource::Init(char *filename, char *external)
             Lock(&dict[i]);
         }
     }
-    for (i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         if (dict[i].flags & kResourceFlag3)
         {
@@ -195,7 +228,7 @@ void Resource::Purge(void)
     }
 }
 
-DICTNODE **Resource::Probe(char *fname, char *type)
+DICTNODE **Resource::Probe(const char *fname, const char *type)
 {
     char name[11];
     dassert(indexName != NULL, 228);
@@ -229,10 +262,10 @@ DICTNODE **Resource::Probe(char *fname, char *type)
     return NULL;
 }
 
-DICTNODE **Resource::Probe(unsigned long id, char *type)
+DICTNODE **Resource::Probe(uint32_t id, const char *type)
 {
     char name[7];
-    dassert(indexName != NULL, 268);
+    dassert(indexName != NULL, 264);
     memset(name, 0, sizeof(name));
     strncpy(name, type, 3);
     *(int*)(name + 3) = id;
@@ -283,7 +316,7 @@ void Resource::Reindex(void)
     }
     indexId = (DICTNODE **)Alloc(buffSize * sizeof(DICTNODE*));
     memset(indexId, 0, buffSize * sizeof(DICTNODE*));
-    for (i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         if (dict[i].flags & kResourceFlag1)
         {
@@ -304,14 +337,18 @@ void Resource::Grow(void)
     Reindex();
 }
 
-void Resource::AddExternalResource(char *name, char *type, int size)
+void Resource::AddExternalResource(const char *name, const char *type, int size)
 {
     dassert(dict != NULL, 352);
     DICTNODE **index = Probe(name, type);
     dassert(index != NULL, 354);
     DICTNODE *node = *index;
-    strupr(name);
-    strupr(type);
+    char name2[_MAX_PATH];
+    char type2[_MAX_PATH];
+    strcpy(name2, name);
+    strcpy(type2, type);
+    strupr(name2);
+    strupr(type2);
     if (!node)
     {
         if (2 * count >= buffSize)
@@ -319,17 +356,17 @@ void Resource::AddExternalResource(char *name, char *type, int size)
             Grow();
         }
         node = &dict[count++];
-        index = Probe(name, type);
+        index = Probe(name2, type2);
         *index = node;
-        strncpy(node->type, type, 3);
-        strncpy(node->name, name, 8);
+        strncpy(node->type, type2, 3);
+        strncpy(node->name, name2, 8);
     }
     node->size = size;
     node->flags |= kResourceFlag2;
     Flush((CACHENODE*)node);
 }
 
-static void *Resource::Alloc(long nSize)
+void *Resource::Alloc(int32_t nSize)
 {
     dassert(heap != NULL, 382);
     dassert(nSize != NULL, 383);
@@ -338,11 +375,11 @@ static void *Resource::Alloc(long nSize)
     {
         return p;
     }
-    for (CACHENODE *node = purgeHead.next; node != &purgeHead; node = node->next)
+    for (CACHENODE *node = purgeHead->next; node != purgeHead; node = node->next)
     {
         dassert(node->lockCount == 0, 392);
         dassert(node->ptr != NULL, 395);
-        long nFree = heap->Free(node->ptr);
+        int32_t nFree = heap->Free(node->ptr);
         node->ptr = NULL;
         RemoveMRU(node);
         if (nSize <= nFree)
@@ -352,40 +389,46 @@ static void *Resource::Alloc(long nSize)
             return p;
         }
     }
-    ThrowError(416+LDIFF1)("Out of memory!");
+    ThrowError(416)("Out of memory!");
     return NULL;
 }
 
-static void Resource::Free(void *p)
+void Resource::Free(void *p)
 {
-    dassert(heap != NULL, 423+LDIFF1);
-    dassert(p != NULL, 424+LDIFF1);
+    dassert(heap != NULL, 423);
+    dassert(p != NULL, 424);
     heap->Free(p);
 }
 
-DICTNODE *Resource::Lookup(char *name, char *type)
+DICTNODE *Resource::Lookup(const char *name, const char *type)
 {
-    dassert(name != NULL, 432+LDIFF1);
-    dassert(type != NULL, 433+LDIFF1);
-    return *Probe(strupr(name), strupr(type));
+    dassert(name != NULL, 432);
+    dassert(type != NULL, 433);
+    char name2[_MAX_PATH];
+    char type2[_MAX_PATH];
+    strcpy(name2, name);
+    strcpy(type2, type);
+    return *Probe(strupr(name2), strupr(type2));
 }
 
-DICTNODE *Resource::Lookup(unsigned long id, char *type)
+DICTNODE *Resource::Lookup(uint32_t id, const char *type)
 {
-    dassert(type != NULL, 441+LDIFF1);
-    return *Probe(id, strupr(type));
+    dassert(type != NULL, 441);
+    char type2[_MAX_PATH];
+    strcpy(type2, type);
+    return *Probe(id, strupr(type2));
 }
 
 void Resource::Read(DICTNODE *n)
 {
-    dassert(n != NULL, 449+LDIFF1);
+    dassert(n != NULL, 449);
     Read(n, n->ptr);
 }
 
 void Resource::Read(DICTNODE *n, void *p)
 {
-    char buf[144];
-    dassert(n != NULL, 456+LDIFF1);
+    char buf[_MAX_PATH];
+    dassert(n != NULL, 456);
     if (!p)
         return;
     if (n->flags & kResourceFlag2)
@@ -393,7 +436,7 @@ void Resource::Read(DICTNODE *n, void *p)
         sprintf(buf, "%s%.8s.%.3s", ext, n->name, n->type);
         if (!FileLoad(buf, p, n->size))
         {
-            ThrowError(472+LDIFF1)("Error reading external resource (%i)", *__get_errno_ptr());
+            ThrowError(472)("Error reading external resource (%i)", errno);
         }
     }
     else
@@ -401,22 +444,22 @@ void Resource::Read(DICTNODE *n, void *p)
         int r = lseek(handle, n->offset, SEEK_SET);
         if (r == -1)
         {
-            ThrowError(479+LDIFF1)("Error seeking to resource!");
+            ThrowError(479)("Error seeking to resource!");
         }
         if (!FileRead(handle, p, n->size))
         {
-            ThrowError(482+LDIFF1)("Error loading resource!");
+            ThrowError(482)("Error loading resource!");
         }
         if (n->flags & kResourceFlag5)
         {
-            Crypt((byte*)n->ptr, n->size > 256 ? 256 : n->size, 0);
+            Crypt((byte*)(void*)n->ptr, n->size > 256 ? 256 : n->size, 0);
         }
     }
 }
 
 void *Resource::Load(DICTNODE *h)
 {
-    dassert(h != NULL, 506+LDIFF1);
+    dassert(h != NULL, 506);
     if (h->ptr)
     {
         if (!h->lockCount)
@@ -434,7 +477,7 @@ void *Resource::Load(DICTNODE *h)
 
 void *Resource::Load(DICTNODE *h, void *p)
 {
-    dassert(h != NULL, 530+LDIFF1);
+    dassert(h != NULL, 530);
     if (p)
     {
         Read(h, p);
@@ -444,7 +487,7 @@ void *Resource::Load(DICTNODE *h, void *p)
 
 void *Resource::Lock(DICTNODE *h)
 {
-    dassert(h != NULL, 545+LDIFF1);
+    dassert(h != NULL, 545);
     if (h->ptr)
     {
         if (h->lockCount == 0)
@@ -464,8 +507,8 @@ void *Resource::Lock(DICTNODE *h)
 
 void Resource::Unlock(DICTNODE *h)
 {
-    dassert(h != NULL, 566+LDIFF1);
-    dassert(h->ptr != NULL, 567+LDIFF1);
+    dassert(h != NULL, 566);
+    dassert(h->ptr != NULL, 567);
     if (h->lockCount > 0)
     {
         h->lockCount--;
@@ -476,10 +519,11 @@ void Resource::Unlock(DICTNODE *h)
     }
 }
 
-void Resource::Crypt(byte *p, long length, int key)
+void Resource::Crypt(byte *p, int32_t length, int key)
 {
     for (int i = 0; i < length; i++, key++)
     {
-        p[i] ^= (byte)((ushort)key / 2);
+        byte xr = ((ushort)key / 2);
+        p[i] ^= xr;
     }
 }

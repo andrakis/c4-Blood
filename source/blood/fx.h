@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum FX_ID {
     FX_NONE = -1,
@@ -99,4 +100,5 @@ void func_746D4(SPRITE *, int);
 void func_74818(SPRITE *, int, int, int);
 void func_74A18(SPRITE *, int, int, int);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

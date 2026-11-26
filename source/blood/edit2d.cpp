@@ -14,6 +14,7 @@
 #include "misc.h"
 #include "sound.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL111A
 #define LDIFF1 0
@@ -2026,3 +2027,4 @@ void CheckKeys2D(void)
     if (key != 0)
         keyFlushStream();
 }
+#pragma pack(pop)  // c4: packall.py

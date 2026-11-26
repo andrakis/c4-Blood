@@ -22,6 +22,7 @@
 #include "cdrom.h"
 #include "globals.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int int_295330;
 playinfo *pinfo;
@@ -161,6 +162,9 @@ void CCDAudio::cdrom_shutdown(void)
 
 void CCDAudio::device_request(void *a1)
 {
+#ifdef C4BLOOD
+    return;  // c4: no MSCDEX; a request goes nowhere and its answer stays zero
+#endif
     memset(&sregs, 0, sizeof(sregs));
     if (!cdmem_allocated)
     {
@@ -672,7 +676,7 @@ int CCDAudio::preprocess(void)
     play_song(t);
     cd_status();
     f_e42 = cdrom_data.f_20;
-    gGameClock = oc;
+    gGameClock_set(oc);
     return 1;
 }
 
@@ -688,3 +692,4 @@ int CCDAudio::status(int a1)
 {
     return cdrom_data.f_20 & a1;
 }
+#pragma pack(pop)  // c4: packall.py

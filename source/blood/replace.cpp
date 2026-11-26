@@ -24,30 +24,31 @@
 #include "resource.h"
 #include "screen.h"
 #include "tile.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 void uninitcache()
 {
 }
 
-extern "C" void agecache()
+extern "C" void agecache_replace()
 {
 }
 
-extern "C" void initcache()
+extern "C" void initcache_replace(intptr_t, int32_t)
 {
 }
 
-extern "C" void allocache()
+extern "C" void allocache_replace(intptr_t*, int32_t, char*)
 {
 }
 
-extern "C" void *kmalloc(long size)
+extern "C" void *kmalloc_replace(size_t size)
 {
     return Resource::Alloc(size);
 }
 
-extern "C" void kfree(void *pMem)
+extern "C" void kfree_replace(void *pMem)
 {
 #if APPVER_BLOODREV < AV_BR_BL111
     dprintf("kfree(%p)\n", pMem);
@@ -55,19 +56,19 @@ extern "C" void kfree(void *pMem)
     Resource::Free(pMem);
 }
 
-extern "C" int loadpics()
+extern "C" int loadpics_replace(char*)
 {
     return tileInit(0, NULL) ? 0 : - 1;
 }
 
-extern "C" void loadtile(short nTile)
+extern "C" void loadtile_replace(short nTile)
 {
     tileLoadTile(nTile);
 }
 
-extern "C" void allocatepermanenttile(short a1, int a2, int a3)
+extern "C" intptr_t allocatepermanenttile_replace(short a1, int a2, int a3)
 {
-    tileAllocTile(a1, a2, a3);
+    return (intptr_t)tileAllocTile(a1, a2, a3);
 }
 
 void overwritesprite (long thex, long they, short tilenum,
@@ -83,7 +84,7 @@ enum {
     kFakevarMask = 0xc000,
 };
 
-extern "C" int animateoffs(short nTile, ushort a2)
+extern "C" int animateoffs_replace(short nTile, ushort a2)
 {
     int offset = 0;
     int frames;
@@ -119,20 +120,68 @@ extern "C" int animateoffs(short nTile, ushort a2)
     return offset;
 }
 
-extern "C" void uninitengine()
+extern "C" void uninitengine_replace()
 {
     tileTerm();
 }
 
-extern "C" void loadpalette()
+extern "C" void loadpalette_replace()
 {
     scrLoadPalette();
 }
 
-extern "C" int getpalookup(int a1, int a2)
+extern "C" int getpalookup_replace(int a1, int a2)
 {
     if (gFogMode)
         return ClipHigh(a1>>8, 15)*16+ClipRange(a2>>2, 0, 15);
     else
         return ClipRange((a1>>8)+a2, 0, 63);
 }
+
+// c4: chocolate-blood's engine (source/build) calls these through pointers;
+// main sets them first, as chocolate-blood's does
+extern "C"
+{
+    void loadvoxel_replace(int nVoxel);
+    void initspritelists_replace(void);
+    int insertsprite_replace(short a1, short a2);
+    int deletesprite_replace(short a1);
+    int changespritesect_replace(short nSprite, short nSector);
+    int changespritestat_replace(short nSprite, short nStatus);
+
+    extern void* (*kmalloc)(size_t);
+    extern void (*kfree)(void*);
+    extern void (*loadvoxel)(int32_t);
+    extern void (*initcache)(intptr_t, int32_t);
+    extern void (*allocache)(intptr_t*, int32_t, char*);
+    extern void (*agecache)();
+    extern int32_t(*loadpics)(char*);
+    extern void (*loadtile)(short);
+    extern intptr_t(*allocatepermanenttile)(short, int32_t, int32_t);
+    extern void (*loadpalette)();
+    extern int engine_revision;
+}
+
+void replace_hook()
+{
+    kmalloc = kmalloc_replace;
+    kfree = kfree_replace;
+    loadvoxel = loadvoxel_replace;
+    initcache = initcache_replace;
+    allocache = allocache_replace;
+    agecache = agecache_replace;
+    initspritelists = initspritelists_replace;
+    insertsprite = insertsprite_replace;
+    deletesprite = deletesprite_replace;
+    changespritesect = changespritesect_replace;
+    changespritestat = changespritestat_replace;
+    loadpics = loadpics_replace;
+    loadtile = loadtile_replace;
+    allocatepermanenttile = allocatepermanenttile_replace;
+    animateoffs = animateoffs_replace;
+    uninitengine = uninitengine_replace;
+    loadpalette = loadpalette_replace;
+    getpalookup = getpalookup_replace;
+    engine_revision = 19961006;  // Blood's engine (one library for every version)
+}
+#pragma pack(pop)  // c4: packall.py

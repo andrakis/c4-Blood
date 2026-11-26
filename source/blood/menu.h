@@ -48,3 +48,5 @@ void SetupMenus(void);
 void func_5A828(void);
 
 #endif
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
+#pragma pack(pop)  // c4: packall.py

@@ -21,6 +21,7 @@
 #include "trig.h"
 #include "misc.h"
 #include "weather.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kNoTile -1
 
@@ -60,7 +61,7 @@ CWeather::~CWeather()
     f_72df = 0;
 }
 
-CWeather::RandomizeVectors(void)
+void CWeather::RandomizeVectors(void)
 {
     for (int i = 0; i < 4096; i++)
     {
@@ -70,7 +71,7 @@ CWeather::RandomizeVectors(void)
     }
 }
 
-CWeather::SetDefaultBuffer(char *a1, int a2, int a3, int *a4)
+void CWeather::SetDefaultBuffer(char *a1, int a2, int a3, int *a4)
 {
     f_4 = a1;
     f_8 = a2;
@@ -78,7 +79,7 @@ CWeather::SetDefaultBuffer(char *a1, int a2, int a3, int *a4)
     memcpy(YLookup, a4, sizeof(YLookup));
 }
 
-CWeather::SetParticles(short nCount, short a2, short nTile)
+void CWeather::SetParticles(short nCount, short a2, short nTile)
 {
     dassert(nCount >= 0 && nCount < kMaxVectors, 81);
     dassert(nTile == kNoTile || (nTile >= 0 && nTile < kMaxTiles), 82);
@@ -87,22 +88,22 @@ CWeather::SetParticles(short nCount, short a2, short nTile)
     f_12dc = nTile;
 }
 
-CWeather::SetTranslucency(int a1)
+void CWeather::SetTranslucency(int a1)
 {
     f_0.f_1 = ClipRange(a1, 0, 2);
 }
 
-CWeather::SetColor(char a1)
+void CWeather::SetColor(char a1)
 {
     f_72de = ClipRange(a1, 0, 255);
 }
 
-CWeather::SetColorShift(char a1)
+void CWeather::SetColorShift(char a1)
 {
     f_72df = ClipRange(a1, 0, 2);
 }
 
-CWeather::Initialize(char *pBuffer, int a2, int a3, int a4, int a5, int *pYLookup, short nCount, short a8, short nTile)
+void CWeather::Initialize(char *pBuffer, int a2, int a3, int a4, int a5, int *pYLookup, short nCount, short a8, short nTile)
 {
     dassert(pBuffer != NULL, 107);
     dassert(pYLookup != NULL, 108);
@@ -116,7 +117,7 @@ CWeather::Initialize(char *pBuffer, int a2, int a3, int a4, int a5, int *pYLooku
     SetParticles(nCount, a8, nTile);
 }
 
-CWeather::Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile)
+void CWeather::Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile)
 {
     dassert(pBuffer != NULL, 122);
     dassert(pYLookup != NULL, 123);
@@ -175,14 +176,14 @@ CWeather::Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a
     }
 }
 
-CWeather::Draw(int a1, int a2, int a3, int a4, int a5, int a6)
+void CWeather::Draw(int a1, int a2, int a3, int a4, int a5, int a6)
 {
     a6 = a6 == -1 ? f_12d8 : a6;
     if (Status() && a6 > 0)
         Draw(f_4, f_10, f_14, f_8, f_c, YLookup, a1, a2, a3, a4, a5, a6, f_12dc);
 }
 
-CWeather::SetWeatherType(WEATHERTYPE a1)
+void CWeather::SetWeatherType(WEATHERTYPE a1)
 {
     switch (a1)
     {
@@ -207,3 +208,4 @@ CWeather::SetWeatherType(WEATHERTYPE a1)
         break;
     }
 }
+#pragma pack(pop)  // c4: packall.py

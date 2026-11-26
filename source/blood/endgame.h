@@ -20,6 +20,7 @@
 #include "typedefs.h"
 #include "build.h"
 #include "globals.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 class CEndGameMgr {
 public:
@@ -59,4 +60,5 @@ extern CEndGameMgr gEndGameMgr;
 extern CSecretMgr gSecretMgr;
 extern CKillMgr gKillMgr;
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_ENDGAME_H_

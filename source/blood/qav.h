@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct TILE_FRAME
 {
@@ -69,4 +70,5 @@ struct QAV
 int qavRegisterClient(void(*pClient)(int, void *));
 
 
+#pragma pack(pop)  // c4: packall.py
 #endif

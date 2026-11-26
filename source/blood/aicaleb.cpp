@@ -27,6 +27,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void SeqAttackCallback(int, int);
 static void thinkSearch(SPRITE *, XSPRITE *);
@@ -398,3 +399,4 @@ static void func_661E0(SPRITE *pSprite, XSPRITE *pXSprite)
     yvel[nSprite] = dmulscale30(t1, nSin, -t2, nCos);
     zvel[nSprite] = dz;
 }
+#pragma pack(pop)  // c4: packall.py

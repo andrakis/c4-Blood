@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "ai.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 extern AISTATE gargoyleFIdle;
 extern AISTATE gargoyleStatueIdle;
@@ -44,5 +45,6 @@ extern AISTATE gargoyleDodgeDown;
 extern AISTATE gargoyleFDodgeDownRight;
 extern AISTATE gargoyleFDodgeDownLeft;
 
+#pragma pack(pop)  // c4: packall.py
 #endif
 

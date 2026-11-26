@@ -18,6 +18,7 @@
 #define _CONTROLS_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 union BUTTONFLAGS
 {
@@ -109,4 +110,5 @@ void ctrlInit(void);
 void ctrlGetInput(void);
 void ctrlTerm(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

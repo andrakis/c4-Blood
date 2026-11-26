@@ -29,6 +29,7 @@
 #include "seq.h"
 #include "trig.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 CFX gFX;
 
@@ -344,4 +345,4 @@ void func_74A18(SPRITE *pSprite, int z, int a3, int a4)
         zvel[pShell->index] = zvel[pSprite->index]-0x20000-(Random2(20)<<18)/120;
     }
 }
-
+#pragma pack(pop)  // c4: packall.py

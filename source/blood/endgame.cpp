@@ -16,8 +16,8 @@
  */
 #include <stdio.h>
 extern "C" {
-#include "types.h"
-#include "fx_man.h"
+#include "TYPES.H"
+#include "FX_MAN.H"
 }
 #include "typedefs.h"
 #include "build.h"
@@ -34,6 +34,7 @@ extern "C" {
 #include "player.h"
 #include "sound.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 CEndGameMgr gEndGameMgr;
 CSecretMgr gSecretMgr;
@@ -280,3 +281,4 @@ void EndGameLoadSave::Save(void)
 }
 
 static EndGameLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

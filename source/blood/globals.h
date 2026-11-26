@@ -17,10 +17,11 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
-#include "..\gamever.h"
+#include "gamever.h"
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum INPUT_MODE {
     INPUT_MODE_0,
@@ -43,7 +44,12 @@ extern Resource gSysRes;
 
 extern BOOL gUse8250;
 
-extern long volatile gGameClock;
+// c4: the clock behind functions; reading it advances the platform's time
+int32_t gGameClock_get(void);
+void gGameClock_set(int32_t value);
+void gGameClock_add(int32_t value);
+void gGameClock_sub(int32_t value);
+#define gGameClock gGameClock_get()
 
 extern int32 gGamma;
 
@@ -89,4 +95,5 @@ void ClockStrobe(void);
 void LockClockStrobe(void);
 void UnlockClockStrobe(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_GLOBALS_H_

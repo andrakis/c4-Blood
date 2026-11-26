@@ -23,6 +23,7 @@
 #include "controls.h"
 #include "misc.h"
 #include "gfx.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 struct FONT {
@@ -146,4 +147,5 @@ void viewClearInterpolations(void);
 void viewCorrectPrediction(void);
 void viewUpdatePrediction(INPUT *);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_VIEW_H_

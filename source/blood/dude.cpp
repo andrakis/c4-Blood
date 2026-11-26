@@ -18,6 +18,7 @@
 #include "globals.h"
 #include "db.h"
 #include "dude.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 DUDEINFO dudeInfo[kDudeMax-kDudeBase] = 
 {
@@ -1598,3 +1599,4 @@ DUDEINFO gPlayerTemplate[2] =
         0
     }
 };
+#pragma pack(pop)  // c4: packall.py

@@ -21,6 +21,7 @@
 #include "player.h"
 #include "qav.h"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 class CChoke {
 public:
@@ -45,4 +46,5 @@ void func_84230(CChoke*, PLAYER* pPlayer);
 
 extern CChoke gChoke;
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_CHOKE_H_

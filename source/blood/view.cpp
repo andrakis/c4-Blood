@@ -49,6 +49,7 @@
 #include "weather.h"
 
 #include "actor.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -1042,7 +1043,7 @@ void viewDrawChar(QFONT *pFont, char chr, int x, int y, byte *pLookup)
         return;
 
     byte *data = &pFont->at820[pCharInfo->offset];
-    for (int i = 0; i < 4; i++)
+    int i; for (i = 0; i < 4; i++)
     {
         palookupoffse[i] = pLookup;
         vince[i] = ystep;
@@ -1271,7 +1272,7 @@ void viewDrawPack(PLAYER *pPlayer, int x, int y)
         int width = 0;
         int nPacks = 0;
         int packs[5];
-        for (int i = 0; i < 5; i++)
+        int i; for (i = 0; i < 5; i++)
         {
             if (pPlayer->packInfo[i].at1)
             {
@@ -2969,7 +2970,7 @@ void viewDrawScreen(void)
         }
         int unk = 0;
 
-        for (int nSprite = headspritestat[2]; nSprite >= 0; nSprite = nextspritestat[nSprite])
+        int nSprite; for (nSprite = headspritestat[2]; nSprite >= 0; nSprite = nextspritestat[nSprite])
         {
             SPRITE *pSprite = &sprite[nSprite];
             int nXSprite = pSprite->extra;
@@ -3307,3 +3308,4 @@ void ViewLoadSave::Save(void)
 }
 
 static ViewLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

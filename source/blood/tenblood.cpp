@@ -32,6 +32,7 @@
 #include "tenutils.h"
 #include "textio.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int gTenActivated;
 void *gTenLog;
@@ -557,3 +558,4 @@ void tenPlayerDebugInfo(char *a1, int pid)
     lags[pid].getMinMax(&minLag, &maxLag);
     sprintf(a1, "%2d - %2d", minLag, maxLag);
 }
+#pragma pack(pop)  // c4: packall.py

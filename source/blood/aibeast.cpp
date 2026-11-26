@@ -29,6 +29,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void SlashSeqCallback(int, int);
 static void StompSeqCallback(int, int);
@@ -115,7 +116,7 @@ static void StompSeqCallback(int, int nXSprite)
             v4 = 0;
     }
     vc <<= 4;
-    for (int nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
+    int nSprite2; for (nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
     {
         if (nSprite2 == nSprite_ && !v4)
             continue;
@@ -558,3 +559,4 @@ static void func_62D7C(SPRITE *pSprite, XSPRITE *pXSprite)
     yvel[nSprite] = dmulscale30(t1, nSin, -t2, nCos);
     zvel[nSprite] = dz;
 }
+#pragma pack(pop)  // c4: packall.py

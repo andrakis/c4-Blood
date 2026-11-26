@@ -17,11 +17,12 @@
 #ifndef _config_public
 #define _config_public
 
-#include "types.h"
+#include "TYPES.H"
 extern "C" {
-#include "fx_man.h"
+#include "FX_MAN.H"
 }
-#include "control.h"
+#include "CONTROL.H"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define SETUPNAMEPARM "SETUPFILE"
 
@@ -86,4 +87,5 @@ void CONFIG_WriteAdultMode( void );
 void CONFIG_ResetKeys( void );
 void CONFIG_WriteSetup( void );
 
+#pragma pack(pop)  // c4: packall.py
 #endif

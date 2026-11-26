@@ -22,6 +22,7 @@
 #include "typedefs.h"
 #include "controls.h"
 #include "debug4g.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum PACKETMODE {
     PACKETMODE_0 = 0,
@@ -153,4 +154,5 @@ void netBroadcastPlayerInfo(int);
 void netCheckSync(void);
 void netSendEmptyPackets(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

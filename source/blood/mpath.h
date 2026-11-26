@@ -16,6 +16,7 @@
  */
 #ifndef _MPATH_H_
 #define _MPATH_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 typedef struct {
     char __f_0[12];
@@ -38,4 +39,5 @@ int func_832E4(void);
 };
 #endif
 
+#pragma pack(pop)  // c4: packall.py
 #endif

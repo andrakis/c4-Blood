@@ -241,36 +241,36 @@ void printChar(int x, int y, byte c)
     }
 }
 
-int gfxGetTextLen(char *a1, QFONT *a2)
+int gfxGetTextLen(const char *a1, QFONT *a2)
 {
     if (a2 == NULL)
         return strlen(a1) * 8;
 
     int l = -a2->at11;
-    for (char *s = a1; *s; s++)
+    for (const char *s = a1; *s; s++)
         l += a2->at20[*s].ox + a2->at11;
 
     return l;
 }
 
-int gfxGetTextNLen(char *a1, QFONT *a2, int a3)
+int gfxGetTextNLen(const char *a1, QFONT *a2, int a3)
 {
     if (a2 == NULL)
         return strlen(a1) * 8;
 
     int l = -a2->at11;
-    for (char *s = a1; *s && a3 > 0; s++, a3--)
+    for (const char *s = a1; *s && a3 > 0; s++, a3--)
         l += a2->at20[*s].ox + a2->at11;
 
     return l;
 }
 
-int gfxGetLabelLen(char *a1, QFONT *a2)
+int gfxGetLabelLen(const char *a1, QFONT *a2)
 {
     int l = 0;
     if (a2)
         l = -a2->at11;
-    for (char* s = a1; *s; s++)
+    for (const char* s = a1; *s; s++)
     {
         if (*s == '&')
             continue;
@@ -282,13 +282,13 @@ int gfxGetLabelLen(char *a1, QFONT *a2)
     return l;
 }
 
-int gfxFindTextPos(char *a1, QFONT *a2, int a3)
+int gfxFindTextPos(const char *a1, QFONT *a2, int a3)
 {
     if (!a2)
         return a3 / 8;
     int l = -a2->at11;
     int pos = 0;
-    for (char* s = a1; *s; s++, pos++)
+    for (const char* s = a1; *s; s++, pos++)
     {
         l += a2->at20[*s].ox + a2->at11;
         if (l > a3)
@@ -297,14 +297,14 @@ int gfxFindTextPos(char *a1, QFONT *a2, int a3)
     return pos;
 }
 
-void gfxDrawText(int x, int y, int color, char* pzText, QFONT* pFont)
+void gfxDrawText(int x, int y, int color, const char* pzText, QFONT* pFont)
 {
     if (pFont)
         y += pFont->atf;
 
     Video.SetColor(color);
 
-    for (char* s = pzText; *s; s++)
+    for (const char* s = pzText; *s; s++)
     {
         if (pFont == NULL)
         {
@@ -338,20 +338,20 @@ void gfxDrawText(int x, int y, int color, char* pzText, QFONT* pFont)
                     break;
                 }
             }
-            x += pChar->ox + pFont->at11;
+            x += pFont->at11 + pChar->ox;
         }
     }
 }
 
-void gfxDrawLabel(int x, int y, int color, char* pzLabel, QFONT* pFont)
+void gfxDrawLabel(int x, int y, int color, const char* pzLabel, QFONT* pFont)
 {
     if (pFont)
         y += pFont->atf;
 
-    BOOL v4 = FALSE;
+    QBOOL v4 = FALSE;
     Video.SetColor(color);
 
-    for (char* s = pzLabel; *s; s++)
+    for (const char* s = pzLabel; *s; s++)
     {
         if (*s == '&')
         {
@@ -398,7 +398,7 @@ void gfxDrawLabel(int x, int y, int color, char* pzLabel, QFONT* pFont)
                     break;
                 }
             }
-            x += pChar->ox + pFont->at11;
+            x += pFont->at11 + pChar->ox;
         }
         v4 = FALSE;
     }

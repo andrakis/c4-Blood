@@ -16,18 +16,25 @@
  */
 #include <stdio.h>
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "build.h"
 #include "debug4g.h"
 #include "resource.h"
 #include "globals.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 Resource gSysRes;
 int gOldDisplayMode;
 long gFrameClock;
 int gFrameTicks;
 int gFrame;
-long volatile gGameClock;
+// c4: Blood's clock, behind functions (globals.h)
+extern "C" void c4blood_clock_read(void);
+static int32_t gGameClock_val;
+int32_t gGameClock_get(void) { c4blood_clock_read(); return gGameClock_val; }
+void gGameClock_set(int32_t value) { gGameClock_val = value; }
+void gGameClock_add(int32_t value) { gGameClock_val += value; }
+void gGameClock_sub(int32_t value) { gGameClock_val -= value; }
 int gCacheMiss;
 int gFrameRate;
 int32 gGamma;
@@ -161,8 +168,9 @@ BOOL gAdultContent = 1;
 
 void ClockStrobe(void)
 {
-    ++gGameClock;
-    totalclock = gGameClock;
+    // c4: the timer interrupt; not through the read, which runs the timer
+    gGameClock_val++;
+    totalclock_set(gGameClock_val);
 }
 
 void CLOCK_STROBE_END(void) {}
@@ -182,3 +190,4 @@ char *GetVersionString(void)
     }
     return gVersionString;
 }
+#pragma pack(pop)  // c4: packall.py

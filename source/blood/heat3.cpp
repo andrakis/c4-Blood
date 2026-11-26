@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "heat.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int int_29547C;
 
@@ -199,3 +200,4 @@ int func_83CF8(void)
     func_83928(7, 6);
     return vb;
 }
+#pragma pack(pop)  // c4: packall.py

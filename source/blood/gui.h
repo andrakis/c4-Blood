@@ -19,6 +19,7 @@
 
 #include "gui.h"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 extern Resource gGuiRes;
 
 struct GEVENT_MOUSE
@@ -267,4 +268,5 @@ void UpdateBlinkClock(int);
 int GetNumberBox(char *, int, int);
 MODAL_RESULT ShowModal(Container* container);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -39,6 +39,7 @@
 #if 0
 #include "function.h"
 #endif
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL111
 #define LDIFF1 0
@@ -402,4 +403,4 @@ void CDemo::NextDemo(void)
         at59eb = 0;
     SetupPlayback(NULL);
 }
-
+#pragma pack(pop)  // c4: packall.py

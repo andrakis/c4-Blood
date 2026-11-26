@@ -24,6 +24,7 @@
 #include "network.h"
 #include "player.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 //char unk[8];
 
@@ -175,3 +176,4 @@ void func_83888(void)
         gEndGameMgr.Draw();
     }
 }
+#pragma pack(pop)  // c4: packall.py

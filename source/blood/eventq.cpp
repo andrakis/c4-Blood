@@ -27,6 +27,7 @@
 #include "loadsave.h"
 #include "pqueue.h"
 #include "triggers.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 class EventQueue : public PriorityQueue
 {
@@ -404,3 +405,4 @@ void EventQLoadSave::Save()
     Write(rxBucket, sizeof(rxBucket));
     Write(bucketHead, sizeof(bucketHead));
 }
+#pragma pack(pop)  // c4: packall.py

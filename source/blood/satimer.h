@@ -17,9 +17,11 @@
 #ifndef _SATIMER_H_
 #define _SATIMER_H_
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void timerRegisterClient(void(*pCall)(void), int nRate);
 void timerInstall(void);
 void timerRemove(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

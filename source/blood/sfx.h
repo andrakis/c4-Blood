@@ -18,6 +18,7 @@
 #define _SFX_H_
 #include "typedefs.h"
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void sfxPlay3DSound(SPRITE *, int, int a3 = -1, int a4 = 0);
 void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector);
@@ -28,4 +29,5 @@ void sfxSetReverb2(BOOL);
 void sfxUpdate3DSounds(void);
 void sfxInit(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

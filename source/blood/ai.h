@@ -20,6 +20,7 @@
 #include "build.h"
 #include "actor.h"
 #include "db.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct AISTATE {
     int at0; // seq
@@ -177,4 +178,5 @@ void aiMoveDodge(SPRITE *, XSPRITE *);
 
 extern int int_138BB0[5];
 
+#pragma pack(pop)  // c4: packall.py
 #endif

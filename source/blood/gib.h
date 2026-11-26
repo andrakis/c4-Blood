@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum GIBTYPE {
     GIBTYPE_0 = 0,
@@ -70,4 +71,5 @@ public:
 void GibSprite(SPRITE *, GIBTYPE, CGibPosition *a3 = NULL, CGibVelocity *a4 = NULL);
 void GibWall(int, GIBTYPE, CGibVelocity *a3 = NULL);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -19,6 +19,7 @@
 #include "typedefs.h"
 #include "build.h"
 #include "network.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct engagecom {
     short f_0;
@@ -86,3 +87,4 @@ short func_83EB0(short *pSource, char *pBuffer)
     memcpy(pBuffer, int_285480->f_10, nSize);
     return nSize;
 }
+#pragma pack(pop)  // c4: packall.py

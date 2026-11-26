@@ -35,6 +35,7 @@
 #include "sound.h"
 #include "trig.h"
 #include "weapon.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL111A
 #define LDIFF1 0
@@ -345,7 +346,7 @@ static void UpdateAimVector(PLAYER * pPlayer)
     if (gProfile[pPlayer->at57].at0 || pPlayer->atbd == 10 || pPlayer->atbd == 9)
     {
         int nClosest = 0x7fffffff;
-        for (short nSprite = headspritestat[6]; nSprite >= 0; nSprite = nextspritestat[nSprite])
+        short nSprite; for (nSprite = headspritestat[6]; nSprite >= 0; nSprite = nextspritestat[nSprite])
         {
             SPRITE *pSprite = &sprite[nSprite];
             if (pSprite == pPSprite)
@@ -2472,7 +2473,7 @@ void func_51340(SPRITE *pMissile, int a2)
     actHitcodeToData(a2, &gHitInfo, &v24);
     if (a2 == 3 && v24 >= 0 && sprite[v24].statnum == 6)
         v4 = 0;
-    for (int nSprite = headspritestat[6]; nSprite >= 0; nSprite = nextspritestat[nSprite])
+    int nSprite; for (nSprite = headspritestat[6]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
         if (nSprite == nOwner && !v4)
             continue;
@@ -2533,3 +2534,4 @@ void WeaponLoadSave::Save()
 }
 
 static WeaponLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

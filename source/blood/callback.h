@@ -16,6 +16,7 @@
  */
 #ifndef _CALLBACK_H_
 #define _CALLBACK_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum CALLBACK_ID {
     CALLBACK_ID_NONE = -1,
@@ -46,4 +47,5 @@ enum CALLBACK_ID {
 
 extern void (*gCallback[kCallbackMax])(int);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

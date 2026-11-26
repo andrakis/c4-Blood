@@ -18,6 +18,7 @@
 #define _CDROM_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 struct tray_request_t {
@@ -240,4 +241,5 @@ extern CCDAudio Redbook;
 extern BOOL gRedBookInstalled;
 extern BOOL bNoCDAudio;
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_CDROM_H_

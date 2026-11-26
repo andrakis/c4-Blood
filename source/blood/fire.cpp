@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "resource.h"
 #include "tile.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int gDamping = 6;
 int fireSize = 128;
@@ -54,29 +55,23 @@ void BuildCoolTable(void)
         CoolTable[i] = ClipLow((i-gDamping) / 4, 0);
 }
 
-void DoFireFramePragma(byte *, byte *);
-
-#pragma aux DoFireFramePragma = \
-"mov esi, offset FrameBuffer"\
-"xor eax,eax"\
-"mov edx,fireSize"\
-"L1:"\
-"push edi"\
-"mov ecx,fireSize"\
-"L2:"\
-"mov al,[esi]"\
-"inc esi"\
-"mov al,[ebx+eax]"\
-"mov [edi],al"\
-"add edi,fireSize"\
-"dec ecx"\
-"jnz short L2"\
-"pop edi"\
-"inc edi"\
-"dec edx"\
-"jnz short L1"\
-parm [ebx] [edi]\
-modify [eax ecx edx esi edi]
+// c4: Watcom inline assembly; the same in C (chocolate-blood's)
+void DoFireFramePragma(byte *a1, byte *a2)
+{
+    byte* s = FrameBuffer;
+    int i = fireSize;
+    do
+    {
+        int j = fireSize;
+        byte* p = a2;
+        do
+        {
+            *p = a1[*s++];
+            p += fireSize;
+        } while (--j);
+        a2++;
+    } while (--i);
+}
 
 void DoFireFrame(void)
 {
@@ -112,3 +107,4 @@ void FireProcess(void)
         lastUpdate = gGameClock;
     }
 }
+#pragma pack(pop)  // c4: packall.py

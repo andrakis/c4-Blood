@@ -27,6 +27,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void SlashSeqCallback(int, int);
 static void ThrowSeqCallback(int, int);
@@ -563,4 +564,4 @@ static void MoveFly(SPRITE *pSprite, XSPRITE *pXSprite)
         break;
     }
 }
-
+#pragma pack(pop)  // c4: packall.py

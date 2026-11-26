@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "build.h"
 #include "db.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum {
     kColor0 = 0,
@@ -93,4 +94,5 @@ void CheckKeys2D(void);
 void Check3DKeys(void);
 
 
+#pragma pack(pop)  // c4: packall.py
 #endif

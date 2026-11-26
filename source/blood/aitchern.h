@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "ai.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 extern AISTATE tchernobogIdle;
 extern AISTATE tchernobogSearch;
@@ -30,5 +31,6 @@ extern AISTATE tcherno13A9F0;
 extern AISTATE tcherno13AA0C;
 extern AISTATE tcherno13AA28;
 
+#pragma pack(pop)  // c4: packall.py
 #endif
 

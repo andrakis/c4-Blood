@@ -22,8 +22,7 @@
 extern "C" {
 #endif
 
-ulong CRC32(void *data, ulong len);
-#pragma aux CRC32 parm [esi][ecx] modify [eax ebx edx ecx esi]
+uint32_t CRC32(void *data, uint32_t len);
 
 #ifdef __cplusplus
 }

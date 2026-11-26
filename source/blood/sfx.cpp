@@ -21,7 +21,7 @@
 #include "globals.h"
 #include "config.h"
 #include "error.h"
-#include "fx_man.h"
+#include "FX_MAN.H"
 #include "gameutil.h"
 #include "misc.h"
 #include "player.h"
@@ -29,6 +29,7 @@
 #include "sfx.h"
 #include "sound.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -493,3 +494,4 @@ void sfxSetReverb2(BOOL toggle)
     else
         FX_SetFastReverb(0);
 }
+#pragma pack(pop)  // c4: packall.py

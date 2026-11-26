@@ -19,15 +19,7 @@
 
 #include "typedefs.h"
 
-struct HEAPNODE
-{
-    HEAPNODE* prev;
-    HEAPNODE* next;
-    int size;
-    BOOL isFree;
-    HEAPNODE* freePrev;
-    HEAPNODE* freeNext;
-};
+struct HEAPNODE;
 
 class QHeap
 {
@@ -41,9 +33,46 @@ public:
     int Free(void *p);
 
     void *heapPtr;
-    HEAPNODE heap;
-    HEAPNODE freeHeap;
+    void *extraPtr;
+    void* AllocExtra(int size)
+    {
+        char* p = (char*)extraPtr;
+        extraPtr = (void*)(p + size);
+
+        return p;
+    }
+    HEAPNODE *heap;
+    HEAPNODE *freeHeap;
     int size;
 };
+
+extern void* basePtr;
+
+#if INTPTR_MAX > INT32_MAX  // c4: a 64-bit host only
+#define QPTR(T) QPtr<T>
+template<typename Type> struct QPtr
+{
+    uint32_t offset;
+
+    Type* operator =(Type* ptr) { if (ptr) offset = (uint32_t)((char*)ptr - (char*)basePtr + 1); else offset = 0; return ptr; }
+    operator Type*() { if (offset) return (Type*)((char*)basePtr + offset - 1); else return (Type*)nullptr; }
+};
+#else
+#define QPTR(T) T *
+#endif
+
+#pragma pack(push, 1)
+
+struct HEAPNODE
+{
+    QPTR(HEAPNODE) prev;
+    QPTR(HEAPNODE) next;
+    int size;
+    QBOOL isFree;
+    QPTR(HEAPNODE) freePrev;
+    QPTR(HEAPNODE) freeNext;
+};
+
+#pragma pack(pop)
 
 #endif

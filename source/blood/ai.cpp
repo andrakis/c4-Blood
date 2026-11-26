@@ -54,6 +54,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static int cumulDamage[kMaxXSprites];
 int gDudeSlope[kMaxXSprites];
@@ -1635,3 +1636,4 @@ void AILoadSave::Save(void)
 }
 
 static AILoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

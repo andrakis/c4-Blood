@@ -29,6 +29,7 @@
 #include "player.h"
 #include "trig.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct MIRROR
 {
@@ -187,7 +188,7 @@ void func_5571C(BOOL mode)
 void func_557C4(long x, long y, int interpolate)
 {
     int nViewSprites = spritesortcnt;
-    for (int nTSprite = nViewSprites-1; nTSprite >= 0; nTSprite--)
+    int nTSprite; for (nTSprite = nViewSprites-1; nTSprite >= 0; nTSprite--)
     {
         SPRITE *pTSprite = &tsprite[nTSprite];
         pTSprite->xrepeat = pTSprite->yrepeat = 0;
@@ -426,3 +427,4 @@ void MirrorLoadSave::Save(void)
 }
 
 static MirrorLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

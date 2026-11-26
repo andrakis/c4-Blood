@@ -18,6 +18,7 @@
 #define _EVENTQ_H_
 
 #include "callback.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxChannels 4096
 
@@ -50,4 +51,5 @@ void evKill(int a1, int a2);
 void evKill(int a1, int a2, CALLBACK_ID a3);
 void evProcess(ulong);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_EVENTQ_H_

@@ -18,6 +18,7 @@
 #define _SOUND_H_
 #include "typedefs.h"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct SAMPLE2D
 {
@@ -54,4 +55,5 @@ void sndStartSample(ulong nSound, int nVolume, int nChannel = -1, BOOL bLoop = F
 void sndProcess(void);
 void sndTerm(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_SOUND_H_

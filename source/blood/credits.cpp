@@ -27,12 +27,13 @@
 #include "smkplay.h"
 #include "sound.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 BOOL exitCredits = FALSE;
 
 BOOL Wait(int nTicks)
 {
-    gGameClock = 0;
+    gGameClock_set(0);
     while (gGameClock < nTicks)
     {
         BYTE key = keyGet();
@@ -50,7 +51,7 @@ BOOL DoFade(byte r, byte g, byte b, int nTicks)
 {
     dassert(nTicks > 0, 59);
     scrSetupFade(r, g, b);
-    gGameClock = gFrameClock = 0;
+    gGameClock_set(0); gFrameClock = 0;
     do
     {
         while (gGameClock < gFrameClock) { }
@@ -67,7 +68,7 @@ BOOL DoUnFade(int nTicks)
 {
     dassert(nTicks > 0, 79);
     scrSetupUnfade();
-    gGameClock = gFrameClock = 0;
+    gGameClock_set(0); gFrameClock = 0;
     do
     {
         while (gGameClock < gFrameClock) { }
@@ -165,3 +166,4 @@ void credPlaySmk(char *pzSMK, char *pzWAV)
     }
     smkPlayer.PlaySMKWithWAV(pzSMK, pzWAV);
 }
+#pragma pack(pop)  // c4: packall.py

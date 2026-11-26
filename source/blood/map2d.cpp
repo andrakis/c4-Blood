@@ -26,6 +26,7 @@
 #include "player.h"
 #include "trig.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 CViewMap gViewMap;
@@ -394,3 +395,4 @@ void CViewMap::FollowMode(BOOL a1)
 {
     bFollowMode = a1;
 }
+#pragma pack(pop)  // c4: packall.py

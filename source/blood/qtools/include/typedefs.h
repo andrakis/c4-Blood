@@ -17,17 +17,20 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
-typedef unsigned char byte;
-typedef unsigned char BYTE;
-typedef unsigned char uchar;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef signed char schar;
-typedef signed short sshort;
+#include "compat.h"
+
+typedef uint8_t byte;
+typedef uint8_t BYTE;
+typedef uint8_t uchar;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef unsigned long ulong;  // c4: as glibc's sys/types.h has it; 32 bits under -m32 and in c4lc's lc32, as in Watcom
+typedef int8_t schar;
+typedef int16_t sshort;
 
 
-typedef unsigned char BOOL;
+typedef uint8_t QBOOL;
+typedef QBOOL BOOL;  // c4: Blood-RE says BOOL; unsigned char in both
 #define FALSE 0
 #define TRUE 1
 

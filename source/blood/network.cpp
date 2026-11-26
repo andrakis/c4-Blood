@@ -29,6 +29,7 @@
 #include "seq.h"
 #include "sound.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int int_27B088;
 
@@ -166,7 +167,7 @@ void netSendPacketAll(char *pBuffer, int nSize)
 
 void func_79760(void)
 {
-    gNetFifoClock = gFrameClock = gGameClock = 0;
+    gGameClock_set(0); gNetFifoClock = gFrameClock = 0;
     gNetFifoMasterTail = 0;
     gPredictTail = 0;
     gNetFifoTail = 0;
@@ -220,7 +221,7 @@ void netCheckSync(void)
         return;
     while (1)
     {
-        for (int p = connecthead; p >= 0; p = connectpoint2[p])
+        int p; for (p = connecthead; p >= 0; p = connectpoint2[p])
         {
             if (gCheckHead[p] <= gCheckTail)
                 return;
@@ -569,7 +570,7 @@ void netWaitForEveryone(BOOL a1)
         if (keystatus[1] && a1)
             exit(0);
         netGetPackets();
-        for (int p = connecthead; p >= 0; p = connectpoint2[p])
+        int p; for (p = connecthead; p >= 0; p = connectpoint2[p])
             if (gPlayerReady[p] < gPlayerReady[myconnectindex])
                 break;
         if (p < 0)
@@ -738,7 +739,7 @@ void netGetInput(void)
                     }
                     else
                         t = ksgn(t);
-                    gGameClock -= t<<2;
+                    gGameClock_sub(t<<2);
                     otherMinLag += t;
                     myMinLag[connecthead] -= t;
                 }
@@ -822,7 +823,7 @@ void netGetInput(void)
                 }
                 else
                     t = ksgn(t);
-                gGameClock -= t<<2;
+                gGameClock_sub(t<<2);
                 otherMinLag += t;
                 myMinLag[connecthead] -= t;
             }
@@ -987,3 +988,4 @@ void netBroadcastNewGame(void) {}
 void netWaitForEveryone(BOOL) {}
 void netBroadcastMsg(int, char*) {}
 #endif
+#pragma pack(pop)  // c4: packall.py

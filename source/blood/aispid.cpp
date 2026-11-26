@@ -28,6 +28,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -300,3 +301,4 @@ static void thinkChase(SPRITE *pSprite, XSPRITE *pXSprite)
     aiNewState(pSprite, pXSprite, &spidGoto);
     pXSprite->target = -1;
 }
+#pragma pack(pop)  // c4: packall.py

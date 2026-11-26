@@ -18,6 +18,7 @@
 #define _MIRRORS_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void DrawMirrors(long, long, long, int, long);
 
@@ -26,4 +27,5 @@ void func_557C4(long, long, int);
 
 void InitMirrors(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "globals.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxVoxels 512
 #define kMaxVoxMips 5
@@ -34,6 +35,8 @@
 #define kMaxSkyTiles 256
 #define kMaxPlayers 8
 #define kMaxViewSprites 1024
+
+#pragma pack(push, 1)  // c4: as the engine (source/build) has them
 
 struct SECTOR {
     short wallptr, wallnum;
@@ -147,9 +150,16 @@ struct PICANM {
     unsigned int at3_7 : 1; // filler
 };
 
+#pragma pack(pop)
+
 extern "C" {
 
-extern volatile int totalclock;
+// c4: chocolate-blood's engine keeps the clock behind functions
+int32_t totalclock_get(void);
+void totalclock_set(int32_t value);
+void totalclock_add(int32_t value);
+void totalclock_sub(int32_t value);
+#define totalclock totalclock_get()
 extern byte palette[768];
 extern byte *palookup[256];
 extern int parallaxvisibility;
@@ -200,24 +210,25 @@ extern byte gotpic[(kMaxTiles+7)>>3];
 
 extern byte *waloff[kMaxTiles];
 
-void fixtransluscence(void);
+void fixtransluscence(intptr_t);
 void initengine(void);
-void uninitengine(void);
+extern void (*uninitengine)(void);
+extern void (*loadvoxel)(int32_t);  // c4: tile.cpp's loadvoxel_replace
 int setgamemode(byte, int, int);
 void clearview(int);
 void nextpage(void);
 void setview(int, int, int, int);
-int getpalookup(int, int);
+extern int (*getpalookup)(int, int);
 
-void initspritelists(void);
-int insertsprite(short, short);
-void deletesprite(short);
-int changespritesect(short, short);
-int changespritestat(short, short);
+extern void (*initspritelists)(void);
+extern int (*insertsprite)(short, short);
+extern int (*deletesprite)(short);
+extern int (*changespritesect)(short, short);
+extern int (*changespritestat)(short, short);
 
 void printext256(int, int, short, short, char *, char);
 
-int animateoffs(short a1, ushort a2);
+extern int (*animateoffs)(short a1, ushort a2);
 
 void rotatesprite(int, int, int, int, int, signed char, char, char, int, int, int, int);
 
@@ -350,17 +361,11 @@ extern int vince[4];
 extern int vplce[4];
 
 void setupvlineasm(int);
-#pragma aux setupvlineasm parm [eax]
 int vlineasm4(int, byte*);
-#pragma aux vlineasm4 parm [ecx][edi] modify [eax ebx ecx edx esi edi]
 int vlineasm1(int, byte*, int, int, byte*, byte*);
-#pragma aux vlineasm1 parm [eax][ebx][ecx][edx][esi][edi]
 int mvlineasm1(int, byte*, int, int, byte*, byte*);
-#pragma aux mvlineasm1 parm [eax][ebx][ecx][edx][esi][edi];
 int mvlineasm4(int, byte*);
-#pragma aux mvlineasm4 parm [ecx][edi] modify [eax ebx ecx edx esi edi];
 void setupmvlineasm(long);
-#pragma aux setupmvlineasm parm [eax];
 
 
 // editor stuff
@@ -426,4 +431,5 @@ char changechar(char, long, char, char);
 
 }
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_BUILD_H_

@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "levels.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 extern GAMEOPTIONS gSaveGameOptions[10];
 extern unsigned int gSavedOffset;
@@ -57,4 +58,5 @@ public:
 
 void LoadSavedInfo(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

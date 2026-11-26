@@ -30,6 +30,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "tile.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -433,7 +434,7 @@ void seqKill(int a1, int a2)
 
 void seqKillAll(void)
 {
-    for (int i = 0; i < kMaxXWalls; i++)
+    int i; for (i = 0; i < kMaxXWalls; i++)
     {
         if (siWall[i].at13)
             UnlockInstance(&siWall[i]);
@@ -616,3 +617,4 @@ void SeqLoadSave::Save(void)
 }
 
 static SeqLoadSave myLoadSave;
+#pragma pack(pop)  // c4: packall.py

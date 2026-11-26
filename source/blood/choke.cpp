@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "player.h"
 #include "resource.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 CChoke::CChoke()
 {
@@ -136,3 +137,4 @@ void func_84230(CChoke *, PLAYER *pPlayer)
 }
 
 CChoke gChoke;
+#pragma pack(pop)  // c4: packall.py

@@ -21,9 +21,10 @@
 #include "globals.h"
 #include "satimer.h"
 extern "C" {
-#include "task_man.h"
+#include "TASK_MAN.H"
 }
 #include "smack.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct CLIENT_INFO {
     void (*pCall)(void);
@@ -106,7 +107,7 @@ void timerRegisterClient(void(*pCall)(void), int nRate)
     if (nClients >= 16)
         return;
     client[nClients].pCall = pCall;
-    client[nClients].pTask = TS_ScheduleTask((task_cast)pCall, nRate, 1, NULL);
+    client[nClients].pTask = TS_ScheduleTask((task_cast)pCall, nRate, 1, NULL, TASK_CHANNEL_TIMER);  // c4: chocolate-blood's audiolib
     nClients++;
 }
 
@@ -137,3 +138,4 @@ void timerSetClientRate(void(*pCall)(void), int nRate)
         return;
     TS_SetTaskRate(client[i].pTask, nRate);
 }
+#pragma pack(pop)  // c4: packall.py

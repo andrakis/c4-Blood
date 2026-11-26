@@ -18,6 +18,7 @@
 #define _CREDITS_H_
 
 #include "typedefs.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 
 void credLogos(void);
@@ -25,4 +26,5 @@ void credPlaySmk(char *pzSMK, int nWAV);
 void credPlaySmk(char *pzSMK, char *pzWAV);
 void credReset(void);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_CREDITS_H_

@@ -16,6 +16,7 @@
  */
 #ifndef _HEAT_H_
 #define _HEAT_H_
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct heatstruct2 {
     char __f_0[12];
@@ -31,4 +32,5 @@ int func_83900(int a1);
 int func_83928(int a1, int a2);
 int func_83954(int a1);
 void func_83A94(char *a1, int *a2);
+#pragma pack(pop)  // c4: packall.py
 #endif

@@ -22,16 +22,17 @@
 #include <time.h>
 #include "typedefs.h"
 #include "globals.h"
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
-#include "control.h"
-#include "file_lib.h"
+#include "CONTROL.H"
+#include "FILE_LIB.H"
 #include "function.h"
 #include "gamedefs.h"
-#include "scriplib.h"
-#include "util_lib.h"
+#include "SCRIPLIB.H"
+#include "UTIL_LIB.H"
 
 #include "_functio.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 //
 // Sound variables
@@ -118,11 +119,11 @@ char RTSPath[48];
 char UserPath[48];
 
 
-void SCRIPT_GetBool(int32 scripthandle, char *section, char *entryname, BOOL *bool)
+void SCRIPT_GetBool(int32 scripthandle, char *section, char *entryname, BOOL *pBool)
 {
-    boolean temp = *bool;
+    boolean temp = *pBool;
     SCRIPT_GetBoolean(scripthandle, section, entryname, &temp);
-    *bool = temp;
+    *pBool = temp;
 }
 /*
 ===================
@@ -758,3 +759,4 @@ void CONFIG_WriteAdultMode( void )
 
    SCRIPT_Save (scripthandle, SetupFilename);
    }
+#pragma pack(pop)  // c4: packall.py

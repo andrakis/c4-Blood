@@ -27,6 +27,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void HackSeqCallback(int, int);
 static void StandSeqCallback(int, int);
@@ -283,3 +284,4 @@ static void entryEStand(SPRITE *pSprite, XSPRITE *pXSprite)
     sfxPlay3DSound(pSprite, 1100, -1, 0);
     pSprite->ang = getangle(pXSprite->at20_0-pSprite->x, pXSprite->at24_0-pSprite->y);
 }
+#pragma pack(pop)  // c4: packall.py

@@ -18,6 +18,7 @@
 #define _DB_H_
 
 #include "build.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxXSprites 2048
 #define kMaxXWalls 512
@@ -323,4 +324,5 @@ ulong dbReadMapCRC(char *pPath);
 void dbLoadMap(char *pPath, long *pX, long *pY, long *pZ, short *pAngle, short *pSector, ulong *pCRC);
 void dbSaveMap(char* pPath, long nX, long nY, long nZ, short nAngle, short nSector);
 
+#pragma pack(pop)  // c4: packall.py
 #endif

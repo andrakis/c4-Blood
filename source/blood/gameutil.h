@@ -20,6 +20,7 @@
 #include "typedefs.h"
 #include "build.h"
 #include "misc.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct HITINFO {
     short hitsect;
@@ -80,4 +81,5 @@ int HitScan(SPRITE *pSprite, int z, int dx, int dy, int dz, unsigned long nMask,
 int VectorScan(SPRITE *pSprite, int nOffset, int nZOffset, int dx, int dy, int dz, int nRange, int ac);
 
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_GAMEUTIL_H_

@@ -26,9 +26,10 @@
 #include "helix.h"
 #include "key.h"
 #include "misc.h"
-#include "mouse.h"
+#include "qmouse.h"  // c4: qtools' mouse, as chocolate-blood names it
 #include "resource.h"
 #include "screen.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 int blinkClock;
 
@@ -938,3 +939,4 @@ Widget::Widget(int a1, int a2, int a3, int a4)
 }
 
 #endif
+#pragma pack(pop)  // c4: packall.py

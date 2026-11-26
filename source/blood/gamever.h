@@ -1,6 +1,7 @@
 // *** VERSIONS RESTORATION ***
 #ifndef GAMEVER_H
 #define GAMEVER_H
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 // It is assumed here that:
 // 1. The compiler is set up to appropriately define APPVER_EXEDEF
@@ -78,4 +79,5 @@
 #endif
 #endif
 
+#pragma pack(pop)  // c4: packall.py
 #endif // GAMEVER_H

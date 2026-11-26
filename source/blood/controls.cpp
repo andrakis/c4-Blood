@@ -18,18 +18,19 @@
 #include <stdlib.h>
 #include "typedefs.h"
 #include "globals.h"
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
 #include "controls.h"
 #include "function.h"
 #include "globals.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 #include "key.h"
 #include "levels.h"
 #include "loadsave.h"
 #include "map2d.h"
 #include "misc.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 INPUT gInput;
 
@@ -499,4 +500,4 @@ void ControlsLoadSave::Save(void)
 }
 
 static ControlsLoadSave myLoadSave;
-
+#pragma pack(pop)  // c4: packall.py

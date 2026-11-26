@@ -34,6 +34,7 @@
 #include "trig.h"
 #include "triggers.h"
 #include "view.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -782,4 +783,4 @@ void (*gCallback[kCallbackMax])(int) = {
     func_769B4,
     func_76B78
 };
-
+#pragma pack(pop)  // c4: packall.py

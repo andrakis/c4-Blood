@@ -19,6 +19,7 @@
 
 #include "typedefs.h"
 #include "player.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void WeaponDraw(PLAYER *,int,int,int,int);
 
@@ -34,4 +35,5 @@ byte WeaponUpgrade(PLAYER *, BOOL);
 
 void WeaponProcess(PLAYER*);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_WEAPON_H_

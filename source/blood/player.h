@@ -24,6 +24,7 @@
 #include "db.h"
 #include "dude.h"
 #include "misc.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #define kMaxPowerUps 49
 
@@ -209,4 +210,5 @@ void powerupInit(void);
 
 BOOL func_3A158(PLAYER *a1, SPRITE *a2 = NULL);
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_PLAYER_H_

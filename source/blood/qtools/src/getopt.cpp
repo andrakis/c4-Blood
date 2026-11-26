@@ -18,25 +18,25 @@
 #include "typedefs.h"
 #include "getopt.h"
 
-char *OptArgv[16];
+const char *OptArgv[16];
 int OptArgc;
-char *OptFull;
-char *SwitchChars = "-/";
+const char *OptFull;
+const char *SwitchChars = "-/";
 
 extern "C" {
-extern int _argc;
-extern char **_argv;
+extern int sys_argc;
+extern const char **sys_argv;
 }
 
 int GetOptions(SWITCH *switches)
 {
-    static char *pChar = NULL;
+    static const char *pChar = NULL;
     static int OptIndex = 1;
     if (!pChar)
     {
-        if (OptIndex >= _argc)
+        if (OptIndex >= sys_argc)
             return -1;
-        pChar = _argv[OptIndex++];
+        pChar = sys_argv[OptIndex++];
         if (!pChar)
             return -1;
     }
@@ -70,9 +70,9 @@ int GetOptions(SWITCH *switches)
             {
                 if (!pChar)
                 {
-                    if (OptIndex >= _argc)
+                    if (OptIndex >= sys_argc)
                         break;
-                    pChar = _argv[OptIndex++];
+                    pChar = sys_argv[OptIndex++];
                 }
                 if (strchr(SwitchChars, *pChar) != 0)
                     break;

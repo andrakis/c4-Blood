@@ -23,11 +23,11 @@
 void DefaultHandler(const Error& err);
 ErrorHandler curHandler = DefaultHandler;
 
-char *module;
+const char *module;
 int line;
-BOOL inHandler;
-char char_3DF0C4[80];
-BOOL gErrorFlag;
+QBOOL inHandler;
+char char_3DF0C4[256];  // c4: was 80; a long path and message overran it
+QBOOL char_3DF114;
 
 ErrorHandler errSetHandler(ErrorHandler eh)
 {
@@ -43,16 +43,16 @@ void DefaultHandler(const Error &err)
     _exit(1);
 }
 
-void _SetErrorLoc(char *_module, int _line)
+void _SetErrorLoc(const char *_module, int _line)
 {
     module = _module;
     line = _line;
 }
 
-void _ThrowError(char *s, ...)
+void _ThrowError(const char *s, ...)
 {
     char buffer[256];
-    gErrorFlag = TRUE;
+    char_3DF114 = TRUE;
     va_list args;
     va_start(args, s);
     vsprintf(buffer, s, args);
@@ -64,15 +64,15 @@ void _ThrowError(char *s, ...)
     }
 }
 
-char *getErrorMsg(void)
+char *func_A54D0(void)
 {
-    if (gErrorFlag)
+    if (char_3DF114)
         return char_3DF0C4;
     return NULL;
 }
 
-BOOL getErrorFlag(void)
+QBOOL func_A54F0(void)
 {
-    return gErrorFlag;
+    return char_3DF114;
 }
 

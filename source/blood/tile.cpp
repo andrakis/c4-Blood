@@ -33,6 +33,7 @@
 #include "resource.h"
 #include "screen.h"
 #include "tile.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL120
 #define LDIFF1 0
@@ -41,7 +42,7 @@
 #endif
 
 #ifndef _3DFX
-extern "C" void loadvoxel(int nVoxel)
+extern "C" void loadvoxel_replace(int nVoxel)
 {
     static int nLastVoxel = 0;
     dassert(nVoxel >= 0 && nVoxel < kMaxVoxels, 117);
@@ -109,7 +110,7 @@ void tileTerm(void)
 void CalcPicsiz(int a1, int a2, int a3)
 {
     byte nP = 0;
-    for (int i = 2; i <= a2; i<<= 1)
+    int i; for (i = 2; i <= a2; i<<= 1)
         nP++;
     for (i = 2; i <= a3; i<<= 1)
         nP+=1<<4;
@@ -958,3 +959,4 @@ byte tileGetSurfType(int hit)
     }
     return 0;
 }
+#pragma pack(pop)  // c4: packall.py

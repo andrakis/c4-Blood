@@ -16,6 +16,7 @@
  */
 #include <i86.h>
 #include <dos.h>
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 void func_838B0(void)
 {
@@ -104,3 +105,4 @@ void func_83A28(void)
     regs.x.eax = 0xD18AA;
     int386(0x48, &regs, &regs);
 }
+#pragma pack(pop)  // c4: packall.py

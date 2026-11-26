@@ -25,6 +25,7 @@
 #include "misc.h"
 #include "tile.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 POINT2D baseWall[kMaxWalls];
 POINT3D baseSprite[kMaxSprites];
@@ -120,7 +121,7 @@ BOOL FindSector(int nX, int nY, int *nSector)
         return 1;
     }
     WALL *pWall = &wall[sector[*nSector].wallptr];
-    for (int i = sector[*nSector].wallnum; i > 0; i--, pWall++)
+    int i; for (i = sector[*nSector].wallnum; i > 0; i--, pWall++)
     {
         short nOSector = pWall->nextsector;
         if (nOSector >= 0 && inside(nX, nY, nOSector))
@@ -800,7 +801,7 @@ BOOL cansee(long x1, long y1, long z1, short sect1, long x2, long y2, long z2, s
     int z21 = z2 - z1;
     sectlist[0] = sect1;
     int n = 1;
-    for (int i = 0; i < n; i++)
+    int i; for (i = 0; i < n; i++)
     {
         short cursect = sectlist[i];
         SECTOR *psect = &sector[cursect];
@@ -859,7 +860,7 @@ BOOL cansee(long x1, long y1, long z1, short sect1, long x2, long y2, long z2, s
                 if (z <= ceilz || z >= floorz)
                     return 0;
             }
-            for (int j = n - 1; j >= 0; j--)
+            int j; for (j = n - 1; j >= 0; j--)
             {
                 if (sectlist[j] == newsector) break;
             }
@@ -984,3 +985,4 @@ int GetClosestSpriteSectors(int nSector, int x, int y, int nDist, short *pSector
         a8[k] = -1;
     return m;
 }
+#pragma pack(pop)  // c4: packall.py

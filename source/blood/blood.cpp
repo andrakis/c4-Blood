@@ -62,13 +62,13 @@
 #include "triggers.h"
 #include "menu.h"
 #include "function.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "endgame.h"
 #include "getopt.h"
 #include "gui.h"
 #include "helix.h"
 #include "choke.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 
 #ifdef _3DFX
 #define MAXALLOC 0x3000000
@@ -665,7 +665,7 @@ void StartLevel(GAMEOPTIONS *gameOptions)
         gGameMessageMgr.SetCoordinates(gViewX0+1,gViewY0+15);
 #endif
     netWaitForEveryone(0);
-    gGameClock = 0;
+    gGameClock_set(0);
     gPaused = 0;
     gGameStarted = 1;
     ready2send = 1;
@@ -916,7 +916,7 @@ void ProcessFrame(void)
 {
     if (gDemo.RecordStatus())
         gDemo.Write(gFifoInput[gNetFifoTail&255]);
-    for (int i = connecthead; i >= 0; i = connectpoint2[i])
+    int i; for (i = connecthead; i >= 0; i = connectpoint2[i])
     {
         gPlayer[i].atc.buttonFlags = gFifoInput[gNetFifoTail&255][i].buttonFlags;
         gPlayer[i].atc.keyFlags.word |= gFifoInput[gNetFifoTail&255][i].keyFlags.word;
@@ -1330,11 +1330,19 @@ void func_86910(void);
 extern "C" void initglide();
 extern "C" void terminateGlide();
 
-void main(void)
+#include "system.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
+extern "C" void Sound_Init(int rate);
+void replace_hook();
+
+int main(int argc, char **argv)
 {
+    // c4: the engine calls Blood's replacements through pointers (replace.cpp),
+    // and the platform (system.h, sound.h) takes the PC's place
+    replace_hook();
+    Sys_Init(argc, argv);
+    Sound_Init(44100);
     CheckIfWindows();
-    if (_grow_handles(40) < 40)
-        ThrowError(2089+LDIFF6)("Not enough file handles available.\nIncrease FILES=## value in CONFIG.SYS.");
     memcpy(&gGameOptions, &gSingleGameOptions, sizeof(GAMEOPTIONS));
     ParseOptions();
     func_26988();
@@ -1601,7 +1609,7 @@ _RESTARTNOLOGO:
                 gBufferJitter = 0;
             while (gNetFifoHead[myconnectindex]-gNetFifoTail > gBufferJitter && !gStartNewGame && !gQuitGame)
             {
-                for (int i = connecthead; i >= 0; i = connectpoint2[i])
+                int i; for (i = connecthead; i >= 0; i = connectpoint2[i])
                     if (gNetFifoHead[i] == gNetFifoTail)
                         break;
                 if (i >= 0)
@@ -1787,4 +1795,4 @@ void BloodLoadSave::Save(void)
 }
 
 static BloodLoadSave myLoadSave;
-
+#pragma pack(pop)  // c4: packall.py

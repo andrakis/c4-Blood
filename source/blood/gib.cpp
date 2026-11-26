@@ -28,6 +28,7 @@
 #include "levels.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 struct GIBFX
 {
@@ -440,7 +441,7 @@ void GibSprite(SPRITE *pSprite, GIBTYPE nGibType, CGibPosition *pPos, CGibVeloci
     if (pSprite->sectnum < 0 || pSprite->sectnum > numsectors)
         return;
     GIBLIST *pGib = &gibList[nGibType];
-    for (int i = 0; i < pGib->at4; i++)
+    int i; for (i = 0; i < pGib->at4; i++)
     {
         GIBFX *pGibFX = &pGib->at0[i];
         dassert(pGibFX->chance > 0, 507);
@@ -510,3 +511,4 @@ void GibWall(int nWall, GIBTYPE nGibType, CGibVelocity *pVel)
         GibFX(nWall, pGibFX, ceilZ, wx, wy, wz, pVel);
     }
 }
+#pragma pack(pop)  // c4: packall.py

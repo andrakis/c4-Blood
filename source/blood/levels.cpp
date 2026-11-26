@@ -25,7 +25,7 @@
 #include "debug4g.h"
 #include "endgame.h"
 #include "error.h"
-#include "file_lib.h"
+#include "FILE_LIB.H"
 #include "inifile.h"
 #include "levels.h"
 #include "loadsave.h"
@@ -37,6 +37,7 @@
 #include "sound.h"
 #include "view.h"
 #include "weather.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 #if APPVER_BLOODREV >= AV_BR_BL111A
 #define LDIFF1 0
@@ -259,7 +260,7 @@ void levelLoadDefaults(void)
     char buffer[64];
     char buffer2[16];
     memset(gEpisodeInfo, 0, sizeof(gEpisodeInfo));
-    for (int i = 0; i < kMaxEpisodes; i++)
+    int i; for (i = 0; i < kMaxEpisodes; i++)
     {
         sprintf(buffer, "Episode%ld", i+1);
         if (!BloodINI->SectionExists(buffer))
@@ -287,7 +288,7 @@ void levelLoadDefaults(void)
         pEpisodeInfo->cutALevel = BloodINI->GetKeyInt(buffer, "CutSceneALevel", 0);
         if (pEpisodeInfo->cutALevel > 0)
             pEpisodeInfo->cutALevel--;
-        for (int j = 0; j < 16; j++)
+        int j; for (j = 0; j < 16; j++)
         {
             LEVELINFO *pLevelInfo = &pEpisodeInfo->at28[j];
             sprintf(buffer2, "Map%ld", j+1);
@@ -425,3 +426,4 @@ void LevelsLoadSave::Save(void)
     Write(&gGameStarted, sizeof(gGameStarted));
     Write(&gWeatherType, sizeof(gWeatherType));
 }
+#pragma pack(pop)  // c4: packall.py

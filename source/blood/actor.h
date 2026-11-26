@@ -22,6 +22,7 @@
 #include "db.h"
 #include "gameutil.h"
 #include "misc.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 enum DAMAGE_TYPE {
     DAMAGE_TYPE_0,
@@ -250,4 +251,5 @@ void actProcessSprites(void);
 void actPostProcess(void);
 
 
+#pragma pack(pop)  // c4: packall.py
 #endif // !_ACTOR_H_

@@ -25,6 +25,7 @@
 #include "misc.h"
 #include "view.h"
 #include "warp.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 ZONE gStartZone[8];
 
@@ -265,4 +266,4 @@ void WarpLoadSave::Save()
 }
 
 static WarpLoadSave myLoadSave;
-
+#pragma pack(pop)  // c4: packall.py

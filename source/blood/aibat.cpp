@@ -27,6 +27,7 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+#pragma pack(push, 1)  // c4: Watcom's packing, as Blood was built (packall.py)
 
 static void BiteSeqCallback(int, int);
 static void thinkTarget(SPRITE *, XSPRITE *);
@@ -448,3 +449,4 @@ void MoveToCeil(SPRITE *pSprite, XSPRITE *pXSprite)
     else
         aiSetTarget(pXSprite, x, y, sector[nSector].ceilingz);
 }
+#pragma pack(pop)  // c4: packall.py
