@@ -26,7 +26,7 @@ ErrorHandler curHandler = DefaultHandler;
 const char *module;
 int line;
 QBOOL inHandler;
-char char_3DF0C4[80];
+char char_3DF0C4[256];  // c4: was 80; a long path and message overran it
 QBOOL char_3DF114;
 
 ErrorHandler errSetHandler(ErrorHandler eh)
