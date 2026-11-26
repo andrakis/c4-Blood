@@ -15,6 +15,7 @@
 #include "c4blood.h"
 #include "dos.h"
 #include "conio.h"
+#include "i86.h"
 // the real calls here (c4blood.h makes the game's open c4blood_open)
 #undef open
 #undef fopen
@@ -346,3 +347,25 @@ unsigned long c4blood_msize (void *p)
 	return (unsigned long)malloc_usable_size (p);
 }
 #endif
+
+// ---- Watcom's DOS calls: no DOS here (i86.h) ----
+
+int int386 (int n, union REGS *in, union REGS *out)
+{
+	(void)n;
+	if (out != in)
+		*out = *in;
+	out->x.cflag = 1;
+	return (int)out->x.eax;
+}
+
+int int386x (int n, union REGS *in, union REGS *out, struct SREGS *s)
+{
+	(void)s;
+	return int386 (n, in, out);
+}
+
+void segread (struct SREGS *s)
+{
+	memset (s, 0, sizeof *s);
+}

@@ -1,4 +1,4 @@
-// blood-host.c -- chocolate-blood's platform (build/system.c, video.c,
+// blood-host.c -- B0: chocolate-blood's platform (build/system.c, video.c,
 // sound.c) on a host with gcc/g++ -m32, one thread, no display, no sound:
 // the reference a c4 build is held to.
 //
@@ -263,6 +263,12 @@ void Video_BlitPage (int32_t page)
 
 void Video_Blit (void)
 {
+}
+
+// the BIOS video mode (misc.h); setvmode is the engine's (ENGINE.C)
+int getvmode (void)
+{
+	return video_graphics == 0x13 ? 0x13 : 3;
 }
 
 static void at_exit (void)

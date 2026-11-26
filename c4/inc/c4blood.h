@@ -4,6 +4,7 @@
 #ifndef C4BLOOD_H
 #define C4BLOOD_H 1
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <fcntl.h>
@@ -15,11 +16,14 @@ extern "C" {
 #endif
 
 #ifndef _MAX_PATH
-#define _MAX_PATH  260
+#define _MAX_PATH  144  // Watcom's (DOS): GAMEOPTIONS, in demos and saves, holds two
 #define _MAX_DRIVE 3
 #define _MAX_DIR   256
 #define _MAX_FNAME 256
 #define _MAX_EXT   256
+#endif
+#ifndef _MAX_PATH2
+#define _MAX_PATH2 (_MAX_PATH + 3)  // Watcom's, for _splitpath2's buffer
 #endif
 
 #define stricmp   strcasecmp
@@ -53,6 +57,9 @@ unsigned long c4blood_msize (void *p);
 void sys_puts (const char *s);
 void sys_printf (const char *s, ...);
 void Sys_WaitVSync (void);  // system.c has it, system.h does not
+// Watcom BIOS calls in Blood-RE's misc.h (int 0x10): the platform's
+void setvmode (int mode);
+int getvmode (void);
 #ifdef C4BLOOD_C4
 // C4IX's libc has no div_t (VES2.H declares one it never uses)
 typedef struct { int quot, rem; } div_t;
