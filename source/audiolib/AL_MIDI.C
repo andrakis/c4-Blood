@@ -33,12 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 //#include <math.h>
 #include "compat.h"
-#include "sndcards.h"
-#include "blaster.h"
-#include "user.h"
-#include "al_midi.h"
-#include "_al_midi.h"
-#include "ll_man.h"
+#include "SNDCARDS.H"
+#include "BLASTER.H"
+#include "USER.H"
+#include "AL_MIDI.H"
+#include "_AL_MIDI.H"
+#include "LL_MAN.H"
 #include "sound.h"
 
 #define TRUE  ( 1 == 1 )

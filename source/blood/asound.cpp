@@ -22,7 +22,7 @@
 #include "db.h"
 #include "error.h"
 extern "C" {
-#include "fx_man.h"
+#include "FX_MAN.H"
 }
 #include "gameutil.h"
 #include "misc.h"

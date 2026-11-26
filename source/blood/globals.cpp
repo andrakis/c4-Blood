@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <SDL3/SDL.h>
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "engine.h"
 #include "debug4g.h"
 #include "resource.h"

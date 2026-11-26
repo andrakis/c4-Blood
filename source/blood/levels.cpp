@@ -25,7 +25,7 @@
 #include "debug4g.h"
 #include "endgame.h"
 #include "error.h"
-#include "file_lib.h"
+#include "FILE_LIB.H"
 #include "inifile.h"
 #include "levels.h"
 #include "loadsave.h"

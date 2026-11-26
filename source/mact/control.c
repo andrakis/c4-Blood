@@ -4,16 +4,16 @@
 
 #include "compat.h"
 #include "system.h"
-#include "types.h"
-#include "develop.h"
-#include "keyboard.h"
-#include "util_lib.h"
-#include "control.h"
-#include "_control.h"
-#include "mouse.h"
-#include "external.h"
-#include "joystick.h"
-#include "fixed.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "KEYBOARD.H"
+#include "UTIL_LIB.H"
+#include "CONTROL.H"
+#include "_CONTROL.H"
+#include "MOUSE.H"
+#include "EXTERNAL.H"
+#include "JOYSTICK.H"
+#include "FIXED.H"
 
 boolean CONTROL_RudderEnabled = false;
 boolean CONTROL_MouseEnabled = false;

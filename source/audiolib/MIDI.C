@@ -32,15 +32,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <SDL3/SDL.h>
 #include "compat.h"
-#include "sndcards.h"
-#include "standard.h"
-#include "task_man.h"
-#include "ll_man.h"
-#include "usrhooks.h"
-#include "music.h"
-#include "_midi.h"
-#include "midi.h"
-#include "debugio.h"
+#include "SNDCARDS.H"
+#include "STANDARD.H"
+#include "TASK_MAN.H"
+#include "LL_MAN.H"
+#include "USRHOOKS.H"
+#include "MUSIC.H"
+#include "_MIDI.H"
+#include "MIDI.H"
+#include "DEBUGIO.H"
 
 extern int MUSIC_SoundDevice;
 

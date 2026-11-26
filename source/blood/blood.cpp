@@ -63,13 +63,13 @@
 #include "triggers.h"
 #include "menu.h"
 #include "function.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "endgame.h"
 #include "getopt.h"
 #include "gui.h"
 #include "helix.h"
 #include "choke.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 
 
 ErrorHandler prevErrorHandler;

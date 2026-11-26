@@ -17,11 +17,11 @@
 #ifndef _config_public
 #define _config_public
 
-#include "types.h"
+#include "TYPES.H"
 extern "C" {
-#include "fx_man.h"
+#include "FX_MAN.H"
 }
-#include "control.h"
+#include "CONTROL.H"
 
 #define SETUPNAMEPARM "SETUPFILE"
 

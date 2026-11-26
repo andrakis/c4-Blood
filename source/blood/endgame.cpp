@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include "compat.h"
 extern "C" {
-#include "types.h"
-#include "fx_man.h"
+#include "TYPES.H"
+#include "FX_MAN.H"
 }
 #include "typedefs.h"
 #include "engine.h"

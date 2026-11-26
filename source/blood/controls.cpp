@@ -17,12 +17,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
 #include "controls.h"
 #include "function.h"
 #include "globals.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 #include "key.h"
 #include "levels.h"
 #include "loadsave.h"

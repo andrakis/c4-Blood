@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-#include "types.h"
-#include "keyboard.h"
+#include "TYPES.H"
+#include "KEYBOARD.H"
 
 
 //***************************************************************************

@@ -16,13 +16,13 @@
 #include <sys/stat.h>
 #include <SDL3/SDL.h>
 #include "compat.h"
-#include "build.h"
-#include "pragmas.h"
+#include "BUILD.H"
+#include "PRAGMAS.H"
 #include "video.h"
 #include "cache1d.h"
 #include "system.h"
 
-#include "ves2.h"
+#include "VES2.H"
 // c4: called before they are defined; with short parameters gcc calls the
 // implicit declarations conflicting types
 int32_t insertspritesect(short sectnum);

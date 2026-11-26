@@ -23,10 +23,10 @@
 #endif
 #include "typedefs.h"
 extern "C" {
-#include "fx_man.h"
-#include "music.h"
+#include "FX_MAN.H"
+#include "MUSIC.H"
 }
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
 #include "debug4g.h"
 #include "error.h"

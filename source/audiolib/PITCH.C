@@ -31,8 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 //#include <math.h>
 #include "compat.h"
-#include "standard.h"
-#include "pitch.h"
+#include "STANDARD.H"
+#include "PITCH.H"
 
 #define MAXDETUNE 25
 

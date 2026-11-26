@@ -19,9 +19,9 @@
 #include <string.h>
 #include <stdio.h>
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "engine.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "config.h"
 #include "debug4g.h"
 #include "error.h"
@@ -29,7 +29,7 @@
 #include "globals.h"
 #include "gui.h"
 #include "key.h"
-#include "keyboard.h"
+#include "KEYBOARD.H"
 #include "levels.h"
 #include "menu.h"
 #include "misc.h"

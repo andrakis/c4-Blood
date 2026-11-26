@@ -39,11 +39,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "compat.h"
 #include "system.h"
 #include "sound.h"
-#include "linklist.h"
-#include "task_man.h"
+#include "LINKLIST.H"
+#include "TASK_MAN.H"
 
 #ifdef USE_USRHOOKS
-#include "usrhooks.h"
+#include "USRHOOKS.H"
 #define FreeMem( ptr )   USRHOOKS_FreeMem( ( ptr ) )
 #else
 #define FreeMem( ptr )   free( ( ptr ) )

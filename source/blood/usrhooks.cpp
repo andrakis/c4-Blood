@@ -16,7 +16,7 @@
  */
 #include "typedefs.h"
 extern "C" {
-#include "usrhooks.h"
+#include "USRHOOKS.H"
 }
 #include "resource.h"
 

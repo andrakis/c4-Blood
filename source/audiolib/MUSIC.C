@@ -31,19 +31,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include "compat.h"
-#include "task_man.h"
-#include "sndcards.h"
-#include "music.h"
-#include "midi.h"
-#include "al_midi.h"
+#include "TASK_MAN.H"
+#include "SNDCARDS.H"
+#include "MUSIC.H"
+#include "MIDI.H"
+#include "AL_MIDI.H"
 //#include "pas16.h"
-#include "blaster.h"
+#include "BLASTER.H"
 //#include "gusmidi.h"
-#include "mpu401.h"
+#include "MPU401.H"
 //#include "awe32.h"
 //#include "sndscape.h"
-#include "ll_man.h"
-#include "user.h"
+#include "LL_MAN.H"
+#include "USER.H"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )

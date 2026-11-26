@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "compat.h"
-#include "build.h"
+#include "BUILD.H"
 #include "cache1d.h"
-#include "pragmas.h"
+#include "PRAGMAS.H"
 
 //   This module keeps track of a standard linear cacheing system.
 //   To use this module, here's all you need to do:

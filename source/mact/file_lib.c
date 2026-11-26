@@ -10,11 +10,11 @@
 #include <io.h>
 #include <direct.h>
 #include "compat.h"
-#include "types.h"
-#include "develop.h"
-#include "file_lib.h"
-#include "_filelib.h"
-#include "util_lib.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "FILE_LIB.H"
+#include "_FILELIB.H"
+#include "UTIL_LIB.H"
 
 static char* FileNames[MAXFILEHANDLES];
 

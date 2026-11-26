@@ -20,7 +20,7 @@
 #include "globals.h"
 #include "satimer.h"
 extern "C" {
-#include "task_man.h"
+#include "TASK_MAN.H"
 }
 //#include "smack.h"
 

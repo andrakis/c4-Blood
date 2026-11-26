@@ -25,15 +25,15 @@
 #include <Windows.h>
 #endif
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "config.h"
-#include "control.h"
-#include "file_lib.h"
+#include "CONTROL.H"
+#include "FILE_LIB.H"
 #include "function.h"
 #include "gamedefs.h"
 #include "globals.h"
-#include "scriplib.h"
-#include "util_lib.h"
+#include "SCRIPLIB.H"
+#include "UTIL_LIB.H"
 
 #include "_functio.h"
 

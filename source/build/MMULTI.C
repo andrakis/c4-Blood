@@ -8,8 +8,8 @@
 #include <stdarg.h>
 #include "compat.h"
 #include "system.h"
-#include "build.h"
-#include "pragmas.h"
+#include "BUILD.H"
+#include "PRAGMAS.H"
 
 #define MAXPLAYERS 16
 #define BAKSIZ 16384

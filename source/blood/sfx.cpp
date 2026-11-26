@@ -20,7 +20,7 @@
 #include "engine.h"
 #include "config.h"
 #include "error.h"
-#include "fx_man.h"
+#include "FX_MAN.H"
 #include "gameutil.h"
 #include "misc.h"
 #include "player.h"

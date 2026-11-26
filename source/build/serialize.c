@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "compat.h"
 #include "serialize.h"
-#include "pragmas.h"
+#include "PRAGMAS.H"
 
 static char *ser_buffer;
 static int ser_buffer_size;

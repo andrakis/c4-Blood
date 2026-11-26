@@ -31,12 +31,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include "compat.h"
-#include "sndcards.h"
-#include "multivoc.h"
-#include "blaster.h"
-#include "ll_man.h"
-#include "user.h"
-#include "fx_man.h"
+#include "SNDCARDS.H"
+#include "MULTIVOC.H"
+#include "BLASTER.H"
+#include "LL_MAN.H"
+#include "USER.H"
+#include "FX_MAN.H"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )

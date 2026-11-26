@@ -32,14 +32,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include "usrhooks.h"
-#include "ll_man.h"
-#include "sndcards.h"
-#include "blaster.h"
-#include "pitch.h"
-#include "multivoc.h"
-#include "_multivc.h"
-#include "debugio.h"
+#include "USRHOOKS.H"
+#include "LL_MAN.H"
+#include "SNDCARDS.H"
+#include "BLASTER.H"
+#include "PITCH.H"
+#include "MULTIVOC.H"
+#include "_MULTIVC.H"
+#include "DEBUGIO.H"
 #include "sound.h"
 
 #define RoundFixed( fixedval, bits )            \

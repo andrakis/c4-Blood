@@ -3,10 +3,10 @@
 #include <string.h>
 #include "compat.h"
 #include "system.h"
-#include "types.h"
-#include "develop.h"
-#include "keyboard.h"
-#include "_keyboar.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "KEYBOARD.H"
+#include "_KEYBOAR.H"
 
 static boolean KeyboardStarted;
 

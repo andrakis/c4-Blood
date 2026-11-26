@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "compat.h"
-#include "types.h"
-#include "develop.h"
-#include "fixed.h"
-#include "angles.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "FIXED.H"
+#include "ANGLES.H"
 
 #define SWAP(a,b) \
 { \

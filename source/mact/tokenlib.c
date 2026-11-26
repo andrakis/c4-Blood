@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "compat.h"
-#include "types.h"
-#include "develop.h"
-#include "file_lib.h"
-#include "tokenlib.h"
-#include "_tokenli.h"
-#include "linklist.h"
-#include "util_lib.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "FILE_LIB.H"
+#include "TOKENLIB.H"
+#include "_TOKENLI.H"
+#include "LINKLIST.H"
+#include "UTIL_LIB.H"
 
 static token_t *tokenfiles[MAXTOKENFILES];
 char token[128];

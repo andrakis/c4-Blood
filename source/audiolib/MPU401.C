@@ -31,8 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "user.h"
-#include "mpu401.h"
+#include "USER.H"
+#include "MPU401.H"
 
 #define MIDI_NOTE_OFF         0x80
 #define MIDI_NOTE_ON          0x90

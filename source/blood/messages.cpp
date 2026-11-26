@@ -19,7 +19,7 @@
 #include "typedefs.h"
 #include "actor.h"
 #include "callback.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "debug4g.h"
 #include "demo.h"
 #include "eventq.h"

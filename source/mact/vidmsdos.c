@@ -1,9 +1,9 @@
 #include "compat.h"
 #include "system.h"
-#include "types.h"
-#include "mouse.h"
-#include "keyboard.h"
-#include "joystick.h"
+#include "TYPES.H"
+#include "MOUSE.H"
+#include "KEYBOARD.H"
+#include "JOYSTICK.H"
 
 static int PauseCount;
 static boolean ExtendedKeyFlag;

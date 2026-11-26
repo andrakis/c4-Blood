@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "compat.h"
-#include "types.h"
-#include "develop.h"
-#include "file_lib.h"
-#include "scriplib.h"
-#include "_scrplib.h"
-#include "linklist.h"
-#include "util_lib.h"
-#include "tokenlib.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "FILE_LIB.H"
+#include "SCRIPLIB.H"
+#include "_SCRPLIB.H"
+#include "LINKLIST.H"
+#include "UTIL_LIB.H"
+#include "TOKENLIB.H"
 
 static script_t *scriptfiles[MAXSCRIPTFILES];
 static boolean scriptlibrarycalled = false;

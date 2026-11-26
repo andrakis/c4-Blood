@@ -9,11 +9,11 @@
 #include <sys/types.h>
 #include "compat.h"
 #include "system.h"
-#include "types.h"
-#include "develop.h"
-#include "fixed.h"
-#include "_util_lb.h"
-#include "util_lib.h"
+#include "TYPES.H"
+#include "DEVELOP.H"
+#include "FIXED.H"
+#include "_UTIL_LB.H"
+#include "UTIL_LIB.H"
 #include <malloc.h>
 #include <io.h>
 

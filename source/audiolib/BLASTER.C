@@ -37,8 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 #include "compat.h"
 #include "sound.h"
-#include "blaster.h"
-#include "_blaster.h"
+#include "BLASTER.H"
+#include "_BLASTER.H"
 
 const int BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
    {

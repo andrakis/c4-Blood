@@ -20,7 +20,7 @@
 #include "typedefs.h"
 #include "cdrom.h"
 #include "config.h"
-#include "control.h"
+#include "CONTROL.H"
 #include "debug4g.h"
 #include "demo.h"
 #include "gamemenu.h"

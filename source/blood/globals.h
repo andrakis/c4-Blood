@@ -18,7 +18,7 @@
 #define _GLOBALS_H_
 
 #include "typedefs.h"
-#include "types.h"
+#include "TYPES.H"
 #include "resource.h"
 
 enum INPUT_MODE : int32_t {
