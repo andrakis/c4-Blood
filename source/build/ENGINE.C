@@ -12,9 +12,9 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <io.h>
-#include <sys\types.h>
-#include <sys\stat.h>
-#include <SDL3\SDL.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <SDL3/SDL.h>
 #include "compat.h"
 #include "build.h"
 #include "pragmas.h"
@@ -23,6 +23,12 @@
 #include "system.h"
 
 #include "ves2.h"
+// c4: called before they are defined; with short parameters gcc calls the
+// implicit declarations conflicting types
+int32_t insertspritesect(short sectnum);
+int32_t insertspritestat(short statnum);
+int32_t deletespritesect(short deleteme);
+int32_t deletespritestat(short deleteme);
 
 #define MAXCLIPNUM 512
 #define MAXPERMS 512

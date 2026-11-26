@@ -539,7 +539,7 @@ static void test
    _MIDI_ServiceRoutine( Task );
    }
 */
-static void _MIDI_ServiceRoutine
+void _MIDI_ServiceRoutine
    (
    task *Task
    )

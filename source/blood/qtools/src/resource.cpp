@@ -73,6 +73,7 @@ void Resource::Init(const char *filename, const char *external)
 #endif
     const char *type;
     const char *dir;
+    const char *node;  // c4: the non-_WIN32 path needs it, as Blood-RE has it
     const char *fname;
     RFFHeader header;
     dassert(heap != NULL, 63);

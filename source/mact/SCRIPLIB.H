@@ -33,7 +33,7 @@ void SCRIPT_Free( int32 scripthandle );
 ==============
 */
 
-int32 SCRIPT_Parse ( char *data, int32 length, char * name );
+int32 SCRIPT_Parse ( const char *data, int32 length, const char * name );
 
 
 /*

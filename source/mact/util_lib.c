@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <sys\stat.h>
-#include <sys\types.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "compat.h"
 #include "system.h"
 #include "types.h"

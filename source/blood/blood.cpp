@@ -1242,7 +1242,7 @@ void func_86910(void)
 void replace_hook();
 void ChainLoadSave();
 
-void main(int argc, char** argv)
+int main(int argc, char** argv)
 {
     replace_hook();
     ChainLoadSave();

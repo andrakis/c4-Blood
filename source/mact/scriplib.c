@@ -50,7 +50,7 @@ void SCRIPT_Delete(int32 scripthandle)
     scriptfiles[scripthandle] = NULL;
 }
 
-int32 SCRIPT_Init(char* name)
+int32 SCRIPT_Init(const char* name)
 {
     int32 scripthandle;
 
@@ -169,7 +169,7 @@ void SafeWriteString(int32 handle, char* string)
     SafeWrite(handle, string, len);
 }
 
-void SCRIPT_Save(int32 scripthandle, char* filename)
+void SCRIPT_Save(int32 scripthandle, const char* filename)
 {
     char buf[160];
     ScriptLineType* l;
@@ -512,7 +512,7 @@ const char* SCRIPT_Entry(int32 scripthandle, const char* sectionname, int32 whic
     return e->name;
 }
 
-const char* SCRIPT_GetRaw(int32 scripthandle, char* sectionname, char* entryname)
+const char* SCRIPT_GetRaw(int32 scripthandle, const char* sectionname, const char* entryname)
 {
     ScriptSectionType* s;
     ScriptEntryType* e;
@@ -532,11 +532,11 @@ const char* SCRIPT_GetRaw(int32 scripthandle, char* sectionname, char* entryname
 
 void SCRIPT_GetString
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    char* dest
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   char * dest
+   )
 {
     char* value;
     if (!SCRIPT_HandleValid(scripthandle))
@@ -562,12 +562,12 @@ void SCRIPT_GetString
 
 void SCRIPT_GetDoubleString
 (
-    int32 scripthandle,
-    const char* sectionname,
-    const char* entryname,
-    char* dest1,
-    char* dest2
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   char * dest1,
+   char * dest2
+   )
 {
     char* value;
     if (!SCRIPT_HandleValid(scripthandle))
@@ -612,11 +612,11 @@ void SCRIPT_GetDoubleString
 
 boolean SCRIPT_GetNumber
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    int32* number
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   int32 * number
+   )
 {
     char* value;
     if (!SCRIPT_HandleValid(scripthandle))
@@ -636,11 +636,11 @@ boolean SCRIPT_GetNumber
 
 void SCRIPT_GetBoolean
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    boolean* bool
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   boolean * _bool
+   )
 {
     int num;
     char* value;
@@ -651,19 +651,19 @@ void SCRIPT_GetBoolean
     {
         sscanf(value, "%ld", &num);
         if (!num)
-            *bool = false;
+            *_bool = false;
         else
-            *bool = true;
+            *_bool = true;
     }
 }
 
 void SCRIPT_GetDouble
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    double* number
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   double * number
+   )
 {
     char* value;
     if (!SCRIPT_HandleValid(scripthandle))
@@ -677,7 +677,7 @@ void SCRIPT_GetDouble
     }
 }
 
-void SCRIPT_PutComment(int32 scripthandle, char* sectionname, char* comment)
+void SCRIPT_PutComment(int32 scripthandle, const char* sectionname, const char* comment)
 {
     int len;
     char* p;
@@ -699,18 +699,18 @@ void SCRIPT_PutComment(int32 scripthandle, char* sectionname, char* comment)
     s->lastline = l;
 }
 
-void SCRIPT_PutEOL(int32 scripthandle, char* sectionname)
+void SCRIPT_PutEOL(int32 scripthandle, const char* sectionname)
 {
     SCRIPT_PutComment(scripthandle, sectionname, " ");
 }
 
 void SCRIPT_PutMultiComment
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* comment,
-    ...
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * comment,
+   ...
+   )
 {
     char buf[200];
     va_list va;
@@ -720,29 +720,29 @@ void SCRIPT_PutMultiComment
     SCRIPT_PutComment(scripthandle, sectionname, buf);
 }
 
-void SCRIPT_PutSection(int32 scripthandle, char* sectionname)
+void SCRIPT_PutSection(int32 scripthandle, const char* sectionname)
 {
     SCRIPT_AddSection(scripthandle, sectionname);
 }
 
 void SCRIPT_PutRaw
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    char* raw
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   const char * raw
+   )
 {
     SCRIPT_AddEntry(scripthandle, sectionname, entryname, raw);
 }
 
 void SCRIPT_PutString
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    char* string
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   const char * string
+   )
 {
     char buf[80];
     sprintf(buf, "%c%s%c", SCRIPTSTRINGSEPARATOR, string, SCRIPTSTRINGSEPARATOR);
@@ -751,12 +751,12 @@ void SCRIPT_PutString
 
 void SCRIPT_PutDoubleString
 (
-    int32 scripthandle,
-    const char* sectionname,
-    const char* entryname,
-    const char* string1,
-    const char* string2
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   const char * string1,
+   const char * string2
+   )
 {
     char buf[80];
     sprintf(buf, "%c%s%c %c%s%c", SCRIPTSTRINGSEPARATOR, string1, SCRIPTSTRINGSEPARATOR, SCRIPTSTRINGSEPARATOR, string2, SCRIPTSTRINGSEPARATOR);
@@ -765,13 +765,13 @@ void SCRIPT_PutDoubleString
 
 void SCRIPT_PutNumber
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    int32 number,
-    boolean hexadecimal,
-    boolean defaultvalue
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   int32 number,
+   boolean hexadecimal,
+   boolean defaultvalue
+   )
 {
     char buf[80];
     if (defaultvalue)
@@ -786,14 +786,14 @@ void SCRIPT_PutNumber
 
 void SCRIPT_PutBoolean
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    boolean bool
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   boolean _bool
+   )
 {
     char buf[80];
-    if (bool)
+    if (_bool)
         sprintf(buf, "1");
     else
         sprintf(buf, "0");
@@ -803,12 +803,12 @@ void SCRIPT_PutBoolean
 
 void SCRIPT_PutDouble
 (
-    int32 scripthandle,
-    char* sectionname,
-    char* entryname,
-    double number,
-    boolean defaultvalue
-)
+   int32 scripthandle,
+   const char * sectionname,
+   const char * entryname,
+   double number,
+   boolean defaultvalue
+   )
 {
     char buf[80];
     if (defaultvalue)

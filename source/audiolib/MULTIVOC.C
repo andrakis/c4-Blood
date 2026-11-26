@@ -610,7 +610,7 @@ playbackstatus MV_GetNextVOCBlock
                }
             else
                {
-               voice->BlockLength  = ( ptr - 4 ) - voice->LoopStart;
+               voice->BlockLength  = ( (char *)ptr - 4 ) - voice->LoopStart;
                voice->sound        = voice->LoopStart;
                voice->position     = 0;
                voice->length       = min( voice->BlockLength, 0x8000 );
