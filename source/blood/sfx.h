@@ -17,14 +17,14 @@
 #ifndef _SFX_H_
 #define _SFX_H_
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 
 void sfxPlay3DSound(SPRITE *, int, int a3 = -1, int a4 = 0);
 void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector);
 void sfxKillAllSounds(void);
 void sfxKill3DSound(SPRITE *pSprite, int a2 = -1, int a3 = -1);
-void sfxSetReverb(QBOOL);
-void sfxSetReverb2(QBOOL);
+void sfxSetReverb(BOOL);
+void sfxSetReverb2(BOOL);
 void sfxUpdate3DSounds(void);
 void sfxInit(void);
 

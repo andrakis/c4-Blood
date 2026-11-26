@@ -17,7 +17,7 @@
 #ifndef _AI_H_
 #define _AI_H_
 
-#include "engine.h"
+#include "build.h"
 #include "actor.h"
 #include "db.h"
 
@@ -31,7 +31,7 @@ struct AISTATE {
     AISTATE *at18; // next state ?
 };
 
-enum AI_SFX_PRIORITY : int32_t {
+enum AI_SFX_PRIORITY {
     AI_SFX_PRIORITY_0 = 0,
     AI_SFX_PRIORITY_1,
     AI_SFX_PRIORITY_2,
@@ -124,7 +124,7 @@ struct DUDEEXTRA_TCHERNOBOG
 
 struct DUDEEXTRA {
     int at0;
-    QBOOL at4;
+    BOOL at4;
     AI_SFX_PRIORITY at5;
     union {
         DUDEEXTRA_GHOST ghost;
@@ -160,14 +160,14 @@ void aiNewState(SPRITE *,XSPRITE *,AISTATE *);
 
 int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE nDmgType, int nDamage);
 
-void aiPlay3DSound(SPRITE *pSprite, int a2, AI_SFX_PRIORITY a3, int a4);
+void aiPlay3DSound(SPRITE *pSprite, int a2, AI_SFX_PRIORITY a3, int a4 = -1);
 
 void aiSetTarget(XSPRITE *, int);
 void aiSetTarget(XSPRITE *, int, int, int);
 void aiActivateDude(SPRITE *, XSPRITE *);
 void aiProcessDudes(void);
 void aiInitSprite(SPRITE *);
-QBOOL aiSeqPlaying(SPRITE*, int);
+BOOL aiSeqPlaying(SPRITE*, int);
 void aiChooseDirection(SPRITE *, XSPRITE *, int);
 void aiThinkTarget(SPRITE *, XSPRITE *);
 void func_5F15C(SPRITE *, XSPRITE *);

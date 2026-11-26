@@ -16,7 +16,7 @@
  */
 #include <stdlib.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "callback.h"
 #include "db.h"
 #include "debug4g.h"
@@ -31,19 +31,19 @@
 class EventQueue : public PriorityQueue
 {
 public:
-    QBOOL IsNotEmpty(int nTime)
+    BOOL IsNotEmpty(int nTime)
     {
         return fNodeCount > 0 && nTime >= queueItems[1].at0;
     }
     EVENT ERemove(void)
     {
-        uint32_t node = Remove();
+        ulong node = Remove();
         return *(EVENT*)&node;
     }
     void Kill(int, int);
     void Kill(int, int, CALLBACK_ID);
 
-    void Insert(uint32_t a1, EVENT a2) { PriorityQueue::Insert(a1, *(uint32_t*)&a2); }
+    void Insert(ulong a1, EVENT a2) { PriorityQueue::Insert(a1, *(ulong*)&a2); }
 };
 
 void EventQueue::Kill(int a1, int a2)
@@ -177,7 +177,7 @@ void evInit(void)
     bucketHead[i] = j;
 }
 
-QBOOL evGetSourceState(int nType, int nIndex)
+BOOL evGetSourceState(int nType, int nIndex)
 {
     int nXIndex;
     switch (nType)
@@ -318,7 +318,7 @@ void evSend(int nIndex, int nType, int rxId, COMMAND_ID command)
     }
 }
 
-void evPost(int nIndex, int nType, uint32_t nDelta, COMMAND_ID command)
+void evPost(int nIndex, int nType, unsigned long nDelta, COMMAND_ID command)
 {
     dassert(command != kCommandCallback, 408);
     if (command == COMMAND_ID_2)
@@ -333,7 +333,7 @@ void evPost(int nIndex, int nType, uint32_t nDelta, COMMAND_ID command)
     eventQ.Insert(gFrameClock+nDelta, evn);
 }
 
-void evPost(int nIndex, int nType, uint32_t nDelta, CALLBACK_ID callback)
+void evPost(int nIndex, int nType, unsigned long nDelta, CALLBACK_ID callback)
 {
     EVENT evn;
     evn.at0_0 = nIndex;
@@ -343,7 +343,7 @@ void evPost(int nIndex, int nType, uint32_t nDelta, CALLBACK_ID callback)
     eventQ.Insert(gFrameClock+nDelta, evn);
 }
 
-void evProcess(uint32_t nTime)
+void evProcess(unsigned long nTime)
 {
     while(eventQ.IsNotEmpty(nTime))
     {
@@ -404,5 +404,3 @@ void EventQLoadSave::Save()
     Write(rxBucket, sizeof(rxBucket));
     Write(bucketHead, sizeof(bucketHead));
 }
-
-void eventq_hook() { myLoadSave.Hook(); }

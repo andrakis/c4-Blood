@@ -27,7 +27,7 @@ extern RGB curDAC[256];
 extern RGB baseDAC[256];
 
 extern byte gStdColor[32];
-extern QBOOL gFogMode;
+extern BOOL gFogMode;
 
 extern int gGammaLevels;
 

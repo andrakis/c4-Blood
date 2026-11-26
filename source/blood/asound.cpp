@@ -18,17 +18,17 @@
 #include <string.h>
 #include "typedefs.h"
 #include "asound.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "error.h"
 extern "C" {
-#include "FX_MAN.H"
+#include "fx_man.h"
 }
 #include "gameutil.h"
 #include "misc.h"
 #include "player.h"
 #include "resource.h"
-#include "qsound.h"
+#include "sound.h"
 
 struct AMB_CHANNEL
 {
@@ -74,7 +74,7 @@ void ambProcess(void)
         {
             int end = ClipLow(pChannel->at14-1, 0);
             pChannel->at0 = FX_PlayLoopedRaw(pChannel->at10, pChannel->at14, pChannel->at10, pChannel->at10+end, GetRate(pChannel->at18), 0,
-                pChannel->at4, pChannel->at4, pChannel->at4, pChannel->at4, (uintptr_t)&pChannel->at0);
+                pChannel->at4, pChannel->at4, pChannel->at4, pChannel->at4, (ulong)&pChannel->at0);
         }
         pChannel->at4 = 0;
     }
@@ -107,14 +107,13 @@ void ambInit(void)
     {
         SPRITE *pSprite = &sprite[nSprite];
         int nXSprite = pSprite->extra;
-        if (nXSprite < 0 || nXSprite >= kMaxXSprites)
+        if (nXSprite <= 0 || nXSprite >= kMaxXSprites)
             continue;
         XSPRITE *pXSprite = &xsprite[nXSprite];
         if (pXSprite->at12_0 <= pXSprite->at10_0)
             continue;
         AMB_CHANNEL *pChannel = ambChannels;
-        int i;
-        for (i = 0; i < nAmbChannels; i++, pChannel++)
+        for (int i = 0; i < nAmbChannels; i++, pChannel++)
             if (pChannel->at8 == pXSprite->at14_0)
                 break;
         if (i == nAmbChannels)
@@ -136,7 +135,11 @@ void ambInit(void)
             pChannel->atc = pRAWNode;
             pChannel->at14 = Resource::Size(pRAWNode);
             pChannel->at10 = (char*)gSoundRes.Lock(pRAWNode);
+#ifdef SHAREWARE
+            pChannel->at18 = 1;
+#else
             pChannel->at18 = pSFX->format;
+#endif
             nAmbChannels++;
         }
         pSprite->owner = i;

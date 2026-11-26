@@ -17,7 +17,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "debug4g.h"
 #include "globals.h"
@@ -308,7 +308,7 @@ void DoSectorPanning(void)
             }
         }
     }
-    for (int i = 0; i < wallPanCount; i++)
+    for (i = 0; i < wallPanCount; i++)
     {
         int nXWall = wallPanList[i];
         XWALL *pXWall = &xwall[nXWall];
@@ -353,7 +353,7 @@ void InitSectorFX(void)
                 panList[panCount++] = nXSector;
         }
     }
-    for (int i = 0; i < numwalls; i++)
+    for (i = 0; i < numwalls; i++)
     {
         short nXWall = wall[i].extra;
         if (nXWall > 0)

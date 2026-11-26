@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aicaleb.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"
@@ -72,9 +72,7 @@ static void SeqAttackCallback(int, int nXSprite)
     dz += Random2(1500);
     for (int i = 0; i < 2; i++)
     {
-        int r1 = Random3(500);
-        int r2 = Random3(1000);
-        actFireVector(pSprite, 0, 0, dx+Random3(1000), dy+r2, dz+r1, VECTOR_TYPE_1);
+        actFireVector(pSprite, 0, 0, dx+Random3(1000), dy+Random3(1000), dz+Random3(500), VECTOR_TYPE_1);
     }
     if (Chance(0x8000))
         sfxPlay3DSound(pSprite, 10000+Random(5));
@@ -338,8 +336,8 @@ static void func_65F44(SPRITE *pSprite, XSPRITE *pXSprite)
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 733);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
     SPRITE *pTarget = &sprite[pXSprite->target];
-    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].atb;
-    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].atb;
+    int z = dudeInfo[pSprite->type - kDudeBase].atb + pSprite->z;
+    int z2 = dudeInfo[pTarget->type - kDudeBase].atb + pTarget->z;
     int nAng = ((pXSprite->at16_0+1024-pSprite->ang)&2047)-1024;
     int nTurnRange = (pDudeInfo->at44<<2)>>4;
     pSprite->ang = (pSprite->ang+ClipRange(nAng, -nTurnRange, nTurnRange))&2047;
@@ -373,8 +371,8 @@ static void func_661E0(SPRITE *pSprite, XSPRITE *pXSprite)
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 796);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
     SPRITE *pTarget = &sprite[pXSprite->target];
-    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].atb;
-    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].atb;
+    int z = dudeInfo[pSprite->type - kDudeBase].atb + pSprite->z;
+    int z2 = dudeInfo[pTarget->type - kDudeBase].atb + pTarget->z;
     int nAng = ((pXSprite->at16_0+1024-pSprite->ang)&2047)-1024;
     int nTurnRange = (pDudeInfo->at44<<2)>>4;
     pSprite->ang = (pSprite->ang+ClipRange(nAng, -nTurnRange, nTurnRange))&2047;

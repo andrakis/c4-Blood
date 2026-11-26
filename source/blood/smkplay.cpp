@@ -15,14 +15,14 @@
  *
  */
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "controls.h"
 #include "key.h"
 #include "resource.h"
 #include "smkplay.h"
-//#include "smack.h"
+#include "smack.h"
 #include "sound.h"
-//#include "svga.h"
+#include "svga.h"
 
 
 CSMKPlayer::CSMKPlayer()
@@ -36,26 +36,26 @@ CSMKPlayer::~CSMKPlayer()
 {
     if (f_c)
     {
-#if 0
         SVGASetup(f_0, f_4);
         SVGASetGraph();
-#endif
     }
 }
 
-int CSMKPlayer::PlaySMK(const char *a1)
+int CSMKPlayer::PlaySMK(char *a1)
 {
     return PlaySMKWithWAV(a1, -1);
 }
 
-int CSMKPlayer::PlaySMKWithWAV(const char *a1, int a2)
+int CSMKPlayer::PlaySMKWithWAV(char *a1, int a2)
 {
-    return 1;
-#if 0
     int v4;
     u32 i;
     Smack *smk;
     func_2906C();
+#if APPVER_BLOODREV < AV_BR_BL111A
+    sndStopSong();
+    sndKillAllSounds();
+#endif
     v4 = 0;
 
     smk = SmackOpen(a1, 0xfe100, -1);
@@ -97,17 +97,18 @@ int CSMKPlayer::PlaySMKWithWAV(const char *a1, int a2)
     sndKillAllSounds();
     func_2906C();
     return v4;
-#endif
 }
 
-int CSMKPlayer::PlaySMKWithWAV(const char *a1, const char *a2)
+int CSMKPlayer::PlaySMKWithWAV(char *a1, char *a2)
 {
-    return 1;
-#if 0
     int v4;
     u32 i;
     Smack *smk;
     func_2906C();
+#if APPVER_BLOODREV < AV_BR_BL111A
+    sndStopSong();
+    sndKillAllSounds();
+#endif
     v4 = 0;
 
     smk = SmackOpen(a1, 0xfe100, -1);
@@ -149,17 +150,19 @@ int CSMKPlayer::PlaySMKWithWAV(const char *a1, const char *a2)
     sndKillAllSounds();
     func_2906C();
     return v4;
-#endif
 }
 
-#if 0
 RCFUNC void PTR4* RADLINK radmalloc(u32 numbytes)
 {
     byte *temp;
     byte va;
     if (numbytes == 0 || numbytes == -1)
         return 0;
+#if APPVER_BLOODREV >= AV_BR_BL111A
     temp = (byte*)Resource::Alloc(numbytes + 16);
+#else
+    temp = (byte*)Resource::heap->Alloc(numbytes + 16);
+#endif
     if (!temp)
         return 0;
 
@@ -178,6 +181,9 @@ RCFUNC void RADLINK radfree(void PTR4* ptr)
         return;
     va = temp[-1];
     temp -= va;
+#if APPVER_BLOODREV >= AV_BR_BL111A
     Resource::Free(temp);
-}
+#else
+    Resource::heap->Free(temp);
 #endif
+}

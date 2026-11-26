@@ -21,7 +21,8 @@
 #include <io.h>
 #include <stdio.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "globals.h"
+#include "build.h"
 #include "crc32.h"
 #include "db.h"
 #include "debug4g.h"
@@ -30,6 +31,12 @@
 #include "iob.h"
 #include "misc.h"
 #include "resource.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#else
+#define LDIFF1 -5
+#endif
 
 XSPRITE xsprite[kMaxXSprites];
 XWALL xwall[kMaxXWalls];
@@ -42,15 +49,17 @@ ushort nextXSector[kMaxXSectors];
 int gMapRev;
 int gSongId;
 int gSkyCount;
-int32_t gVisibility;
+long gVisibility;
 
+#ifdef REGISTERED
 MAPHEADER2 char_19AE44;
+#endif
 
-int32_t xvel[kMaxSprites], yvel[kMaxSprites], zvel[kMaxSprites];
+long xvel[kMaxSprites], yvel[kMaxSprites], zvel[kMaxSprites];
 
 ushort gStatCount[kMaxStatus + 1];
 
-const char *gItemText[] = {
+char *gItemText[] = {
     "Skull Key",
     "Eye Key",
     "Fire Key",
@@ -102,7 +111,7 @@ const char *gItemText[] = {
     "Red Flag",
 };
 
-const char *gAmmoText[] = {
+char *gAmmoText[] = {
     "Spray can",
     "Bundle of TNT*",
     "Bundle of TNT",
@@ -126,7 +135,7 @@ const char *gAmmoText[] = {
     NULL,
 };
 
-const char *gWeaponText[] = {
+char *gWeaponText[] = {
     "RANDOM",
     "Sawed-off",
     "Tommy Gun",
@@ -242,17 +251,17 @@ void RemoveSpriteStat(int nSprite)
     gStatCount[nStat]--;
 }
 
-extern "C" void initspritelists_replace(void)
+void initspritelists(void)
 {
     for (short i = 0; i <= kMaxSectors; i++)
     {
         headspritesect[i] = -1;
     }
-    for (short i = 0; i <= kMaxStatus; i++)
+    for (i = 0; i <= kMaxStatus; i++)
     {
         headspritestat[i] = -1;
     }
-    for (short i = 0; i < kMaxSprites; i++)
+    for (i = 0; i < kMaxSprites; i++)
     {
         sprite[i].sectnum = -1;
         sprite[i].index = -1;
@@ -261,7 +270,7 @@ extern "C" void initspritelists_replace(void)
     memset(gStatCount, 0, sizeof(gStatCount));
 }
 
-extern "C" int insertsprite_replace(short a1, short a2)
+int insertsprite(short a1, short a2)
 {
     return InsertSprite(a1, a2);
 }
@@ -290,10 +299,9 @@ int InsertSprite(int nSector, int nStat)
     return nSprite;
 }
 
-extern "C" int deletesprite_replace(short a1)
+void deletesprite(short a1)
 {
     DeleteSprite(a1);
-    return 0;
 }
 
 void DeleteSprite(int nSprite)
@@ -302,40 +310,40 @@ void DeleteSprite(int nSprite)
     {
         dbDeleteXSprite(sprite[nSprite].extra);
     }
-    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 667);
+    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 667+LDIFF1);
     RemoveSpriteStat(nSprite);
-    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 670);
+    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 670+LDIFF1);
     RemoveSpriteSect(nSprite);
     InsertSpriteStat(nSprite, kMaxStatus);
 }
 
-extern "C" int changespritesect_replace(short nSprite, short nSector)
+int changespritesect(short nSprite, short nSector)
 {
     return ChangeSpriteSect(nSprite, nSector);
 }
 
 int ChangeSpriteSect(int nSprite, int nSector)
 {
-    dassert(nSprite >= 0 && nSprite < kMaxSprites,679);
-    dassert(nSector >= 0 && nSector < kMaxSectors,680);
-    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 682);
-    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 683);
+    dassert(nSprite >= 0 && nSprite < kMaxSprites,679+LDIFF1);
+    dassert(nSector >= 0 && nSector < kMaxSectors,680+LDIFF1);
+    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 682+LDIFF1);
+    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 683+LDIFF1);
     RemoveSpriteSect(nSprite);
     InsertSpriteSect(nSprite, nSector);
     return 0;
 }
 
-extern "C" int changespritestat_replace(short nSprite, short nStatus)
+int changespritestat(short nSprite, short nStatus)
 {
     return ChangeSpriteStat(nSprite, nStatus);
 }
 
 int ChangeSpriteStat(int nSprite, int nStatus)
 {
-    dassert(nSprite >= 0 && nSprite < kMaxSprites, 694);
-    dassert(nStatus >= 0 && nStatus < kMaxStatus, 695);
-    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 696);
-    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 697);
+    dassert(nSprite >= 0 && nSprite < kMaxSprites, 694+LDIFF1);
+    dassert(nStatus >= 0 && nStatus < kMaxStatus, 695+LDIFF1);
+    dassert(sprite[nSprite].statnum >= 0 && sprite[nSprite].statnum < kMaxStatus, 696+LDIFF1);
+    dassert(sprite[nSprite].sectnum >= 0 && sprite[nSprite].sectnum < kMaxSectors, 697+LDIFF1);
     RemoveSpriteStat(nSprite);
     InsertSpriteStat(nSprite, nStatus);
     return 0;
@@ -368,7 +376,7 @@ ushort dbInsertXSprite(int nSprite)
     ushort nXSprite = GetFree(nextXSprite);
     if (nXSprite == 0)
     {
-        ThrowError(756)("Out of free XSprites");
+        ThrowError(756+LDIFF1)("Out of free XSprites");
     }
     memset(&xsprite[nXSprite], 0, sizeof(XSPRITE));
     sprite[nSprite].extra = nXSprite;
@@ -378,8 +386,8 @@ ushort dbInsertXSprite(int nSprite)
 
 void dbDeleteXSprite(int nXSprite)
 {
-    dassert(xsprite[nXSprite].reference >= 0, 768);
-    dassert(sprite[xsprite[nXSprite].reference].extra == nXSprite, 769);
+    dassert(xsprite[nXSprite].reference >= 0, 768+LDIFF1);
+    dassert(sprite[xsprite[nXSprite].reference].extra == nXSprite, 769+LDIFF1);
     InsertFree(nextXSprite, nXSprite);
     sprite[xsprite[nXSprite].reference].extra = -1;
     xsprite[nXSprite].reference = -1;
@@ -390,7 +398,7 @@ ushort dbInsertXWall(int nWall)
     ushort nXWall = GetFree(nextXWall);
     if (nXWall == 0)
     {
-        ThrowError(782)("Out of free XWalls");
+        ThrowError(782+LDIFF1)("Out of free XWalls");
     }
     memset(&xwall[nXWall], 0, sizeof(XWALL));
     wall[nWall].extra = nXWall;
@@ -400,7 +408,7 @@ ushort dbInsertXWall(int nWall)
 
 void dbDeleteXWall(int nXWall)
 {
-    dassert(xwall[nXWall].reference >= 0, 794);
+    dassert(xwall[nXWall].reference >= 0, 794+LDIFF1);
     InsertFree(nextXWall, nXWall);
     wall[xwall[nXWall].reference].extra = -1;
     xwall[nXWall].reference = -1;
@@ -411,7 +419,7 @@ ushort dbInsertXSector(int nSector)
     ushort nXSector = GetFree(nextXSector);
     if (nXSector == 0)
     {
-        ThrowError(807)("Out of free XSectors");
+        ThrowError(807+LDIFF1)("Out of free XSectors");
     }
     memset(&xsector[nXSector], 0, sizeof(XSECTOR));
     sector[nSector].extra = nXSector;
@@ -421,7 +429,7 @@ ushort dbInsertXSector(int nSector)
 
 void dbDeleteXSector(int nXSector)
 {
-    dassert(xsector[nXSector].reference >= 0, 819);
+    dassert(xsector[nXSector].reference >= 0, 819+LDIFF1);
     InsertFree(nextXSector, nXSector);
     sector[xsector[nXSector].reference].extra = -1;
     xsector[nXSector].reference = -1;
@@ -439,7 +447,7 @@ void dbXSpriteClean(void)
         }
         if (sprite[nSprite].statnum < kMaxStatus && nXSprite > 0)
         {
-            dassert(nXSprite < kMaxXSprites, 846);
+            dassert(nXSprite < kMaxXSprites, 846+LDIFF1);
             if (xsprite[nXSprite].reference != nSprite)
             {
                 int nXSprite2 = dbInsertXSprite(nSprite);
@@ -453,7 +461,7 @@ void dbXSpriteClean(void)
         nSprite = xsprite[nXSprite].reference;
         if (nSprite >= 0)
         {
-            dassert(nSprite < kMaxSprites, 864);
+            dassert(nSprite < kMaxSprites, 864+LDIFF1);
             if (sprite[nSprite].statnum >= kMaxStatus || sprite[nSprite].extra != nXSprite)
             {
                 InsertFree(nextXSprite, nXSprite);
@@ -475,7 +483,7 @@ void dbXWallClean(void)
         }
         if (nXWall > 0)
         {
-            dassert(nXWall < kMaxXWalls, 894);
+            dassert(nXWall < kMaxXWalls, 894+LDIFF1);
             if (xwall[nXWall].reference == -1)
             {
                 wall[nWall].extra = -1;
@@ -491,7 +499,7 @@ void dbXWallClean(void)
         if (wall[nWall].extra > 0)
         {
             nXWall = wall[nWall].extra;
-            dassert(nXWall < kMaxXWalls, 914);
+            dassert(nXWall < kMaxXWalls, 914+LDIFF1);
             if (xwall[nXWall].reference != nWall)
             {
                 int nXWall2 = dbInsertXWall(nWall);
@@ -505,7 +513,7 @@ void dbXWallClean(void)
         nWall = xwall[nXWall].reference;
         if (nWall >= 0)
         {
-            dassert(nWall < kMaxWalls, 933);
+            dassert(nWall < kMaxWalls, 933+LDIFF1);
             if (nWall >= numwalls || wall[nWall].extra != nXWall)
             {
                 InsertFree(nextXWall, nXWall);
@@ -527,7 +535,7 @@ void dbXSectorClean(void)
         }
         if (nXSector > 0)
         {
-            dassert(nXSector < kMaxXSectors, 963);
+            dassert(nXSector < kMaxXSectors, 963+LDIFF1);
             if (xsector[nXSector].reference == -1)
             {
                 sector[nSector].extra = -1;
@@ -543,7 +551,7 @@ void dbXSectorClean(void)
         if (sector[nSector].extra > 0)
         {
             nXSector = sector[nSector].extra;
-            dassert(nXSector < kMaxXSectors, 983);
+            dassert(nXSector < kMaxXSectors, 983+LDIFF1);
             if (xsector[nXSector].reference != nSector)
             {
                 int nXSector2 = dbInsertXSector(nSector);
@@ -557,7 +565,7 @@ void dbXSectorClean(void)
         int nSector = xsector[nXSector].reference;
         if (nSector >= 0)
         {
-            dassert(nSector < kMaxSectors, 1002);
+            dassert(nSector < kMaxSectors, 1002+LDIFF1);
             if (nSector >= numsectors || sector[nSector].extra != nXSector)
             {
                 InsertFree(nextXSector, nXSector);
@@ -575,17 +583,17 @@ void dbInit(void)
         xsprite[i].reference = -1;
     }
     InitFreeList(nextXWall, kMaxXWalls);
-    for (int i = 1; i < kMaxXWalls; i++)
+    for (i = 1; i < kMaxXWalls; i++)
     {
         xwall[i].reference = -1;
     }
     InitFreeList(nextXSector, kMaxXSectors);
-    for (int i = 1; i < kMaxXSectors; i++)
+    for (i = 1; i < kMaxXSectors; i++)
     {
         xsector[i].reference = -1;
     }
     initspritelists();
-    for (int i = 0; i < kMaxSprites; i++)
+    for (i = 0; i < kMaxSprites; i++)
     {
         sprite[i].cstat = 128;
     }
@@ -662,9 +670,7 @@ void PropagateMarkerReferences(void)
     }
 }
 
-QBOOL char_1A76C6, char_1A76C7, char_1A76C8;
-
-#pragma pack(push, 1)
+BOOL char_1A76C6, char_1A76C7, char_1A76C8;
 
 struct MAPSIGNATURE {
     char signature[4];
@@ -687,21 +693,19 @@ struct MAPHEADER{
     ushort at23; // numsprites
 };
 
-#pragma pack(pop)
-
-uint32_t dbReadMapCRC(char *pPath)
+ulong dbReadMapCRC(char *pPath)
 {
-    char path1[_MAX_PATH + 10], path2[_MAX_PATH];
-    const char *ext, *dir, *fname;
+    char path1[_MAX_PATH2], path2[_MAX_PATH];
+    char *ext, *dir, *node, *fname;
     MAPSIGNATURE header;
     char_1A76C7 = 0;
     char_1A76C8 = 0;
-    MySplitPath(pPath, path1, &dir, &fname, &ext);
+    _splitpath2(pPath, path1, &node, &dir, &fname, &ext);
     _makepath(path2, NULL, NULL, fname, NULL);
     DICTNODE *pNode = gSysRes.Lookup(path2, "MAP");
     if (!pNode)
     {
-        ThrowError(1144)("Error opening map file %s", path2);
+        ThrowError(1144+LDIFF1)("Error opening map file %s", path2);
     }
     int nSize = Resource::Size(pNode);
     byte *pData = (byte*)gSysRes.Lock(pNode);
@@ -709,8 +713,9 @@ uint32_t dbReadMapCRC(char *pPath)
     iob.Read(&header, 6);
     if (memcmp(header.signature, "BLM\x1a", 4))
     {
-        ThrowError(1154)("Map file corrupted");
+        ThrowError(1154+LDIFF1)("Map file corrupted");
     }
+#ifdef REGISTERED
     if ((header.version & 0xff00) == 0x600)
     {
     }
@@ -720,36 +725,41 @@ uint32_t dbReadMapCRC(char *pPath)
     }
     else
     {
-        ThrowError(1164)("Map file is wrong version");
+        ThrowError(1164+LDIFF1)("Map file is wrong version");
     }
-    uint32_t nCRC = *(uint32_t*)(pData+nSize-4);
+#else
+    if ((header.version & 0xff00) != 0x600)
+        ThrowError(1167+LDIFF1)("Map file is wrong version");
+#endif
+    ulong nCRC = *(ulong*)(pData+nSize-4);
     gSysRes.Unlock(pNode);
     return nCRC;
 }
 
-void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle, short *pSector, uint32_t *pCRC)
+void dbLoadMap(char *pPath, long *pX, long *pY, long *pZ, short *pAngle, short *pSector, ulong *pCRC)
 {
     char path2[_MAX_PATH];
-    const char *fname;
-    uint32_t nCRC;
-    const char *dir;
     int i;
     int numsprites;
-    byte *pData;
-    char path1[_MAX_PATH+10];
+    int nSize;
     MAPSIGNATURE header;
     MAPHEADER mapHeader;
-    int nSize;
-    const char *ext;
+    byte* pData;
+    ulong nCRC;
+    char* node;
+    char* dir;
+    char* fname;
+    char* ext;
+    char path1[_MAX_PATH2];
     memset(show2dsector, 0, sizeof(show2dsector));
     memset(show2dwall, 0, sizeof(show2dwall));
     memset(show2dsprite, 0, sizeof(show2dsprite));
-    MySplitPath(pPath, path1, &dir, &fname, &ext);
+    _splitpath2(pPath, path1, &node, &dir, &fname, &ext);
     _makepath(path2, NULL, NULL, fname, NULL);
     DICTNODE *pNode = gSysRes.Lookup(path2, "MAP");
     if (!pNode)
     {
-        ThrowError(1211)("Error opening map file %s", path2);
+        ThrowError(1211+LDIFF1)("Error opening map file %s", path2);
     }
     nSize = Resource::Size(pNode);
     pData = (byte*)gSysRes.Lock(pNode);
@@ -757,8 +767,9 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     IOBuffer1.Read(&header, 6);
     if (memcmp(header.signature, "BLM\x1a", 4))
     {
-        ThrowError(1221)("Map file corrupted");
+        ThrowError(1221+LDIFF1)("Map file corrupted");
     }
+#ifdef REGISTERED
     char_1A76C8 = 0;
     if ((header.version & 0xff00) != 0x600)
     {
@@ -768,15 +779,23 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
         }
         else
         {
-            ThrowError(1235)("Map file is wrong version");
+            ThrowError(1235+LDIFF1)("Map file is wrong version");
         }
     }
+#else
+    if ((header.version & 0xff00) != 0x600)
+    {
+        ThrowError(1238+LDIFF1)("Map file is wrong version");
+    }
+#endif
     IOBuffer1.Read(&mapHeader,37);
+#ifdef REGISTERED
     if (mapHeader.at16 != 0 && mapHeader.at16 != 'ttaM' && mapHeader.at16 != 'Matt')
     {
         dbCrypt((byte*)&mapHeader, 37, (int)'ttaM');
         char_1A76C7 = 1;
     }
+#endif
     *pX = mapHeader.at0;
     *pY = mapHeader.at4;
     *pZ = mapHeader.at8;
@@ -785,6 +804,7 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     pskybits = mapHeader.at10;
     gVisibility = visibility = mapHeader.at12;
     gSongId = mapHeader.at16;
+#ifdef REGISTERED
     if (char_1A76C8)
     {
         if (mapHeader.at16 == 'ttaM' || mapHeader.at16 == 'Matt')
@@ -797,12 +817,14 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
         }
         else
         {
-            ThrowError(1267)("Corrupted Map file");
+            ThrowError(1267+LDIFF1)("Corrupted Map file");
         }
     }
-    else if (mapHeader.at16)
+    else
+#endif
+    if (mapHeader.at16)
     {
-        ThrowError(1272)("Corrupted Map file");
+        ThrowError(1272+LDIFF1)("Corrupted Map file");
     }
     parallaxtype = mapHeader.at1a;
     gMapRev = mapHeader.at1b;
@@ -810,6 +832,7 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     numwalls = mapHeader.at21;
     numsprites = mapHeader.at23;
     dbInit();
+#ifdef REGISTERED
     if (char_1A76C8)
     {
         IOBuffer1.Read(&char_19AE44, 128);
@@ -819,24 +842,38 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     {
         memset(&char_19AE44, 0, 128);
     }
+#endif
     gSkyCount = 1<<pskybits;
     IOBuffer1.Read(pskyoff, gSkyCount*sizeof(pskyoff[0]));
+#ifdef REGISTERED
     if (char_1A76C8)
     {
         dbCrypt((byte*)pskyoff, gSkyCount*sizeof(pskyoff[0]), gSkyCount*2);
     }
+#endif
     for (i = 0; i < numsectors; i++)
     {
         IOBuffer1.Read(&sector[i], sizeof(SECTOR));
+#ifdef REGISTERED
         if (char_1A76C8)
         {
             dbCrypt((byte*)&sector[i], sizeof(SECTOR), gMapRev*sizeof(SECTOR));
         }
+#endif
         if (sector[i].extra > 0)
         {
             XSECTOR *pXSector = &xsector[dbInsertXSector(i)];
             memset(pXSector, 0, sizeof(XSECTOR));
-            IOBuffer1.Read(pXSector, !char_1A76C8 ? sizeof(XSECTOR) : char_19AE44.at48);
+            int size;
+            if (!char_1A76C8)
+                size = sizeof(XSECTOR);
+            else
+#ifdef REGISTERED
+                size = char_19AE44.at48;
+#else
+                size = sizeof(XSECTOR);
+#endif
+            IOBuffer1.Read(pXSector, size);
             xsector[sector[i].extra].reference = i;
             xsector[sector[i].extra].at1_7 = xsector[sector[i].extra].at1_6<<16;
         }
@@ -844,15 +881,26 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     for (i = 0; i < numwalls; i++)
     {
         IOBuffer1.Read(&wall[i], sizeof(WALL));
+#ifdef REGISTERED
         if (char_1A76C8)
         {
             dbCrypt((byte*)&wall[i], sizeof(WALL), (gMapRev*sizeof(SECTOR))|(int)'ttaM');
         }
+#endif
         if (wall[i].extra > 0)
         {
             XWALL *pXWall = &xwall[dbInsertXWall(i)];
             memset(pXWall, 0, sizeof(XWALL));
-            IOBuffer1.Read(pXWall, !char_1A76C8 ? sizeof(XWALL) : char_19AE44.at44);
+            int size;
+            if (!char_1A76C8)
+                size = sizeof(XWALL);
+            else
+#ifdef REGISTERED
+                size = char_19AE44.at44;
+#else
+                size = sizeof(XWALL);
+#endif
+            IOBuffer1.Read(pXWall, size);
             xwall[wall[i].extra].reference = i;
             xwall[wall[i].extra].at1_7 = xwall[wall[i].extra].at1_6 << 16;
         }
@@ -862,10 +910,12 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     {
         RemoveSpriteStat((short)i);
         IOBuffer1.Read(&sprite[i], sizeof(SPRITE));
+#ifdef REGISTERED
         if (char_1A76C8)
         {
             dbCrypt((byte*)&sprite[i], sizeof(SPRITE), (gMapRev*sizeof(SPRITE)) | (int)'ttaM');
         }
+#endif
         InsertSpriteSect((short)i, sprite[i].sectnum);
         InsertSpriteStat((short)i, sprite[i].statnum);
         sprite[i].index = i;
@@ -873,7 +923,16 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
         {
             XSPRITE *pXSprite = &xsprite[dbInsertXSprite(i)];
             memset(pXSprite, 0, sizeof(XSPRITE));
-            IOBuffer1.Read(pXSprite, !char_1A76C8 ? sizeof(XSPRITE) : char_19AE44.at40);
+            int size;
+            if (!char_1A76C8)
+                size = sizeof(XSPRITE);
+#ifdef REGISTERED
+            else
+                size = char_19AE44.at40;
+#else
+            size = sizeof(XSPRITE);
+#endif
+            IOBuffer1.Read(pXSprite, size);
             xsprite[sprite[i].extra].reference = i;
             xsprite[sprite[i].extra].at1_7 = xsprite[sprite[i].extra].at1_6 << 16;
             if (!char_1A76C8)
@@ -889,11 +948,12 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     IOBuffer1.Read(&nCRC, 4);
     if (CRC32(pData, nSize-4) != nCRC)
     {
-        ThrowError(1439)("Map File does not match CRC");
+        ThrowError(1439+LDIFF1)("Map File does not match CRC");
     }
     *pCRC = nCRC;
     gSysRes.Unlock(pNode);
     PropagateMarkerReferences();
+#ifdef REGISTERED
     if (char_1A76C8)
     {
         if (gSongId == 'ttaM' || gSongId == 'Matt')
@@ -906,12 +966,14 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
         }
         else
         {
-            ThrowError(1457)("Corrupted Map file");
+            ThrowError(1457+LDIFF1)("Corrupted Map file");
         }
     }
-    else if (gSongId != 0)
+    else
+#endif
+    if (gSongId != 0)
     {
-        ThrowError(1462)("Corrupted Shareware Map file");
+        ThrowError(1462+LDIFF1)("Corrupted Shareware Map file");
     }
     if ((header.version & 0xff00) == 0x603) // BUG
     {
@@ -971,19 +1033,21 @@ void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle
     }
 }
 
-void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, short nSector)
+void dbSaveMap(char *pPath, long nX, long nY, long nZ, short nAngle, short nSector)
 {
     char sMapExt[_MAX_PATH];
     char sBakExt[_MAX_PATH];
     int nHandle;
     MAPSIGNATURE header;
     MAPHEADER mapheader;
-    byte *pData;
     int nSize;
+    byte *pData;
+#if MAPEDIT
+    char_1A76C8 = 1;
+#endif
+    int nSpriteNum = 0;
     int i;
-    uint32_t nCRC;
-    int nSpriteNum;
-    nSpriteNum = 0;
+    ulong nCRC;
     gSkyCount = 1<<pskybits;
     gMapRev++;
     strcpy(sMapExt, pPath);
@@ -991,10 +1055,12 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     ChangeExtension(sMapExt, ".MAP");
     ChangeExtension(sBakExt, ".BAK");
     nSize = sizeof(MAPSIGNATURE)+sizeof(MAPHEADER);
+#ifdef REGISTERED
     if (char_1A76C8)
     {
         nSize += sizeof(MAPHEADER2);
     }
+#endif
     nSize += gSkyCount*sizeof(pskyoff[0]);
     nSize += sizeof(SECTOR)*numsectors;
     for (i = 0; i < numsectors; i++)
@@ -1028,6 +1094,10 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     pData = (byte*)Resource::Alloc(nSize);
     IOBuffer IOBuffer1(nSize, pData);
     memcpy(&header, "BLM\x1a", 4);
+#if MAPEDIT
+    header.version = 0x700;
+    char_1A76C7 = 1;
+#else
     if (char_1A76C8)
     {
         header.version = 0x700;
@@ -1038,6 +1108,7 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
         header.version = 0x603;
         char_1A76C7 = 0;
     }
+#endif
     IOBuffer1.Write(&header, sizeof(header));
     mapheader.at0 = nX;
     mapheader.at4 = nY;
@@ -1046,6 +1117,9 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     mapheader.ate = nSector;
     mapheader.at10 = pskybits;
     mapheader.at12 = gVisibility;
+#if MAPEDIT
+    gSongId = 'ttaM';
+#else
     if (char_1A76C6)
     {
         gSongId = 'ttaM';
@@ -1054,6 +1128,7 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     {
         gSongId = 0;
     }
+#endif
     mapheader.at16 = gSongId;
     mapheader.at1a = parallaxtype;
     mapheader.at1b = gMapRev;
@@ -1062,19 +1137,24 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     mapheader.at23 = nSpriteNum;
     if (char_1A76C7)
     {
-        dbCrypt((byte*)&mapheader, sizeof(MAPHEADER), (int)'ttam');
+        dbCrypt((byte*)&mapheader, sizeof(MAPHEADER), (int)'ttaM');
     }
     IOBuffer1.Write(&mapheader, sizeof(MAPHEADER));
+#ifdef REGISTERED
     if (char_1A76C8)
     {
+#if MAPEDIT
+        memset(&char_19AE44, 0, sizeof(MAPHEADER2));
+#endif
         strcpy(char_19AE44.at0, "Copyright 1997 Monolith Productions.  All Rights Reserved");
-        char_19AE44.at48 = sizeof(XSECTOR);
-        char_19AE44.at44 = sizeof(XWALL);
         char_19AE44.at40 = sizeof(XSPRITE);
+        char_19AE44.at44 = sizeof(XWALL);
+        char_19AE44.at48 = sizeof(XSECTOR);
         dbCrypt((byte*)&char_19AE44, sizeof(MAPHEADER2), numwalls);
         IOBuffer1.Write(&char_19AE44, sizeof(MAPHEADER2));
         dbCrypt((byte*)&char_19AE44, sizeof(MAPHEADER2), numwalls);
     }
+#endif
     if (char_1A76C8)
     {
         dbCrypt((byte*)pskyoff, gSkyCount*sizeof(pskyoff[0]), gSkyCount*sizeof(pskyoff[0]));
@@ -1104,12 +1184,12 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     {
         if (char_1A76C8)
         {
-            dbCrypt((byte*)&wall[i], sizeof(WALL), gMapRev*sizeof(SECTOR) | (int)'ttam');
+            dbCrypt((byte*)&wall[i], sizeof(WALL), gMapRev*sizeof(SECTOR) | (int)'ttaM');
         }
         IOBuffer1.Write(&wall[i], sizeof(WALL));
         if (char_1A76C8)
         {
-            dbCrypt((byte*)&wall[i], sizeof(WALL), gMapRev*sizeof(SECTOR) | (int)'ttam');
+            dbCrypt((byte*)&wall[i], sizeof(WALL), gMapRev*sizeof(SECTOR) | (int)'ttaM');
         }
         if (wall[i].extra > 0)
         {
@@ -1122,12 +1202,12 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
         {
             if (char_1A76C8)
             {
-                dbCrypt((byte*)&sprite[i], sizeof(SPRITE), gMapRev*sizeof(SPRITE) | (int)'ttam');
+                dbCrypt((byte*)&sprite[i], sizeof(SPRITE), gMapRev*sizeof(SPRITE) | (int)'ttaM');
             }
             IOBuffer1.Write(&sprite[i], sizeof(SPRITE));
             if (char_1A76C8)
             {
-                dbCrypt((byte*)&sprite[i], sizeof(SPRITE), gMapRev*sizeof(SPRITE) | (int)'ttam');
+                dbCrypt((byte*)&sprite[i], sizeof(SPRITE), gMapRev*sizeof(SPRITE) | (int)'ttaM');
             }
             if (sprite[i].extra > 0)
             {
@@ -1142,11 +1222,11 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     nHandle = open(sMapExt, O_BINARY|O_TRUNC|O_CREAT|O_WRONLY, S_IWRITE);
     if (nHandle == -1)
     {
-        ThrowError(1747)("Error opening MAP file");
+        ThrowError(1747+LDIFF1)("Error opening MAP file");
     }
     if (write(nHandle, pData, nSize) != nSize)
     {
-        ThrowError(1750)("Error writing MAP file");
+        ThrowError(1750+LDIFF1)("Error writing MAP file");
     }
     close(nHandle);
     Resource::Free(pData);
@@ -1157,5 +1237,5 @@ void dbSaveMap(char *pPath, int32_t nX, int32_t nY, int32_t nZ, short nAngle, sh
     }
     gSysRes.AddExternalResource(sMapExt, "MAP", nSize);
     DICTNODE *hMap = gSysRes.Lookup(sMapExt, "MAP");
-    dassert(hMap != NULL, 1761);
+    dassert(hMap != NULL, 1761+LDIFF1);
 }

@@ -18,9 +18,9 @@
 #define _FX_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 
-enum FX_ID : int32_t {
+enum FX_ID {
     FX_NONE = -1,
     FX_0 = 0,
     FX_1,

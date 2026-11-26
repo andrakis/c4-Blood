@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aihand.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"
@@ -53,7 +53,7 @@ static void HandJumpSeqCallback(int, int nXSprite)
     if (IsPlayerSprite(pTarget))
     {
         PLAYER *pPlayer = &gPlayer[pTarget->type-kDudePlayer1];
-        if (!pPlayer->at376)
+        if (pPlayer->at376 == 0)
         {
             pPlayer->at376 = 1;
             actPostSprite(pSprite->index, kStatFree);

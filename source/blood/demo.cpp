@@ -20,12 +20,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <dos.h>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#endif
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "demo.h"
 #include "error.h"
@@ -44,13 +40,29 @@
 #include "function.h"
 #endif
 
+#if APPVER_BLOODREV >= AV_BR_BL111
+#define LDIFF1 0
+#else
+#define LDIFF1 -4
+#endif
+
 int int_28F380 = 0;
 
 CDemo gDemo;
 
+#ifdef SHAREWARE
+#define RELEASEID 2
+#else
+#ifdef PLASMAPAK
+#define RELEASEID 4
+#else
+#define RELEASEID 3
+#endif
+#endif
+
 CDemo::CDemo()
 {
-    int_28F380 = 4;
+    int_28F380 = RELEASEID;
     at0 = 0;
     at1 = 0;
     at3 = 0;
@@ -76,7 +88,7 @@ CDemo::~CDemo()
     }
 }
 
-QBOOL CDemo::Create(const char *pzFile)
+BOOL CDemo::Create(char *pzFile)
 {
     char buffer[13] = "";
     char vc = 0;
@@ -110,7 +122,7 @@ QBOOL CDemo::Create(const char *pzFile)
     return 1;
 }
 
-void CDemo::Write(QINPUT *pPlayerInputs)
+void CDemo::Write(INPUT *pPlayerInputs)
 {
     dassert(pPlayerInputs != NULL, 155);
     if (!RecordStatus())
@@ -130,7 +142,7 @@ void CDemo::Write(QINPUT *pPlayerInputs)
     }
     for (int p = connecthead; p >= 0; p = connectpoint2[p])
     {
-        memcpy(&at1aa[atb&1023], &pPlayerInputs[p], sizeof(QINPUT));
+        memcpy(&at1aa[atb&1023], &pPlayerInputs[p], sizeof(INPUT));
         atb++;
         if((atb&1023)==0)
             write(at7,at1aa,sizeof(at1aa));
@@ -142,7 +154,7 @@ void CDemo::Close(void)
     if (RecordStatus())
     {
         if (atb&1023)
-            write(at7,at1aa,sizeof(QINPUT)*(atb&1023));
+            write(at7,at1aa,sizeof(INPUT)*(atb&1023));
         atf.nInputCount = atb;
         lseek(at7, 0, SEEK_SET);
         write(at7, &atf, sizeof(DEMOHEADER));
@@ -156,7 +168,7 @@ void CDemo::Close(void)
     at1 = 0;
 }
 
-QBOOL CDemo::SetupPlayback(const char *pzFile)
+BOOL CDemo::SetupPlayback(char *pzFile)
 {
     at0 = 0;
     at1 = 0;
@@ -175,7 +187,11 @@ QBOOL CDemo::SetupPlayback(const char *pzFile)
     read(at7, &atf, sizeof(atf));
     if (atf.signature != '\x1aMED')
         return 0;
-    if (atf.nVersion.w != gGameVersion.w && gGameVersion.w == 0x10b && atf.nVersion.w != 0x10a)
+    if (atf.nVersion.w != gGameVersion.w
+#if APPVER_BLOODREV >= AV_BR_BL111
+        && gGameVersion.w == 0x10b && atf.nVersion.w != 0x10a
+#endif
+        )
         return 0;
     if (atf.nBuild != int_28F380)
         return 0;
@@ -225,8 +241,8 @@ void CDemo::ProcessKeys(void)
             byte nKey;
             while ((nKey = keyGet()) != 0)
             {
-	            QBOOL alt = keystatus[bsc_LAlt] | keystatus[bsc_RAlt];
-	            QBOOL ctrl = keystatus[bsc_LCtrl] | keystatus[bsc_RCtrl];
+	            BOOL alt = keystatus[bsc_LAlt] | keystatus[bsc_RAlt];
+	            BOOL ctrl = keystatus[bsc_LCtrl] | keystatus[bsc_RCtrl];
                 switch (nKey)
                 {
                 case bsc_F12:
@@ -288,29 +304,30 @@ _DEMOPLAYBACK:
             {
                 if ((v4&1023) == 0)
                 {
-                    unsigned int nSize = sizeof(QINPUT)*(atb-v4);
+                    unsigned int nSize = sizeof(INPUT)*(atb-v4);
                     if (nSize > sizeof(at1aa))
                         nSize = sizeof(at1aa);
                     read(at7, at1aa, nSize);
                 }
-                memcpy(&gFifoInput[gNetFifoHead[p]&255][p], &at1aa[v4&1023], sizeof(QINPUT));
+                int i = gNetFifoHead[p]&255;
+                memcpy(&gFifoInput[i][p], &at1aa[v4&1023], sizeof(INPUT));
                 gNetFifoHead[p]++;
                 v4++;
                 if (v4 >= atf.nInputCount)
                 {
                     ready2send = 0;
-                    if (DemoCount() != 1)
+                    if (DemoCount() == 1)
+                    {
+                        lseek(at7, sizeof(DEMOHEADER), SEEK_SET);
+                        v4 = 0;
+                    }
+                    else
                     {
                         v4 = 0;
                         Close();
                         NextDemo();
                         gNetFifoClock = gGameClock;
                         goto _DEMOPLAYBACK;
-                    }
-                    else
-                    {
-                        lseek(at7, sizeof(DEMOHEADER), SEEK_SET);
-                        v4 = 0;
                     }
                 }
             }
@@ -339,47 +356,43 @@ void CDemo::StopPlayback(void)
 
 void CDemo::LoadDemoInfo(void)
 {
-#ifdef _WIN32
-    WIN32_FIND_DATAA find;
-    at59ef = 0;
-    HANDLE h = FindFirstFileA("BLOOD*.DEM", &find);
-    if (h == INVALID_HANDLE_VALUE)
-        return;
-    int status = 1;
-    while (status && at59ef < 5)
-    {
-        int hFile2 = open(find.cFileName, O_BINARY);
-        if (hFile2 == -1)
-            ThrowError(510)("File error #%d loading demo file header.", errno);
-        read(hFile2, &atf, sizeof(atf));
-        close(hFile2);
-        if (atf.signature == '\x1aMED' && (atf.nVersion.w == gGameVersion.w || gGameVersion.w != 0x10b || atf.nVersion.w == 0x10a) && atf.nBuild == int_28F380)
-        {
-            strcpy(at59aa[at59ef], find.cFileName);
-            at59ef++;
-        }
-        status = FindNextFileA(h, &find);
-    }
-    FindClose(h);
-#else
     struct find_t find;
+    int status, hFile;
     at59ef = 0;
-    int status = _dos_findfirst("BLOOD*.DEM", 0, &find);
+    status = _dos_findfirst("BLOOD*.DEM", 0, &find);
     while (!status && at59ef < 5)
     {
-        int hFile2 = open(find.name, O_BINARY);
-        if (hFile2 == -1)
-            ThrowError(510)("File error #%d loading demo file header.", errno);
-        read(hFile2, &atf, sizeof(atf));
-        close(hFile2);
-        if (atf.signature == '\x1aMED' && (atf.nVersion.w == gGameVersion.w || gGameVersion.w != 0x10b || atf.nVersion.w == 0x10a) && atf.nBuild == int_28F380)
+        hFile = open(find.name, O_BINARY);
+        if (hFile == -1)
+            ThrowError(510+LDIFF1)("File error #%d loading demo file header.", errno);
+        read(hFile, &atf, sizeof(atf));
+#if APPVER_BLOODREV >= AV_BR_BL111
+        close(hFile);
+        hFile = -1;
+#endif
+        if (atf.signature != '\x1aMED')
         {
-            strcpy(at59aa[at59ef], find.name);
-            at59ef++;
+            goto next;
         }
+        if (atf.nVersion.w != gGameVersion.w)
+        {
+#if APPVER_BLOODREV >= AV_BR_BL111
+            if (gGameVersion.w == 0x10b && atf.nVersion.w != 0x10a)
+#endif
+                goto next;
+        }
+        if (atf.nBuild != int_28F380)
+        {
+            goto next;
+        }
+#if APPVER_BLOODREV < AV_BR_BL111
+        close(hFile);
+#endif
+        strcpy(at59aa[at59ef], find.name);
+        at59ef++;
+next:
         status = _dos_findnext(&find);
     }
-#endif
 }
 
 void CDemo::NextDemo(void)

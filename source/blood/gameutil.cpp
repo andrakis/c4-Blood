@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "debug4g.h"
 #include "gameutil.h"
@@ -28,15 +28,15 @@
 
 POINT2D baseWall[kMaxWalls];
 POINT3D baseSprite[kMaxSprites];
-int32_t baseFloor[kMaxSectors];
-int32_t baseCeil[kMaxSectors];
-int32_t velFloor[kMaxSectors];
-int32_t velCeil[kMaxSectors];
+long baseFloor[kMaxSectors];
+long baseCeil[kMaxSectors];
+long velFloor[kMaxSectors];
+long velCeil[kMaxSectors];
 short gUpperLink[kMaxSectors];
 short gLowerLink[kMaxSectors];
 HITINFO gHitInfo;
 
-QBOOL AreSectorsNeighbors(int sect1, int sect2)
+BOOL AreSectorsNeighbors(int sect1, int sect2)
 {
     int i;
     int nWall;
@@ -69,7 +69,7 @@ QBOOL AreSectorsNeighbors(int sect1, int sect2)
     return 0;
 }
 
-QBOOL FindSector(int nX, int nY, int nZ, int* nSector)
+BOOL FindSector(int nX, int nY, int nZ, int* nSector)
 {
     int i;
     int nZCeil;
@@ -112,16 +112,15 @@ QBOOL FindSector(int nX, int nY, int nZ, int* nSector)
     return 0;
 }
 
-QBOOL FindSector(int nX, int nY, int *nSector)
+BOOL FindSector(int nX, int nY, int *nSector)
 {
-    int i;
     dassert(*nSector >= 0 && *nSector < kMaxSectors, 127);
     if (inside(nX, nY, *nSector))
     {
         return 1;
     }
     WALL *pWall = &wall[sector[*nSector].wallptr];
-    for (i = sector[*nSector].wallnum; i > 0; i--, pWall++)
+    for (int i = sector[*nSector].wallnum; i > 0; i--, pWall++)
     {
         short nOSector = pWall->nextsector;
         if (nOSector >= 0 && inside(nX, nY, nOSector))
@@ -143,8 +142,8 @@ QBOOL FindSector(int nX, int nY, int *nSector)
 
 void CalcFrameRate(void)
 {
-    static int32_t ticks[64];
-    static int32_t index;
+    static long ticks[64];
+    static long index;
     if (gFrameClock != ticks[index])
     {
         gFrameRate = (120*64)/(gFrameClock-ticks[index]);
@@ -153,7 +152,7 @@ void CalcFrameRate(void)
     index = (index+1) & 63;
 }
 
-QBOOL CheckProximity(SPRITE *pSprite, int nX, int nY, int nZ, int nSector, int nDist)
+BOOL CheckProximity(SPRITE *pSprite, int nX, int nY, int nZ, int nSector, int nDist)
 {
     dassert(pSprite != NULL, 183);
     int oX = klabs(nX-pSprite->x)>>4;
@@ -182,7 +181,7 @@ QBOOL CheckProximity(SPRITE *pSprite, int nX, int nY, int nZ, int nSector, int n
     return 0;
 }
 
-QBOOL CheckProximityPoint(int nX1, int nY1, int nZ1, int nX2, int nY2, int nZ2, int nDist)
+BOOL CheckProximityPoint(int nX1, int nY1, int nZ1, int nX2, int nY2, int nZ2, int nDist)
 {
     int oX = klabs(nX2-nX1)>>4;
     if (oX < nDist)
@@ -201,23 +200,12 @@ QBOOL CheckProximityPoint(int nX1, int nY1, int nZ1, int nX2, int nY2, int nZ2, 
     return 0;
 }
 
-QBOOL CheckProximityWall(int nWall, int x, int y, int nDist)
+BOOL CheckProximityWall(int nWall, int x, int y, int nDist)
 {
-    int y1;
-    int x1;
-    int y2;
-    int x2;
-
-    int dx;
-    int dy;
-    int px;
-    int py;
-
-
-    x1 = wall[nWall].x;
-    y1 = wall[nWall].y;
-    x2 = wall[wall[nWall].point2].x;
-    y2 = wall[wall[nWall].point2].y;
+    int x1 = wall[nWall].x;
+    int y1 = wall[nWall].y;
+    int x2 = wall[wall[nWall].point2].x;
+    int y2 = wall[wall[nWall].point2].y;
     nDist <<= 4;
     if (x1 < x2)
     {
@@ -236,13 +224,14 @@ QBOOL CheckProximityWall(int nWall, int x, int y, int nDist)
                 {
                     return 0;
                 }
+                int sq = nDist * nDist;
                 if (y < y1)
                 {
-                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < nDist* nDist;
+                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < sq;
                 }
                 if (y > y2)
                 {
-                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < nDist* nDist;
+                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < sq;
                 }
             }
             else
@@ -251,13 +240,14 @@ QBOOL CheckProximityWall(int nWall, int x, int y, int nDist)
                 {
                     return 0;
                 }
+                int sq = nDist * nDist;
                 if (y < y2)
                 {
-                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < nDist* nDist;
+                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < sq;
                 }
                 if (y > y1)
                 {
-                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < nDist* nDist;
+                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < sq;
                 }
             }
             return 1;
@@ -284,13 +274,14 @@ QBOOL CheckProximityWall(int nWall, int x, int y, int nDist)
                 {
                     return 0;
                 }
+                int sq = nDist * nDist;
                 if (x < x1)
                 {
-                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < nDist * nDist;
+                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < sq;
                 }
                 if (x > x2)
                 {
-                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < nDist * nDist;
+                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < sq;
                 }
             }
             else
@@ -299,37 +290,38 @@ QBOOL CheckProximityWall(int nWall, int x, int y, int nDist)
                 {
                     return 0;
                 }
+                int sq = nDist * nDist;
                 if (x < x2)
                 {
-                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < nDist * nDist;
+                    return (x - x2) * (x - x2) + (y - y2) * (y - y2) < sq;
                 }
                 if (x > x1)
                 {
-                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < nDist * nDist;
+                    return (x - x1) * (x - x1) + (y - y1) * (y - y1) < sq;
                 }
             }
         }
     }
 
-    nDist = nDist * nDist;
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int px = x - x2;
+    int py = y - y2;
 
-    dx = x2 - x1;
-    dy = y2 - y1;
-    px = x - x2;
-    py = y - y2;
-    if (dx * px + dy * py >= 0)
+    int sq = nDist * nDist;
+    if (px * dx + py * dy >= 0)
     {
-        return px * px + py * py < nDist;
+        return px * px + py * py < sq;
     }
     px = x - x1;
     py = y - y1;
-    if (dx * px + dy * py <= 0)
+    if (px * dx + py * dy <= 0)
     {
-        return px * px + py * py < nDist;
+        return px * px + py * py < sq;
     }
-    //int check1 = dy * px - dx * py;
+    int check1 = px * dy - py * dx;
     //int check2 = dx * dx + dy * dy;
-    return (dy * px - dx * py) * (dy * px - dx * py) < (dx* dx + dy * dy) * nDist;
+    return check1 * check1 < (dx* dx + dy * dy) * sq;
 }
 
 int GetWallAngle(int nWall)
@@ -351,7 +343,7 @@ void GetWallNormal(int nWall, int *pX, int *pY)
     *pY = divscale16(dY, nLength);
 }
 
-QBOOL IntersectRay(int32_t wx, int32_t wy, int32_t wdx, int32_t wdy, int32_t x1, int32_t y1, int32_t z1, int32_t x2, int32_t y2, int32_t z2, int32_t *ix, int32_t *iy, int32_t *iz)
+BOOL IntersectRay(long wx, long wy, long wdx, long wdy, long x1, long y1, long z1, long x2, long y2, long z2, long *ix, long *iy, long *iz)
 {
     int topt, topu, t;
     int dX = x1 - x2;
@@ -389,7 +381,7 @@ QBOOL IntersectRay(int32_t wx, int32_t wy, int32_t wdx, int32_t wdy, int32_t x1,
     return 1;
 }
 
-int HitScan(SPRITE *pSprite, int z, int dx, int dy, int dz, uint32_t nMask, int a8)
+int HitScan(SPRITE *pSprite, int z, int dx, int dy, int dz, unsigned long nMask, int a8)
 {
     dassert(pSprite != NULL, 555);
     dassert(dx != 0 || dy != 0, 556);
@@ -564,8 +556,8 @@ retry:
             if (!nSizX || !nSizY)
                 return 0;
 
-            QBOOL potX = (1<<(picsiz[nPicnum]&15)) == nSizX;
-            QBOOL potY = (1<<(picsiz[nPicnum]>>4)) == nSizY;
+            BOOL potX = (1<<(picsiz[nPicnum]&15)) == nSizX;
+            BOOL potY = (1<<(picsiz[nPicnum]>>4)) == nSizY;
 
             int nVOffset = (nOffset2*pWall->yrepeat) / 8 + (pWall->ypanning*nSizY) / 256;
             int nLength = approxDist(pWall->x - wall[pWall->point2].x, pWall->y - wall[pWall->point2].y);
@@ -657,10 +649,10 @@ retry:
     return -1;
 }
 
-void GetZRange(SPRITE *pSprite, int32_t *ceilZ, int32_t *ceilHit, int32_t *floorZ, int32_t *floorHit, int nDist, uint32_t nMask)
+void GetZRange(SPRITE *pSprite, long *ceilZ, long *ceilHit, long *floorZ, long *floorHit, int nDist, ulong nMask)
 {
     dassert(pSprite != NULL, 1018);
-    int32_t nTemp1, nTemp2;
+    long nTemp1, nTemp2;
     short bakCstat = pSprite->cstat;
     pSprite->cstat &= ~(kSpriteStat8 | kSpriteStat0);
     getzrange(pSprite->x, pSprite->y, pSprite->z, pSprite->sectnum, ceilZ, ceilHit, floorZ, floorHit, nDist, nMask);
@@ -705,9 +697,9 @@ void GetZRange(SPRITE *pSprite, int32_t *ceilZ, int32_t *ceilHit, int32_t *floor
     pSprite->cstat = bakCstat;
 }
 
-void GetZRangeAtXYZ(int32_t x, int32_t y, int32_t z, int nSector, int32_t *ceilZ, int32_t *ceilHit, int32_t *floorZ, int32_t *floorHit, int nDist, uint32_t nMask)
+void GetZRangeAtXYZ(long x, long y, long z, int nSector, long *ceilZ, long *ceilHit, long *floorZ, long *floorHit, int nDist, unsigned long nMask)
 {
-    int32_t nTemp1, nTemp2;
+    long nTemp1, nTemp2;
     getzrange(x, y, z, nSector, ceilZ, ceilHit, floorZ, floorHit, nDist, nMask);
     if (((*floorHit) & 0xe000) == 0x4000)
     {
@@ -778,7 +770,7 @@ int GetDistToLine(int x1, int y1, int x2, int y2, int x3, int y3)
     return approxDist(t1-x1, t2-y1);
 }
 
-uint ClipMove(int32_t *x, int32_t *y, int32_t *z, int *nSector, int32_t xv, int32_t yv, int wd, int cd, int fd, uint32_t nMask)
+uint ClipMove(long *x, long *y, long *z, int *nSector, long xv, long yv, int wd, int cd, int fd, ulong nMask)
 {
     int bakX = *x;
     int bakY = *y;
@@ -796,8 +788,7 @@ uint ClipMove(int32_t *x, int32_t *y, int32_t *z, int *nSector, int32_t xv, int3
     return nRes;
 }
 
-#if 0
-QBOOL cansee(long x1, long y1, long z1, short sect1, long x2, long y2, long z2, short sect2) // UNUSED
+BOOL cansee(long x1, long y1, long z1, short sect1, long x2, long y2, long z2, short sect2) // UNUSED
 {
     int x, y, z, ceilz, floorz, bot, t;
     short sectlist[512];
@@ -885,7 +876,6 @@ QBOOL cansee(long x1, long y1, long z1, short sect1, long x2, long y2, long z2, 
     }
     return 0;
 }
-#endif
 
 int GetClosestSectors(int nSector, int x, int y, int nDist, short *pSectors, byte *pSectBit)
 {
@@ -894,9 +884,9 @@ int GetClosestSectors(int nSector, int x, int y, int nDist, short *pSectors, byt
     memset(sectbits, 0, sizeof(sectbits));
     pSectors[0] = nSector;
     SetBitString(sectbits, nSector);
+    int i = 0;
     int n = 1;
     int m = 1;
-    int i = 0;
     if (pSectBit)
     {
         memset(pSectBit, 0, (kMaxSectors+7)>>3);
@@ -941,14 +931,14 @@ int GetClosestSectors(int nSector, int x, int y, int nDist, short *pSectors, byt
 
 int GetClosestSpriteSectors(int nSector, int x, int y, int nDist, short *pSectors, byte *pSectBit, short *a8)
 {
+    dassert(pSectors != NULL, 1440);
     byte sectbits[(kMaxSectors+7)>>3];
-    dassert(pSectors != NULL, 1359);
-    int n = 0;
-    int m = 1;
     memset(sectbits, 0, sizeof(sectbits));
-    pSectors[n++] = nSector;
-    SetBitString(sectbits, nSector);
+    pSectors[0] = nSector;
     int i = 0;
+    int n = 1;
+    SetBitString(sectbits, nSector);
+    int m = 1;
     int k = 0;
     if (pSectBit)
     {

@@ -16,11 +16,11 @@
  */
 #include "typedefs.h"
 extern "C" {
-#include "USRHOOKS.H"
+#include "usrhooks.h"
 }
 #include "resource.h"
 
-int USRHOOKS_GetMem(void **ptr, uint32_t size)
+int USRHOOKS_GetMem(void **ptr, unsigned long size)
 {
     void *mem = Resource::Alloc(size);
     if (!mem)

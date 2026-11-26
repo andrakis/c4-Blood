@@ -16,8 +16,7 @@
  */
 #include <stdio.h>
 #include "typedefs.h"
-#include "system.h"
-#include "engine.h"
+#include "build.h"
 #include "config.h"
 #include "controls.h"
 #include "debug4g.h"
@@ -28,15 +27,15 @@
 #include "network.h"
 #include "player.h"
 #include "seq.h"
-#include "qsound.h"
+#include "sound.h"
 #include "view.h"
 
 int int_27B088;
 
 char packet[576];
 
-QBOOL char_27B2CC;
-QBOOL gStartNewGame;
+BOOL char_27B2CC;
+BOOL gStartNewGame;
 
 PKT_STARTGAME gPacketStartGame;
 PACKETMODE gPacketMode;
@@ -47,7 +46,7 @@ int gNetFifoHead[kMaxPlayers];
 int gPredictTail;
 int gNetFifoMasterTail;
 
-QINPUT gFifoInput[256][kMaxPlayers];
+INPUT gFifoInput[256][kMaxPlayers];
 
 int gNetSentSizeThreshold;
 
@@ -55,8 +54,8 @@ int myMinLag[kMaxPlayers];
 int otherMinLag;
 int myMaxLag;
 
-uint32_t gChecksum[4];
-uint32_t gCheckFifo[256][kMaxPlayers][4];
+ulong gChecksum[4];
+ulong gCheckFifo[256][kMaxPlayers][4];
 int gCheckHead[kMaxPlayers];
 int gSendCheckTail;
 int gCheckTail;
@@ -67,9 +66,9 @@ int gBufferJitter;
 
 int gPlayerReady[kMaxPlayers];
 
-QBOOL gRobust;
-QBOOL bOutOfSync;
-QBOOL ready2send;
+BOOL gRobust;
+BOOL bOutOfSync;
+BOOL ready2send;
 
 struct struct28E3B0
 {
@@ -93,9 +92,20 @@ byte char_28E3D8[4000];
 short short_28F378;
 int int_28F37C;
 
-const BLOODVERSION short_1328AC = { 20, 2 };
+const BLOODVERSION short_1328AC = {
+#if APPVER_BLOODREV >= AV_BR_BL120
+    20,
+#else
+    1,
+#endif
+#ifdef PLASMAPAK
+    2
+#else
+    1
+#endif
+};
 
-QBOOL bNoResend = 1;
+BOOL bNoResend = 1;
 int gSyncRate = 1;
 int int_13B860 = 2;
 
@@ -103,22 +113,6 @@ void func_83444(int nDest, char *pBuffer, int nSize);
 short func_83E44(int nDest, char *pBuffer, int nSize);
 void func_8364C(short nDest, char *pBuffer, short nSize);
 int tenBloodSendPacket(int nIndex, char *bufptr, int buflen);
-
-void func_83444(int nDest, char* pBuffer, int nSize)
-{
-}
-short func_83E44(int nDest, char* pBuffer, int nSize)
-{
-    return 0;
-}
-void func_8364C(short nDest, char* pBuffer, short nSize)
-{
-}
-
-int tenBloodSendPacket(int nIndex, char* bufptr, int buflen)
-{
-    return 0;
-}
 
 void netsendpacket(int nDest, char *pBuffer, int nSize)
 {
@@ -172,8 +166,7 @@ void netSendPacketAll(char *pBuffer, int nSize)
 
 void func_79760(void)
 {
-    gGameClock_set(0);
-    gNetFifoClock = gFrameClock = 0;
+    gNetFifoClock = gFrameClock = gGameClock = 0;
     gNetFifoMasterTail = 0;
     gPredictTail = 0;
     gNetFifoTail = 0;
@@ -189,7 +182,7 @@ void func_79760(void)
     bOutOfSync = 0;
 }
 
-uint32_t inline Checksum(char *p, int l)
+ulong inline Checksum(char *p, int l)
 {
     int *pl = (int*)p;
     l >>= 2;
@@ -204,7 +197,7 @@ uint32_t inline Checksum(char *p, int l)
 void CalcGameChecksum(void)
 {
     memset(gChecksum, 0, sizeof(gChecksum));
-    gChecksum[0] = wrand();
+    gChecksum[0] = rand();
     for (int p = connecthead; p >= 0; p = connectpoint2[p])
     {
         gChecksum[1] ^= Checksum((char*)&gPlayer[p].at22, 216*4);
@@ -215,15 +208,8 @@ void CalcGameChecksum(void)
 
 byte func_86760(byte *);
 
-
-byte func_86760(byte*)
-{
-    return 0;
-}
-
 void netCheckSync(void)
 {
-    int p;
     char v4;
     char buffer[80];
     if (gGameOptions.nGameType == GAMETYPE_0)
@@ -234,7 +220,7 @@ void netCheckSync(void)
         return;
     while (1)
     {
-        for (p = connecthead; p >= 0; p = connectpoint2[p])
+        for (int p = connecthead; p >= 0; p = connectpoint2[p])
         {
             if (gCheckHead[p] <= gCheckTail)
                 return;
@@ -273,24 +259,6 @@ short func_8349C(short *pSource, char *pBuffer);
 short func_83EB0(short *pSource, char *pBuffer);
 short func_83700(short *pSource, char *pBuffer);
 short tenBloodGetPacket(short *pSource, char *pBuffer);
-
-
-short func_8349C(short* pSource, char* pBuffer)
-{
-    return 0;
-}
-short func_83EB0(short* pSource, char* pBuffer)
-{
-    return 0;
-}
-short func_83700(short* pSource, char* pBuffer)
-{
-    return 0;
-}
-short tenBloodGetPacket(short* pSource, char* pBuffer)
-{
-    return 0;
-}
 
 short netGetPacket(short *pSource, char *pMessage)
 {
@@ -349,8 +317,8 @@ void netGetPackets(void)
             {
                 if (p != myconnectindex)
                 {
-                    QINPUT *pInput = &gFifoInput[gNetFifoHead[p]&255][p];
-                    memset(pInput, 0, sizeof(QINPUT));
+                    INPUT *pInput = &gFifoInput[gNetFifoHead[p]&255][p];
+                    memset(pInput, 0, sizeof(INPUT));
                     pInput->syncFlags.byte = GetPacketByte(pPacket);
                     pInput->forward = GetPacketByte(pPacket);
                     pInput->turn = GetPacketWord(pPacket);
@@ -409,8 +377,8 @@ void netGetPackets(void)
             break;
         case 1:
         {
-            QINPUT *pInput = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
-            memset(pInput, 0, sizeof(QINPUT));
+            INPUT *pInput = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
+            memset(pInput, 0, sizeof(INPUT));
             pInput->syncFlags.byte = GetPacketByte(pPacket);
             pInput->forward = GetPacketByte(pPacket);
             pInput->turn = GetPacketWord(pPacket);
@@ -444,8 +412,8 @@ void netGetPackets(void)
                         otherMinLag = nLag;
                 }
             }
-            QINPUT *pInput = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
-            memset(pInput, 0, sizeof(QINPUT));
+            INPUT *pInput = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
+            memset(pInput, 0, sizeof(INPUT));
             pInput->syncFlags.byte = GetPacketByte(pPacket);
             pInput->forward = GetPacketByte(pPacket);
             pInput->turn = GetPacketWord(pPacket);
@@ -461,10 +429,10 @@ void netGetPackets(void)
             if (pInput->syncFlags.mlookChange)
                 pInput->mlook = GetPacketByte(pPacket);
             gNetFifoHead[nPlayer]++;
-            for (p = gSyncRate; p > 1; p--)
+            for (int i = gSyncRate; i > 1; i--)
             {
-                QINPUT *pInput2 = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
-                memcpy(pInput2, pInput, sizeof(QINPUT));
+                INPUT *pInput2 = &gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer];
+                memcpy(pInput2, pInput, sizeof(INPUT));
                 pInput2->keyFlags.word = 0;
                 pInput2->useFlags.byte = 0;
                 pInput2->newWeapon = 0;
@@ -487,7 +455,7 @@ void netGetPackets(void)
         }
         case 3:
             pPacket += 4;
-            if (*pPacket != '/' || (!*pPacket && !*(pPacket+1)) || (*(pPacket+1) >= '1' && *(pPacket+1) <= '8' && *(pPacket+1)-'1' == myconnectindex))
+            if (pPacket[0] != '/' || (pPacket[0] == '/' && (!pPacket[1] || (pPacket[1] >= '1' && pPacket[1] <= '8' && pPacket[1] - '1' == myconnectindex))))
             {
                 sprintf(buffer, "%s : %s", gProfile[nPlayer].name, pPacket);
                 viewSetMessage(buffer);
@@ -588,7 +556,7 @@ void netBroadcastMsg(int nPlayer, char *pzMessage)
     }
 }
 
-void netWaitForEveryone(QBOOL a1)
+void netWaitForEveryone(BOOL a1)
 {
     if (numplayers < 2)
         return;
@@ -596,25 +564,20 @@ void netWaitForEveryone(QBOOL a1)
     PutPacketByte(pPacket, 250);
     netSendPacketAll(packet, pPacket-packet);
     gPlayerReady[myconnectindex]++;
-    int p;
-    do
+    while (1)
     {
         if (keystatus[1] && a1)
             exit(0);
         netGetPackets();
-        for (p = connecthead; p >= 0; p = connectpoint2[p])
+        for (int p = connecthead; p >= 0; p = connectpoint2[p])
             if (gPlayerReady[p] < gPlayerReady[myconnectindex])
                 break;
-    } while (p >= 0);
+        if (p < 0)
+            break;
+    }
 }
 
 int tenBloodScore(char *);
-
-
-int tenBloodScore(char*)
-{
-    return 0;
-}
 
 void func_7AC28(char *pzString)
 {
@@ -655,7 +618,7 @@ void netSendEmptyPackets(void)
     }
 }
 
-void func_7AD90(QINPUT *pInput)
+void func_7AD90(INPUT *pInput)
 {
     char_28E3B0.at0.byte |= pInput->syncFlags.byte;
     char_28E3B0.at4 += pInput->forward;
@@ -669,7 +632,7 @@ void func_7AD90(QINPUT *pInput)
     char_28E3B0.at1d = pInput->mlook;
 }
 
-void func_7AE2C(QINPUT *pInput)
+void func_7AE2C(INPUT *pInput)
 {
     pInput->syncFlags = char_28E3B0.at0;
     pInput->forward = char_28E3B0.at4 / gSyncRate;
@@ -685,15 +648,6 @@ void func_7AE2C(QINPUT *pInput)
 
 int func_83500(void);
 void tenCalculateJitter(void);
-
-
-int func_83500(void)
-{
-    return 0;
-}
-void tenCalculateJitter(void)
-{
-}
 
 void netGetInput(void)
 {
@@ -715,8 +669,8 @@ void netGetInput(void)
     func_7AD90(&gInput);
     if (gNetFifoHead[myconnectindex]&(gSyncRate-1))
     {
-        QINPUT *pInput1 = &gFifoInput[gNetFifoHead[myconnectindex]&255][myconnectindex];
-        memcpy(pInput1, &gFifoInput[(gNetFifoHead[myconnectindex]-1)&255][myconnectindex], sizeof(QINPUT));
+        INPUT *pInput1 = &gFifoInput[gNetFifoHead[myconnectindex]&255][myconnectindex];
+        memcpy(pInput1, &gFifoInput[(gNetFifoHead[myconnectindex]-1)&255][myconnectindex], sizeof(INPUT));
         pInput1->keyFlags.word = 0;
         pInput1->useFlags.byte = 0;
         pInput1->newWeapon = 0;
@@ -724,9 +678,9 @@ void netGetInput(void)
         gNetFifoHead[myconnectindex]++;
         return;
     }
-    QINPUT *pInput = &gFifoInput[gNetFifoHead[myconnectindex]&255][myconnectindex];
+    INPUT *pInput = &gFifoInput[gNetFifoHead[myconnectindex]&255][myconnectindex];
     func_7AE2C(pInput);
-    memcpy(&gInput, pInput, sizeof(QINPUT));
+    memcpy(&gInput, pInput, sizeof(INPUT));
     gNetFifoHead[myconnectindex]++;
     if (gGameOptions.nGameType == GAMETYPE_0 || numplayers == 1)
     {
@@ -734,7 +688,7 @@ void netGetInput(void)
         {
             if (nPlayer != myconnectindex)
             {
-                memcpy(&gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer], &gFifoInput[(gNetFifoHead[nPlayer]-1)&255][nPlayer], sizeof(QINPUT));
+                memcpy(&gFifoInput[gNetFifoHead[nPlayer]&255][nPlayer], &gFifoInput[(gNetFifoHead[nPlayer]-1)&255][nPlayer], sizeof(INPUT));
                 gNetFifoHead[nPlayer]++;
             }
         }
@@ -784,7 +738,7 @@ void netGetInput(void)
                     }
                     else
                         t = ksgn(t);
-                    gGameClock_sub(t<<2);
+                    gGameClock -= t<<2;
                     otherMinLag += t;
                     myMinLag[connecthead] -= t;
                 }
@@ -868,7 +822,7 @@ void netGetInput(void)
                 }
                 else
                     t = ksgn(t);
-                gGameClock_sub(t<<2);
+                gGameClock -= t<<2;
                 otherMinLag += t;
                 myMinLag[connecthead] -= t;
             }
@@ -903,7 +857,7 @@ void netGetInput(void)
         PutPacketByte(pPacket, 0);
         for (nPlayer = connecthead; nPlayer >= 0; nPlayer = connectpoint2[nPlayer])
         {
-            QINPUT *pInput = &gFifoInput[gNetFifoMasterTail&255][nPlayer];
+            INPUT *pInput = &gFifoInput[gNetFifoMasterTail&255][nPlayer];
             if (pInput->buttonFlags.byte)
                 pInput->syncFlags.buttonChange = 1;
             if (pInput->keyFlags.word)
@@ -948,11 +902,6 @@ void netGetInput(void)
 }
 
 void tenBloodIdle(void);
-
-
-void tenBloodIdle(void)
-{
-}
 
 extern "C" void faketimerhandler(void)
 {
@@ -1035,6 +984,6 @@ void netPlayerQuit(int nPlayer)
 #if 0
 void func_7AC28(char*) {}
 void netBroadcastNewGame(void) {}
-void netWaitForEveryone(QBOOL) {}
+void netWaitForEveryone(BOOL) {}
 void netBroadcastMsg(int, char*) {}
 #endif

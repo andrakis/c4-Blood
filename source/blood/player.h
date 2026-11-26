@@ -19,7 +19,7 @@
 
 #include "typedefs.h"
 #include "actor.h"
-#include "engine.h"
+#include "build.h"
 #include "controls.h"
 #include "db.h"
 #include "dude.h"
@@ -28,7 +28,7 @@
 #define kMaxPowerUps 49
 
 struct PACKINFO {
-    QBOOL at0;
+    BOOL at0;
     int at1;
 };
 
@@ -48,7 +48,7 @@ struct POSTURE {
 };
 
 struct PROFILE {
-    QBOOL at0;
+    BOOL at0;
     int skill;
     char name[12];
 };
@@ -62,11 +62,11 @@ struct PLAYER {
     SPRITE *pSprite;
     XSPRITE *pXSprite;
     DUDEINFO *pDudeInfo;
-    QINPUT atc;
+    INPUT atc;
     int at22;
     int at26; // weapon qav
     int at2a; // qav callback
-    QBOOL at2e; // run
+    BOOL at2e; // run
     int at2f; // state
     int at33; // unused?
     int at37;
@@ -89,8 +89,8 @@ struct PLAYER {
     int at7b; // horiz
     int at7f; // horizoff
     int at83;
-    QBOOL at87; // underwater
-    QBOOL at88[8]; // keys
+    BOOL at87; // underwater
+    BOOL at88[8]; // keys
     byte at90; // flag capture
     short at91[8];
     int ata1[7];
@@ -131,9 +131,9 @@ struct PLAYER {
     int at30e;
     int at312;
     int at316;
-    QBOOL at31a; // God mode
-    QBOOL at31b; // Fall scream
-    QBOOL at31c;
+    BOOL at31a; // God mode
+    BOOL at31b; // Fall scream
+    BOOL at31c;
     int at31d; // pack timer
     int at321; // pack id
     PACKINFO packInfo[5]; // at325
@@ -151,7 +151,7 @@ struct PLAYER {
     int at36a; // blind
     int at36e; // choke
     int at372;
-    QBOOL at376; // hand
+    BOOL at376; // hand
     int at377;
     int at37b; // weapon flash
     int at37f; // quake2
@@ -175,10 +175,10 @@ extern int int_21EFB0[8];
 extern int int_21EFD0[8];
 extern AMMOINFO gAmmoInfo[];
 
-QBOOL packItemActive(PLAYER *, int);
+BOOL packItemActive(PLAYER *, int);
 int powerupCheck(PLAYER *, int);
 
-QBOOL playerSeqPlaying(PLAYER *, int);
+BOOL playerSeqPlaying(PLAYER *, int);
 int playerDamageSprite(int, PLAYER *, DAMAGE_TYPE, int);
 
 void playerResetInertia(PLAYER*);
@@ -191,13 +191,13 @@ void func_41250(PLAYER*);
 
 int UseAmmo(PLAYER *, int, int);
 
-SPRITE *playerFireMissile(PLAYER *, int, int32_t, int32_t, int32_t, int);
+SPRITE *playerFireMissile(PLAYER *, int, long, long, long, int);
 SPRITE *playerFireThing(PLAYER *, int, int, int, int);
 
-QBOOL powerupActivate(PLAYER *, int);
+BOOL powerupActivate(PLAYER *, int);
 void powerupDeactivate(PLAYER*, int);
-void playerSetGodMode(PLAYER*, QBOOL);
-QBOOL packAddItem(PLAYER*, int);
+void playerSetGodMode(PLAYER*, BOOL);
+BOOL packAddItem(PLAYER*, int);
 
 void playerInit(int, unsigned int);
 
@@ -206,5 +206,7 @@ void playerStart(int nPlayer);
 void playerProcess(PLAYER *);
 
 void powerupInit(void);
+
+BOOL func_3A158(PLAYER *a1, SPRITE *a2 = NULL);
 
 #endif // !_PLAYER_H_

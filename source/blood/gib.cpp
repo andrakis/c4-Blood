@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include "typedefs.h"
 #include "actor.h"
-#include "engine.h"
+#include "build.h"
 #include "callback.h"
 #include "config.h"
 #include "db.h"
@@ -437,7 +437,7 @@ void GibSprite(SPRITE *pSprite, GIBTYPE nGibType, CGibPosition *pPos, CGibVeloci
 {
     dassert(pSprite != NULL, 491);
     dassert(nGibType >= 0 && nGibType < kGibMax, 492);
-    if (pSprite->sectnum < 0 || pSprite->sectnum >= numsectors)
+    if (pSprite->sectnum < 0 || pSprite->sectnum > numsectors)
         return;
     GIBLIST *pGib = &gibList[nGibType];
     for (int i = 0; i < pGib->at4; i++)
@@ -446,7 +446,7 @@ void GibSprite(SPRITE *pSprite, GIBTYPE nGibType, CGibPosition *pPos, CGibVeloci
         dassert(pGibFX->chance > 0, 507);
         GibFX(pSprite, pGibFX, pPos, pVel);
     }
-    for (int i = 0; i < pGib->atc; i++)
+    for (i = 0; i < pGib->atc; i++)
     {
         GIBTHING *pGibThing = &pGib->at8[i];
         dassert(pGibThing->chance > 0, 516);
@@ -462,9 +462,7 @@ void GibFX(int nWall, GIBFX * pGFX, int a3, int a4, int a5, int a6, CGibVelocity
     int nCount = ChanceToCount(pGFX->chance, pGFX->at9);
     for (int i = 0; i < nCount; i++)
     {
-        int r1 = Random(a6);
-        int r2 = Random(a5);
-        SPRITE *pGib = gFX.fxSpawn(pGFX->at0, nSector, pWall->x+Random(a4), pWall->y+r2, a3+r1, 0);
+        SPRITE *pGib = gFX.fxSpawn(pGFX->at0, nSector, pWall->x+Random(a4), pWall->y+Random(a5), a3+Random(a6), 0);
         if (pGib)
         {
             if (pGFX->at1 < 0)

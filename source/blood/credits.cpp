@@ -16,7 +16,7 @@
  */
 #include <ctype.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "cdrom.h"
 #include "credits.h"
 #include "debug4g.h"
@@ -25,13 +25,14 @@
 #include "misc.h"
 #include "screen.h"
 #include "smkplay.h"
-#include "qsound.h"
+#include "sound.h"
+#include "view.h"
 
-QBOOL exitCredits = FALSE;
+BOOL exitCredits = FALSE;
 
-QBOOL Wait(int nTicks)
+BOOL Wait(int nTicks)
 {
-    gGameClock_set(0);
+    gGameClock = 0;
     while (gGameClock < nTicks)
     {
         BYTE key = keyGet();
@@ -45,12 +46,11 @@ QBOOL Wait(int nTicks)
     return TRUE;
 }
 
-QBOOL DoFade(byte r, byte g, byte b, int nTicks)
+BOOL DoFade(byte r, byte g, byte b, int nTicks)
 {
     dassert(nTicks > 0, 59);
     scrSetupFade(r, g, b);
-    gFrameClock = 0;
-    gGameClock_set(0);
+    gGameClock = gFrameClock = 0;
     do
     {
         while (gGameClock < gFrameClock) { }
@@ -63,12 +63,11 @@ QBOOL DoFade(byte r, byte g, byte b, int nTicks)
     return TRUE;
 }
 
-QBOOL DoUnFade(int nTicks)
+BOOL DoUnFade(int nTicks)
 {
     dassert(nTicks > 0, 79);
     scrSetupUnfade();
-    gFrameClock = 0;
-    gGameClock_set(0);
+    gGameClock = gFrameClock = 0;
     do
     {
         while (gGameClock < gFrameClock) { }
@@ -84,7 +83,7 @@ QBOOL DoUnFade(int nTicks)
 
 void credLogos(void)
 {
-    QBOOL bShift = keystatus[bsc_LShift] | keystatus[bsc_RShift];
+    BOOL bShift = keystatus[bsc_LShift] | keystatus[bsc_RShift];
     setview(0, 0, xdim-1, ydim-1);
     DoUnFade(1);
     clearview(0);
@@ -122,7 +121,7 @@ void credLogos(void)
     if (!DoUnFade(1))
         return;
     clearview(0);
-    rotatesprite(160<<16, 100<<16, 65536, 0, 2518, 0, 0, 0x4a, 0, 0, xdim-1, ydim-1);
+    rotatesprite(160<<16, 100<<16, 65536, 0, BACKTILE, 0, 0, 0x4a, 0, 0, xdim-1, ydim-1);
     scrNextPage();
     Wait(360);
     sndFadeSong(4000);

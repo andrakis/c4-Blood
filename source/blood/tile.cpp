@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "debug4g.h"
 #include "error.h"
@@ -34,7 +34,14 @@
 #include "screen.h"
 #include "tile.h"
 
-extern "C" void loadvoxel_replace(int nVoxel)
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#else
+#define LDIFF1 -2
+#endif
+
+#ifndef _3DFX
+extern "C" void loadvoxel(int nVoxel)
 {
     static int nLastVoxel = 0;
     dassert(nVoxel >= 0 && nVoxel < kMaxVoxels, 117);
@@ -55,23 +62,24 @@ extern "C" void loadvoxel_replace(int nVoxel)
         pVox += nSize;
     }
 }
+#endif
 
-CACHENODE *tileNode;
+CACHENODE tileNode[kMaxTiles];
 
 int tileStart[256];
 int tileEnd[256];
 int hTileFile[256];
 
-QBOOL tileFileDirty[256];
+BOOL tileFileDirty[256];
 int nTileFiles;
 
-QBOOL artLoaded;
+BOOL artLoaded;
 
 int tileHist[kMaxTiles];
 
-QBOOL bSurfChanged;
-QBOOL bShadeChanged;
-QBOOL bVoxelChanged;
+BOOL bSurfChanged;
+BOOL bShadeChanged;
+BOOL bVoxelChanged;
 
 short tileIndex[kMaxTiles];
 int tileIndexCount;
@@ -84,7 +92,7 @@ short voxelIndex[kMaxTiles];
 
 int pickSize[] = { 32, 40, 64, 80, 128, 160 };
 
-const char *pzBaseFileName = "TILES%03i.ART";
+char *pzBaseFileName = "TILES%03i.ART";
 
 void tileTerm(void)
 {
@@ -103,19 +111,13 @@ void CalcPicsiz(int a1, int a2, int a3)
     byte nP = 0;
     for (int i = 2; i <= a2; i<<= 1)
         nP++;
-    for (int i = 2; i <= a3; i<<= 1)
+    for (i = 2; i <= a3; i<<= 1)
         nP+=1<<4;
     picsiz[a1] = nP;
 }
 
-int tileInit(QBOOL a1, char *a2)
+int tileInit(BOOL a1, char *a2)
 {
-    if (!tileNode)
-    {
-        tileNode = (CACHENODE*)Resource::heap->AllocExtra(sizeof(CACHENODE) * kMaxTiles);
-        memset(tileNode, 0, sizeof(CACHENODE) * kMaxTiles);
-    }
-
     int i;
     int hFile;
     char filename[20];
@@ -127,7 +129,9 @@ int tileInit(QBOOL a1, char *a2)
     memset(picanm, 0, sizeof(picanm));
     memset(gotpic, 0, sizeof(gotpic));
     memset(hTileFile, -1, sizeof(hTileFile));
+#ifndef _3DFX
     memset(voxoff, 0, sizeof(voxoff));
+#endif
 
     int v8 = 0;
 
@@ -148,8 +152,8 @@ int tileInit(QBOOL a1, char *a2)
         if (a1)
         {
             if (artversion != 69)
-                ThrowError(213)("Invalid .ART files\n");
-            dassert(artversion == 69, 214);
+                ThrowError(213+LDIFF1)("Invalid .ART files\n");
+            dassert(artversion == 69, 214+LDIFF1);
         }
         read(hFile, &numtiles, 4);
         read(hFile, &tileStart[v8], 4);
@@ -278,7 +282,7 @@ void tileSaveArtInfo(void)
         if (!tileFileDirty[i])
             continue;
         hFile = hTileFile[i];
-        dassert(hFile != -1, 360);
+        dassert(hFile != -1, 360+LDIFF1);
         lseek(hFile, 0, SEEK_SET);
         write(hFile, &artversion, 4);
         write(hFile, &numtiles, 4);
@@ -350,7 +354,7 @@ void tilePurgeTile(int nTile)
     if (node->ptr)
     {
         Resource::Flush(node);
-        dassert(node->ptr == NULL, 442);
+        dassert(node->ptr == NULL, 442+LDIFF1);
     }
 }
 
@@ -372,11 +376,11 @@ byte *tileLoadTile(int nTile)
     if (tileNode[nLastTile].lockCount == 0)
         waloff[nLastTile] = 0;
     nLastTile = nTile;
-    dassert(nTile >= 0 && nTile < kMaxTiles, 472);
+    dassert(nTile >= 0 && nTile < kMaxTiles, 472+LDIFF1);
     CACHENODE *node = &tileNode[nTile];
     if (node->ptr)
     {
-        waloff[nTile] = (byte*)(void*)node->ptr;
+        waloff[nTile] = (byte*)node->ptr;
         if (node->lockCount == 0)
         {
             Resource::RemoveMRU(node);
@@ -389,9 +393,9 @@ byte *tileLoadTile(int nTile)
     if (nSize <= 0)
         return NULL;
     gCacheMiss = gGameClock + 30;
-    dassert(node->lockCount == 0, 508);
+    dassert(node->lockCount == 0, 508+LDIFF1);
     node->ptr = Resource::Alloc(nSize);
-    waloff[nTile] = (byte*)(void*)node->ptr;
+    waloff[nTile] = (byte*)node->ptr;
     Resource::AddMRU(node);
     int hFile = hTileFile[tilefilenum[nTile]];
     lseek(hFile, tilefileoffs[nTile], SEEK_SET);
@@ -401,7 +405,7 @@ byte *tileLoadTile(int nTile)
 
 byte *tileLockTile(int nTile)
 {
-    dassert(nTile >= 0 && nTile < kMaxTiles, 524);
+    dassert(nTile >= 0 && nTile < kMaxTiles, 524+LDIFF1);
     if (!tileLoadTile(nTile))
         return NULL;
     CACHENODE *node = &tileNode[nTile];
@@ -414,7 +418,7 @@ byte *tileLockTile(int nTile)
 
 void tileUnlockTile(int nTile)
 {
-    dassert(nTile >= 0 && nTile < kMaxTiles, 540);
+    dassert(nTile >= 0 && nTile < kMaxTiles, 540+LDIFF1);
     waloff[nTile] = 0;
     CACHENODE *node = &tileNode[nTile];
     if (node->lockCount > 0)
@@ -428,12 +432,12 @@ void tileUnlockTile(int nTile)
 
 byte *tileAllocTile(int nTile, int x, int y, int ox, int oy)
 {
-    dassert(nTile >= 0 && nTile < kMaxTiles, 559);
+    dassert(nTile >= 0 && nTile < kMaxTiles, 559+LDIFF1);
     if (x <= 0 || y <= 0 || nTile >= kMaxTiles)
         return NULL;
     int nSize = x * y;
     byte *p = (byte*)Resource::Alloc(nSize);
-    dassert(p != NULL, 567);
+    dassert(p != NULL, 567+LDIFF1);
     tileNode[nTile].lockCount++;
     tileNode[nTile].ptr = p;
     waloff[nTile] = p;
@@ -453,7 +457,7 @@ byte *tileAllocTile(int nTile, int x, int y, int ox, int oy)
 
 void tileFreeTile(int nTile)
 {
-    dassert(nTile >= 0 && nTile < kMaxTiles, 591);
+    dassert(nTile >= 0 && nTile < kMaxTiles, 591+LDIFF1);
     tilePurgeTile(nTile);
 
     waloff[nTile] = NULL;
@@ -494,8 +498,10 @@ void tilePreloadTile(int nTile)
             voxelIndex[nTile] = -1;
             picanm[nTile].at3_4 = 0;
         }
+#ifndef _3DFX
         else
-            loadvoxel_replace(voxelIndex[nTile]);
+            loadvoxel(voxelIndex[nTile]);
+#endif
         break;
     }
     for(; n > 0; n--, nTile += 1 + picanm[nTile].animframes)
@@ -570,13 +576,13 @@ int tileBuildHistogram(int a1)
     case 1:
         for (i = 0; i < numsectors; i++)
         {
-            tileHist[sector[i].floorpicnum]++;
+            tileHist[sector[i].ceilingpicnum]++;
         }
         break;
     case 2:
         for (i = 0; i < numsectors; i++)
         {
-            tileHist[sector[i].ceilingpicnum]++;
+            tileHist[sector[i].floorpicnum]++;
         }
         break;
     case 4:
@@ -643,7 +649,7 @@ void tileDrawTileScreen(int a1, int a2, int a3, int a4)
 
     int v54;
 
-    int v38;
+    unsigned int v3c;
 
     unsigned int v4c;
     unsigned int v60;
@@ -651,7 +657,7 @@ void tileDrawTileScreen(int a1, int a2, int a3, int a4)
     unsigned int vbp;
 
     unsigned int v50;
-    unsigned int v3c;
+    int v38;
 
     int v30;
     int v2c;
@@ -820,7 +826,7 @@ int tilePick(int nTile, int a2, int a3)
             WaitVBL();
         }
         scrNextPage();
-        gFrameTicks = totalclock - gFrameClock;
+        gFrameTicks = gGameClock - gFrameClock;
         gFrameClock += gFrameTicks;
         UpdateBlinkClock(gFrameTicks);
         key = keyGet();

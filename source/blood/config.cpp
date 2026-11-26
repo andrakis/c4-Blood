@@ -20,20 +20,16 @@
 #include <string.h>
 #include <dos.h>
 #include <time.h>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#endif
 #include "typedefs.h"
-#include "TYPES.H"
+#include "globals.h"
+#include "types.h"
 #include "config.h"
-#include "CONTROL.H"
-#include "FILE_LIB.H"
+#include "control.h"
+#include "file_lib.h"
 #include "function.h"
 #include "gamedefs.h"
-#include "globals.h"
-#include "SCRIPLIB.H"
-#include "UTIL_LIB.H"
+#include "scriplib.h"
+#include "util_lib.h"
 
 #include "_functio.h"
 
@@ -55,7 +51,7 @@ int32 ReverseStereo;
 controltype ControllerType;
 int32 gMouseSensitivity;
 int32 gMouseAiming;
-QBOOL gMouseAimingFlipped;
+BOOL gMouseAimingFlipped;
 int32 gTurnSpeed = 92;
 
 //
@@ -68,23 +64,25 @@ int32 ScreenHeight;
 char SetupFilename[128] = {SETUPFILENAME};
 static int32 scripthandle; // BUG, CONFIG_ReadSetup uses local variable
 
-QBOOL gViewInterpolate = TRUE;
-QBOOL gViewHBobbing = TRUE;
-QBOOL gViewVBobbing = TRUE;
-QBOOL gFollowMap = TRUE;
-QBOOL gAutoAim = TRUE;
-QBOOL gAutoRun = TRUE;
-QBOOL gSlopeTilting = TRUE;
-QBOOL gOverlayMap;
-QBOOL gRotateMap;
-QBOOL gInfiniteAmmo;
-QBOOL gFullMap;
-QBOOL gNoClip;
-QBOOL gAimReticle;
-QBOOL gShowWeapon;
-QBOOL gMouseAim;
+BOOL gViewInterpolate = TRUE;
+BOOL gViewHBobbing = TRUE;
+BOOL gViewVBobbing = TRUE;
+BOOL gFollowMap = TRUE;
+BOOL gAutoAim = TRUE;
+BOOL gAutoRun = TRUE;
+BOOL gSlopeTilting = TRUE;
+BOOL gOverlayMap;
+BOOL gRotateMap;
+BOOL gInfiniteAmmo;
+BOOL gFullMap;
+BOOL gNoClip;
+BOOL gAimReticle;
+BOOL gShowWeapon;
+#if APPVER_BLOODREV >= AV_BR_BL111
+BOOL gMouseAim;
+#endif
 
-QBOOL gMessageState = TRUE;
+BOOL gMessageState = TRUE;
 int32 gMessageFont;
 int32 gMessageCount = 4;
 int32 gMessageTime = 5;
@@ -92,8 +90,8 @@ int32 gViewSize = 1;
 int32 gDetail = 4;
 int32 gDifficulty = 2;
 int32 gSkill = 2;
-QBOOL gDoppler = TRUE;
-QBOOL gbAdultContent;
+BOOL gDoppler = TRUE;
+BOOL gbAdultContent;
 char gzAdultPassword[12];
 
 int32 ComPort;
@@ -120,11 +118,11 @@ char RTSPath[48];
 char UserPath[48];
 
 
-void SCRIPT_GetBool(int32 scripthandle, const char *section, const char *entryname, QBOOL *qbool)
+void SCRIPT_GetBool(int32 scripthandle, char *section, char *entryname, BOOL *bool)
 {
-    boolean temp = *qbool;
+    boolean temp = *bool;
     SCRIPT_GetBoolean(scripthandle, section, entryname, &temp);
-    *qbool = temp;
+    *bool = temp;
 }
 /*
 ===================
@@ -136,12 +134,7 @@ void SCRIPT_GetBool(int32 scripthandle, const char *section, const char *entryna
 #define MAXSETUPFILES 20
 void CONFIG_GetSetupFilename( void )
    {
-#ifdef _WIN32
-   HANDLE h;
-   WIN32_FIND_DATAA fd;
-#else
    struct find_t fblock;
-#endif
    char extension[8];
    char * src;
    char * filenames[MAXSETUPFILES];
@@ -157,21 +150,6 @@ void CONFIG_GetSetupFilename( void )
    _makepath(buffer, NULL, NULL, "*", extension);
 
    numfiles=0;
-#ifdef _WIN32
-   if ((h = FindFirstFileA(extension, &fd)) != INVALID_HANDLE_VALUE)
-      {
-      do
-         {
-         filenames[numfiles]=(char*)SafeMalloc(128);
-         strcpy(filenames[numfiles],fd.cFileName);
-         numfiles++;
-         if (numfiles == MAXSETUPFILES)
-            break;
-         }
-      while(FindNextFileA(h, &fd));
-      FindClose(h);
-      }
-#else
    if (_dos_findfirst(buffer,0,&fblock)==0)
       {
       do
@@ -184,7 +162,6 @@ void CONFIG_GetSetupFilename( void )
          }
       while(!_dos_findnext(&fblock));
       }
-#endif
    if (numfiles>1)
       {
       int32 time;
@@ -257,7 +234,7 @@ void CONFIG_GetSetupFilename( void )
 ===================
 */
 
-int32 CONFIG_FunctionNameToNum( const char * func )
+int32 CONFIG_FunctionNameToNum( char * func )
    {
    int32 i;
 
@@ -279,7 +256,7 @@ int32 CONFIG_FunctionNameToNum( const char * func )
 ===================
 */
 
-const char * CONFIG_FunctionNumToName( int32 func )
+char * CONFIG_FunctionNumToName( int32 func )
    {
    if (func < NUMGAMEFUNCTIONS)
       {
@@ -391,9 +368,9 @@ void CONFIG_ReadKeys( int32 scripthandle )
 void CONFIG_WriteKeys( int32 scripthandle )
    {
    int32 i;
-   const char *functionname;
-   const char *keyname1;
-   const char *keyname2;
+   char *functionname;
+   char *keyname1;
+   char *keyname2;
    int32 key1,key2;
 
    for (i=0;i<NUMKEYENTRIES;i++)
@@ -681,9 +658,6 @@ void CONFIG_ReadSetup( void )
       case controltype_keyboardandmouse:
          CONFIG_SetupMouse(scripthandle);
          break;
-      default:
-         CONFIG_SetupMouse(scripthandle);
-         break;
       case controltype_keyboardandjoystick:
       case controltype_keyboardandflightstick:
       case controltype_keyboardandthrustmaster:
@@ -696,9 +670,15 @@ void CONFIG_ReadSetup( void )
       }
    
    SCRIPT_GetNumber( scripthandle, "Options","Detail",&gDetail);
+#if APPVER_BLOODREV >= AV_BR_BL111
    SCRIPT_GetBool( scripthandle, "Options","MouseAim",&gMouseAim);
    SCRIPT_GetBool( scripthandle, "Options","AutoRun",&gAutoRun);
    SCRIPT_GetBool( scripthandle, "Options","Interpolation",&gViewInterpolate);
+#else
+   dummy = gViewInterpolate;
+   SCRIPT_GetBoolean( scripthandle, "Options","Interpolation",&dummy);
+   gViewInterpolate = dummy;
+#endif
    SCRIPT_GetBool( scripthandle, "Options","ViewHBobbing",&gViewHBobbing);
    SCRIPT_GetBool( scripthandle, "Options","ViewVBobbing",&gViewVBobbing);
    SCRIPT_GetBool( scripthandle, "Options","FollowMap",&gFollowMap);
@@ -731,7 +711,7 @@ void CONFIG_WriteSetup( void )
    SCRIPT_PutNumber( scripthandle, "Screen Setup", "Gamma",gGamma,false,false);
    SCRIPT_PutNumber( scripthandle, "Sound Setup", "FXVolume",FXVolume,false,false);
    SCRIPT_PutNumber( scripthandle, "Sound Setup", "MusicVolume",MusicVolume,false,false);
-   SCRIPT_PutNumber( scripthandle, "Sound Setup", "CDVolume",MusicVolume,false,false);
+   SCRIPT_PutNumber( scripthandle, "Sound Setup", "CDVolume",CDVolume,false,false);
 
    switch (ControllerType)
       {
@@ -744,7 +724,9 @@ void CONFIG_WriteSetup( void )
 
    SCRIPT_PutNumber( scripthandle, "Controls","TurnSpeed", gTurnSpeed,false,false);
    SCRIPT_PutNumber( scripthandle, "Options","Detail", gDetail,false,false);
+#if APPVER_BLOODREV >= AV_BR_BL111
    SCRIPT_PutBoolean( scripthandle, "Options","MouseAim", gMouseAim);
+#endif
    SCRIPT_PutBoolean( scripthandle, "Options","AutoRun", gAutoRun);
    SCRIPT_PutBoolean( scripthandle, "Options","Interpolation", gViewInterpolate);
    SCRIPT_PutBoolean( scripthandle, "Options","ViewHBobbing", gViewHBobbing);

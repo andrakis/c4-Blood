@@ -18,7 +18,7 @@
 #define _ENDGAME_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "globals.h"
 
 class CEndGameMgr {
@@ -30,7 +30,7 @@ public:
     void ProcessKeys(void);
     void Draw(void);
     void Finish(void);
-    QBOOL Active(void) { return at0; }
+    BOOL Active(void) { return at0; }
 };
 
 class CSecretMgr {

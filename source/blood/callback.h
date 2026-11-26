@@ -17,7 +17,7 @@
 #ifndef _CALLBACK_H_
 #define _CALLBACK_H_
 
-enum CALLBACK_ID : int32_t {
+enum CALLBACK_ID {
     CALLBACK_ID_NONE = -1,
     CALLBACK_ID_0 = 0,
     CALLBACK_ID_1,

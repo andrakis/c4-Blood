@@ -21,14 +21,12 @@
 #include "globals.h"
 #include "levels.h"
 
-#pragma pack(push, 1)
-
 struct DEMOHEADER
 {
-    uint32_t signature;
+    ulong signature;
     BLOODVERSION nVersion;
-    int32_t nBuild;
-    int32_t nInputCount;
+    long nBuild;
+    long nInputCount;
     int nNetPlayers;
     short nMyConnectIndex;
     short nConnectHead;
@@ -36,34 +34,32 @@ struct DEMOHEADER
     GAMEOPTIONS gameOptions;
 };
 
-#pragma pack(pop)
-
 class CDemo {
 public:
     CDemo();
     ~CDemo();
     void Close(void);
     void StopPlayback(void);
-    QBOOL Create(const char *);
-    void Write(QINPUT *);
-    QBOOL SetupPlayback(const char *);
+    BOOL Create(char *);
+    void Write(INPUT *);
+    BOOL SetupPlayback(char *);
     void ProcessKeys(void);
     void Playback(void);
     void NextDemo(void);
     void LoadDemoInfo(void);
-    QBOOL at0; // record
-    QBOOL at1; // playback
-    QBOOL at2;
+    BOOL at0; // record
+    BOOL at1; // playback
+    BOOL at2;
     int at3;
     int at7;
     int atb;
     DEMOHEADER atf;
-    QINPUT at1aa[1024];
+    INPUT at1aa[1024];
     char at59aa[5][13];
     int at59eb;
     int at59ef;
-    QBOOL RecordStatus() { return at0; }
-    QBOOL PlaybackStatus() { return at1; }
+    BOOL RecordStatus() { return at0; }
+    BOOL PlaybackStatus() { return at1; }
     int DemoCount() { return at59ef; }
 };
 

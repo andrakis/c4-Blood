@@ -23,7 +23,7 @@
 #include "controls.h"
 #include "debug4g.h"
 
-enum PACKETMODE : int32_t {
+enum PACKETMODE {
     PACKETMODE_0 = 0,
     PACKETMODE_1,
     PACKETMODE_2,
@@ -47,17 +47,17 @@ extern int gNetFifoTail;
 
 extern int gNetFifoHead[kMaxPlayers];
 
-extern QINPUT gFifoInput[256][kMaxPlayers];
+extern INPUT gFifoInput[256][kMaxPlayers];
 
 extern int int_28E3D4;
 
 extern int gInitialNetPlayers;
 
-extern QBOOL bOutOfSync;
+extern BOOL bOutOfSync;
 extern int gBufferJitter;
 extern int gCheckTail;
-extern uint32_t gCheckFifo[256][kMaxPlayers][4];
-extern uint32_t gChecksum[4];
+extern ulong gCheckFifo[256][kMaxPlayers][4];
+extern ulong gChecksum[4];
 extern int gCheckHead[kMaxPlayers];
 extern int gSendCheckTail;
 extern int gNetFifoMasterTail;
@@ -66,10 +66,10 @@ extern int otherMinLag;
 extern int myMinLag[kMaxPlayers];
 extern int gPlayerReady[kMaxPlayers];
 
-extern QBOOL ready2send;
+extern BOOL ready2send;
 
 void netBroadcastNewGame(void);
-void netWaitForEveryone(QBOOL);
+void netWaitForEveryone(BOOL);
 void netBroadcastMsg(int, char*);
 void netPlayerQuit(int);
 void netGetPackets(void);
@@ -81,16 +81,16 @@ void netBroadcastMyLogoff(void);
 // extern int gNetPlayers;
 
 extern int gNetFifoClock;
-extern QBOOL gStartNewGame;
+extern BOOL gStartNewGame;
 
 extern int gSyncRate;
 
-extern QBOOL bNoResend;
-extern QBOOL gRobust;
+extern BOOL bNoResend;
+extern BOOL gRobust;
 
 extern PACKETMODE gPacketMode;
 
-extern QBOOL char_27B2CC;
+extern BOOL char_27B2CC;
 
 
 inline void PutPacketBuffer(char *&p, const void *pBuffer, int size)

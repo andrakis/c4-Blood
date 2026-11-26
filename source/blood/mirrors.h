@@ -19,10 +19,10 @@
 
 #include "typedefs.h"
 
-void DrawMirrors(int32_t, int32_t, int32_t, int, int32_t);
+void DrawMirrors(long, long, long, int, long);
 
-void func_5571C(QBOOL);
-void func_557C4(int32_t, int32_t, int);
+void func_5571C(BOOL);
+void func_557C4(long, long, int);
 
 void InitMirrors(void);
 

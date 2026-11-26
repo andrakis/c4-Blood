@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "actor.h"
 #include "ai.h"
-#include "engine.h"
+#include "build.h"
 #include "callback.h"
 #include "db.h"
 #include "debug4g.h"
@@ -30,10 +30,20 @@
 #include "player.h"
 #include "seq.h"
 #include "sfx.h"
-#include "qsound.h"
+#include "sound.h"
 #include "trig.h"
 #include "triggers.h"
 #include "view.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#define LDIFF2 0
+#define LDIFF3 0
+#else
+#define LDIFF1 -1
+#define LDIFF2 -3
+#define LDIFF3 -13
+#endif
 
 static void func_74C20(int nSprite) // 7
 {
@@ -105,13 +115,13 @@ static void Remove(int nSprite) // 1
     evKill(nSprite, 3);
     if (pSprite->extra > 0)
         seqKill(3, pSprite->extra);
-    sfxKill3DSound(pSprite, 0, -1);
+    sfxKill3DSound(pSprite);
     DeleteSprite(nSprite);
 }
 
 static void FlareBurst(int nSprite) // 2
 {
-    dassert(nSprite >= 0 && nSprite < kMaxSprites, 139);
+    dassert(nSprite >= 0 && nSprite < kMaxSprites, 139+LDIFF1);
     SPRITE *pSprite = &sprite[nSprite];
     int nRadius = 0x55555;
     int nAngle = getangle(xvel[nSprite], yvel[nSprite]);
@@ -124,9 +134,9 @@ static void FlareBurst(int nSprite) // 2
         pSpawn->xrepeat = pSpawn->yrepeat = 32;
         pSpawn->type = 303;
         pSpawn->clipdist = 2;
-        int32_t dx = 0;
-        int32_t dy = mulscale30r(nRadius, Sin((i<<11)/8));
-        int32_t dz = mulscale30r(nRadius, -Cos((i<<11)/8));
+        long dx = 0;
+        long dy = mulscale30r(nRadius, Sin((i<<11)/8));
+        long dz = mulscale30r(nRadius, -Cos((i<<11)/8));
         if (i&1)
         {
             dy >>= 1;
@@ -169,10 +179,10 @@ static void FlareSparkLite(int nSprite) // 4
 
 static void ZombieSpurt(int nSprite) // 5
 {
-    dassert(nSprite >= 0 && nSprite < kMaxSprites, 212);
+    dassert(nSprite >= 0 && nSprite < kMaxSprites, 212+LDIFF1);
     SPRITE *pSprite = &sprite[nSprite];
     int nXSprite = pSprite->extra;
-    dassert(nXSprite > 0 && nXSprite < kMaxXSprites, 215);
+    dassert(nXSprite > 0 && nXSprite < kMaxXSprites, 215+LDIFF1);
     XSPRITE *pXSprite = &xsprite[nXSprite];
     int top, bottom;
     GetSpriteExtents(pSprite, &top, &bottom);
@@ -233,12 +243,17 @@ static void Respawn(int nSprite) // 9
 {
     SPRITE *pSprite = &sprite[nSprite];
     int nXSprite = pSprite->extra;
-    dassert(nXSprite > 0 && nXSprite < kMaxXSprites, 302);
+    dassert(nXSprite > 0 && nXSprite < kMaxXSprites, 302+LDIFF1);
     XSPRITE *pXSprite = &xsprite[pSprite->extra];
+#if APPVER_BLOODREV >= AV_BR_BL120
     if (pSprite->statnum != 8 && pSprite->statnum != 4)
-        ThrowError(306)("Sprite %d is not on Respawn or Thing list\n", nSprite);
+        ThrowError(306+LDIFF1)("Sprite %d is not on Respawn or Thing list\n", nSprite);
+#else
+    if (pSprite->statnum != 8)
+        ThrowError(306+LDIFF1)("Sprite %d is not on Respawn list\n", nSprite);
+#endif
     if (!(pSprite->flags&kSpriteFlag4))
-        ThrowError(309)("Sprite %d does not have the respawn attribute\n", nSprite);
+        ThrowError(309+LDIFF1)("Sprite %d does not have the respawn attribute\n", nSprite);
     switch (pXSprite->atb_4)
     {
     case 1:
@@ -257,10 +272,14 @@ static void Respawn(int nSprite) // 9
     }
     case 3:
     {
-        dassert(pSprite->owner != kStatRespawn, 336);
+        dassert(pSprite->owner != kStatRespawn, 336+LDIFF2);
+#if APPVER_BLOODREV >= AV_BR_BL120
         dassert(pSprite->owner >= 0 && pSprite->owner < kMaxStatus, 338);
+#endif
         ChangeSpriteStat(nSprite, pSprite->owner);
+#if APPVER_BLOODREV >= AV_BR_BL120
         pSprite->type = pSprite->inittype;
+#endif
         pSprite->owner = -1;
         pSprite->flags &= ~16;
         xvel[nSprite] = yvel[nSprite] = zvel[nSprite] = 0;
@@ -269,6 +288,7 @@ static void Respawn(int nSprite) // 9
         pXSprite->atd_2 = 0;
         if (pSprite->type >= kDudeBase && pSprite->type < kDudeMax)
         {
+#if APPVER_BLOODREV >= AV_BR_BL120
             int nType = pSprite->type-kDudeBase;
             pSprite->x = baseSprite[nSprite].x;
             pSprite->y = baseSprite[nSprite].y;
@@ -280,6 +300,15 @@ static void Respawn(int nSprite) // 9
                 seqSpawn(dudeInfo[nType].seqStartID, 3, pSprite->extra);
             aiInitSprite(pSprite);
             pXSprite->atd_3 = 0;
+#else
+            pXSprite->at34 = NULL;
+            pXSprite->target = 0;
+            pXSprite->health = 0;
+            pXSprite->at20_0 = 0;
+            pXSprite->at24_0 = 0;
+            pXSprite->at28_0 = 0;
+            pXSprite->atd_3 = 0;
+#endif
         }
         if (pSprite->type == 400)
         {
@@ -291,7 +320,7 @@ static void Respawn(int nSprite) // 9
         break;
     }
     default:
-        ThrowError(384)("Unexpected respawnPending value = %d", pXSprite->atb_4);
+        ThrowError(384+LDIFF3)("Unexpected respawnPending value = %d", pXSprite->atb_4);
         break;
     }
 }
@@ -303,7 +332,7 @@ static void PlayerBubble(int nSprite) // 10
     if (!IsPlayerSprite(pSprite))
         return;
     pPlayer = &gPlayer[pSprite->type-kDudePlayer1];
-    dassert(pPlayer != NULL, 398);
+    dassert(pPlayer != NULL, 398+LDIFF3);
     if (pPlayer->at302)
     {
         int top, bottom;
@@ -352,7 +381,7 @@ static void EnemyBubble(int nSprite) // 11
 
 static void CounterCheck(int nSector) // 12
 {
-    dassert(nSector >= 0 && nSector < kMaxSectors, 454);
+    dassert(nSector >= 0 && nSector < kMaxSectors, 454+LDIFF3);
     SECTOR *pSector = &sector[nSector];
     if (pSector->type != 619)
         return;
@@ -384,7 +413,7 @@ static void CounterCheck(int nSector) // 12
 void func_76140(int nSprite) // 14
 {
     SPRITE *pSprite = &sprite[nSprite];
-    int32_t ceilZ, ceilHit, floorZ, floorHit;
+    long ceilZ, ceilHit, floorZ, floorHit;
     GetZRange(pSprite, &ceilZ, &ceilHit, &floorZ, &floorHit, pSprite->clipdist, CLIPMASK0);
     int top, bottom;
     GetSpriteExtents(pSprite, &top, &bottom);
@@ -397,7 +426,7 @@ void func_76140(int nSprite) // 14
     if (pSprite->ang == 1024)
     {
         int nChannel = 28+(pSprite->index&2);
-        dassert(nChannel < 32, 512);
+        dassert(nChannel < 32, 512+LDIFF3);
         sfxPlay3DSound(pSprite, 385, nChannel, 1);
     }
     if (Chance(0x5000))
@@ -439,12 +468,12 @@ int dword_13B338[] = { 610, 612 };
 static void func_763BC(int nSprite) // 16
 {
     SPRITE *pSprite = &sprite[nSprite];
-    int32_t ceilZ, ceilHit, floorZ, floorHit;
+    long ceilZ, ceilHit, floorZ, floorHit;
     GetZRange(pSprite, &ceilZ, &ceilHit, &floorZ, &floorHit, pSprite->clipdist, CLIPMASK0);
     int top, bottom;
     GetSpriteExtents(pSprite, &top, &bottom);
     pSprite->z += floorZ-bottom;
-    int32_t zv = zvel[nSprite]-velFloor[pSprite->sectnum];
+    long zv = zvel[nSprite]-velFloor[pSprite->sectnum];
     if (zv > 0)
     {
         actFloorBounceVector(&xvel[nSprite], &yvel[nSprite], &zv, pSprite->sectnum, 0x9000);
@@ -455,7 +484,7 @@ static void func_763BC(int nSprite) // 16
             return;
         }
         int nChannel = 28+(pSprite->index&2);
-        dassert(nChannel < 32, 596);
+        dassert(nChannel < 32, 596+LDIFF3);
         if (pSprite->type >= 37 && pSprite->type <= 39)
         {
             Random(3);
@@ -495,7 +524,7 @@ static void func_765B8(int nSprite) // 17
 static void func_766B8(int nSprite) // 19
 {
     SPRITE *pSprite = &sprite[nSprite];
-    int32_t ceilZ, ceilHit, floorZ, floorHit;
+    long ceilZ, ceilHit, floorZ, floorHit;
     GetZRange(pSprite, &ceilZ, &ceilHit, &floorZ, &floorHit, pSprite->clipdist, CLIPMASK0);
     int top, bottom;
     GetSpriteExtents(pSprite, &top, &bottom);
@@ -507,7 +536,7 @@ static void func_766B8(int nSprite) // 19
     if (pSprite->ang == 1024 && pSprite->type == 53)
     {
         int nChannel = 28+(pSprite->index&2);
-        dassert(nChannel < 32, 683);
+        dassert(nChannel < 32, 683+LDIFF3);
         sfxPlay3DSound(pSprite, 385, nChannel, 1);
     }
     SPRITE *pFX = NULL;
@@ -583,7 +612,7 @@ static void func_76B78(int nSprite)
         return;
     }
     SPRITE *pOwner = &sprite[nOwner];
-    PLAYER *pPlayer = IsPlayerSprite(pOwner) ? &gPlayer[pOwner->type - kDudePlayer1] : NULL;
+    PLAYER *pPlayer = IsPlayerSprite(pOwner) ? &gPlayer[pOwner->type - kDudeBase] : NULL;
     if (!pPlayer)
     {
         evPost(nSprite, 3, 0, CALLBACK_ID_1);
@@ -592,10 +621,9 @@ static void func_76B78(int nSprite)
     int dx = pOwner->x - pSprite->x;
     int dy = pOwner->y - pSprite->y;
     pSprite->ang = getangle(dx, dy);
-    int nXSprite = pSprite->extra;
-    if (nXSprite > 0)
+    if (pSprite->extra > 0)
     {
-        XSPRITE *pXSprite = &xsprite[nXSprite];
+        XSPRITE *pXSprite = &xsprite[pSprite->extra];
         if (pXSprite->at10_0 == 0)
         {
             evPost(nSprite, 3, 0, CALLBACK_ID_1);
@@ -609,27 +637,24 @@ static void func_76B78(int nSprite)
                 continue;
             SPRITE *pSprite2 = &sprite[nSprite2];
             int nXSprite2 = pSprite2->extra;
-            if (nXSprite2 < 0 || nXSprite2 >= kMaxXSprites)
+            if (nXSprite2 <= 0 || nXSprite2 >= kMaxXSprites)
                 continue;
             if (pSprite2->flags & kSpriteFlag5)
                 continue;
             XSPRITE *pXSprite2 = &xsprite[nXSprite2];
-            PLAYER *pPlayer2 = IsPlayerSprite(pSprite2) ? &gPlayer[pSprite2->type-kDudePlayer1] : NULL;
+            PLAYER *pPlayer2 = IsPlayerSprite(pSprite2) ? &gPlayer[pSprite2->type-kDudeBase] : NULL;
             if (pXSprite2->health > 0 && (pPlayer2 || pXSprite2->atd_3 == 0))
             {
                 if (pPlayer2)
                 {
                     if (gGameOptions.nGameType == GAMETYPE_1)
                         continue;
-                    if (gGameOptions.nGameType == GAMETYPE_3 && pPlayer->at2ea == pPlayer2->at2ea)
+                    if (gGameOptions.nGameType == GAMETYPE_3 && pPlayer2->at2ea == pPlayer->at2ea)
                         continue;
-                    int x = gNetPlayers - 1;
-                    if (x < 1)
-                        x = 1;
-                    int t = 0x8000/x;
+                    int vd = 0x8000 / ClipLow(gNetPlayers - 1, 1);
                     if (!powerupCheck(pPlayer2, 14))
-                        t += ((3200-pPlayer2->at33e[2])<<15)/3200;
-                    if (Chance(t) || nNextSprite < 0)
+                        vd += scale(3200 - pPlayer2->at33e[2], 0, 3200, 0, 32768);
+                    if (Chance(vd) || nNextSprite < 0)
                     {
                         int nDmg = actDamageSprite(nOwner, pSprite2, DAMAGE_TYPE_5, pXSprite->at10_0<<4);
                         pXSprite->at10_0 = ClipLow(pXSprite->at10_0-nDmg, 0);
@@ -643,20 +668,56 @@ static void func_76B78(int nSprite)
                     int vd = 0x2666;
                     switch (pSprite2->type)
                     {
+                    case 201:
+                    case 202:
+                    case 203:
+                    case 204:
+                        break;
+                    case 205:
+                        vd = 0;
+                        break;
+                    case 206:
+                    case 207:
+                    case 208:
+                    case 209:
+                    case 210:
+                    case 211:
+                    case 212:
+                    case 213:
+                    case 214:
+                    case 215:
+                    case 216:
+                    case 217:
+                        break;
                     case 218:
                     case 219:
                     case 220:
-                    case 250:
-                    case 251:
                         vd = 0x147;
+                        break;
+                    case 221:
+                    case 222:
+                    case 223:
+                    case 224:
+                    case 225:
+                    case 226:
+                        vd = 0;
                         break;
                     case 227:
                     case 228:
                         vd = 0;
                         break;
-                    case 252:
-                    case 253:
+                    case 229:
                         vd = 0;
+                        break;
+                    case 230:
+                    case 231:
+                    case 232:
+                    case 233:
+                    case 234:
+                    case 235:
+                    case 236:
+                    case 237:
+                    case 238:
                         break;
                     case 239:
                     case 240:
@@ -667,22 +728,18 @@ static void func_76B78(int nSprite)
                     case 245:
                         vd = 0;
                         break;
-                    case 205:
-                    case 221:
-                    case 222:
-                    case 223:
-                    case 224:
-                    case 225:
-                    case 226:
-                    case 229:
-                        vd = 0;
+                    case 246:
+                    case 247:
+                    case 248:
+                    case 249:
                         break;
-                    case 200:
-                    case 201:
-                    case 202:
-                    case 203:
-                    case 204:
-                    case 217:
+                    case 250:
+                    case 251:
+                        vd = 0x147;
+                        break;
+                    case 252:
+                    case 253:
+                        vd = 0;
                         break;
                     }
                     if (vd && (Chance(vd) || nNextSprite < 0))

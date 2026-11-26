@@ -18,7 +18,7 @@
 #define _TILE_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 
 enum {
     kSurf0 = 0,
@@ -28,14 +28,18 @@ enum {
 extern signed char tileShade[];
 extern short voxelIndex[];
 extern char surfType[kMaxTiles];
+extern int tileIndexCount;
+extern short tileIndex[kMaxTiles];
+
 
 byte *tileLoadTile(int);
 void tilePreloadTile(int nTile);
 void tilePrecacheTile(int nTile);
-int tileInit(QBOOL a1, char *a2);
+int tileInit(BOOL a1, char *a2);
 void tileTerm(void);
 void scrLoadPalette(void);
 byte* tileAllocTile(int nTile, int x, int y, int ox = 0, int oy = 0);
 byte tileGetSurfType(int hit);
+int tilePick(int nTile, int a2, int a3);
 
 #endif // !_TILE_H_

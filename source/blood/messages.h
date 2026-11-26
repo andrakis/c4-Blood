@@ -44,7 +44,7 @@ public:
     void SetFont(int);
     void SetMaxMessages(int);
     void SetMessageTime(int);
-    void Add(const char *, byte);
+    void Add(char *, byte);
     void Display(void);
     void Clear();
     void SetMessageFlags(unsigned int nFlags);
@@ -55,11 +55,11 @@ class CPlayerMsg
 public:
     int at0;
     char at4[42];
-    CPlayerMsg() { at4[0] = 0; }
+    CPlayerMsg() { at0 = 0; at4[0] = 0; }
     void Clear(void);
     void Term(void);
     void Draw(void);
-    QBOOL AddChar(char);
+    BOOL AddChar(char);
     void DelChar(void);
     void Set(char *pzString);
     void Send(void);
@@ -69,8 +69,8 @@ public:
 class CCheatMgr
 {
 public:
-    static QBOOL m_bPlayerCheated;
-    enum CHEATCODE : int32_t
+    static BOOL m_bPlayerCheated;
+    enum CHEATCODE
     {
         kCheatNone = 0,
         kCheat1,
@@ -111,18 +111,25 @@ public:
         kCheat36,
         kCheatMax
     };
-    static uint32_t kCheatFlagsNone;
+    static const unsigned long kCheatFlagsNone;
+#if APPVER_BLOODREV >= AV_BR_BL120
+    static const unsigned long kCheatFlags0;
+#endif
     struct CHEATINFO
     {
-        const char *pzString;
+        char *pzString;
         CHEATCODE id;
         int flags;
     };
     static CHEATINFO s_CheatInfo[];
     CCheatMgr() {}
     void func_5BCF4(void);
-    QBOOL Check(char *);
-    void Process(CHEATCODE nCheatCode, char* pzArgs);
+    BOOL Check(char *);
+#if APPVER_BLOODREV >= AV_BR_BL120
+    void Process(CHEATCODE nCheatCode, char* pzArgs = NULL);
+#else
+    void Process(CHEATCODE nCheatCode);
+#endif
 };
 
 extern CGameMessageMgr gGameMessageMgr;

@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aiinnoc.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"

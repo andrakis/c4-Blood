@@ -21,7 +21,7 @@
 
 #define kMaxChannels 4096
 
-enum COMMAND_ID : int32_t {
+enum COMMAND_ID {
     COMMAND_ID_0 = 0,
     COMMAND_ID_1,
     COMMAND_ID_2,
@@ -43,11 +43,11 @@ struct EVENT {
 }; // <= 4 bytes
 
 void evInit(void);
-void evPost(int nIndex, int nType, uint32_t nDelta, COMMAND_ID command);
-void evPost(int nIndex, int nType, uint32_t nDelta, CALLBACK_ID callback);
+void evPost(int nIndex, int nType, unsigned long nDelta, COMMAND_ID command);
+void evPost(int nIndex, int nType, unsigned long nDelta, CALLBACK_ID callback);
 void evSend(int nIndex, int nType, int rxId, COMMAND_ID command);
 void evKill(int a1, int a2);
 void evKill(int a1, int a2, CALLBACK_ID a3);
-void evProcess(uint32_t);
+void evProcess(ulong);
 
 #endif // !_EVENTQ_H_

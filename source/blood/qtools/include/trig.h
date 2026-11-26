@@ -18,19 +18,19 @@
 #define _TRIG_H_
 #include "typedefs.h"
 #include "resource.h"
-extern int32_t costable[2048];
+extern long costable[2048];
 
 int GetOctant(int x, int y);
-void RotateVector(int32_t *dx, int32_t *dy, int nAngle);
-void RotatePoint(int32_t *x, int32_t *y, int nAngle, int ox, int oy);
+void RotateVector(long *dx, long *dy, int nAngle);
+void RotatePoint(long *x, long *y, int nAngle, int ox, int oy);
 void trigInit(Resource &Res);
 
-inline int32_t Sin(int ang)
+inline long Sin(int ang)
 {
     return costable[(ang - 512) & 2047];
 }
 
-inline int32_t Cos(int ang)
+inline long Cos(int ang)
 {
     return costable[ang & 2047];
 }

@@ -17,15 +17,13 @@
 #ifndef _DB_H_
 #define _DB_H_
 
-#include "engine.h"
+#include "build.h"
 
 #define kMaxXSprites 2048
 #define kMaxXWalls 512
 #define kMaxXSectors 512
 
 struct AISTATE;
-
-#pragma pack(push, 1)
 
 struct XSPRITE {
     //int at0;
@@ -205,8 +203,6 @@ struct XWALL {
     unsigned int at14_0 : 32; // unused
 }; // 24(0x18) bytes
 
-#pragma pack(pop)
-
 enum {
     kStatRespawn = 8,
     kStatMarker = 10,
@@ -214,7 +210,10 @@ enum {
 };
 
 enum {
-    kMarker6 = 6,
+    kMarker3 = 3,
+    kMarker4,
+    kMarker5,
+    kMarker6,
     kMarker7,
     kMarkerWarpDest,
     kMarker9,
@@ -254,13 +253,19 @@ enum {
     kMissile303,
     kMissile304,
     kMissile306 = 306,
+    kMissile316 = 316,
+    kMissile317 = 317,
     kMissileMax = 318,
 };
 
 enum {
     kSectorType604 = 604,
     kSectorType612 = 612,
-    kSectorType617 = 617,
+    kSectorType613,
+    kSectorType614,
+    kSectorType615,
+    kSectorType616,
+    kSectorType617,
 };
 
 struct MAPHEADER2 {
@@ -274,17 +279,17 @@ struct MAPHEADER2 {
 extern XSPRITE xsprite[kMaxXSprites];
 extern XSECTOR xsector[kMaxXSectors];
 extern XWALL xwall[kMaxXWalls];
-extern int32_t xvel[kMaxSprites], yvel[kMaxSprites], zvel[kMaxSprites];
+extern long xvel[kMaxSprites], yvel[kMaxSprites], zvel[kMaxSprites];
 
-extern int32_t gVisibility;
+extern long gVisibility;
 
 extern ushort nextXSprite[kMaxXSprites];
 extern ushort nextXWall[kMaxXWalls];
 extern ushort nextXSector[kMaxXSectors];
 
-extern QBOOL char_1A76C6;
-extern QBOOL char_1A76C7;
-extern QBOOL char_1A76C8;
+extern BOOL char_1A76C6;
+extern BOOL char_1A76C7;
+extern BOOL char_1A76C8;
 
 extern int gSongId;
 extern int gMapRev;
@@ -292,21 +297,30 @@ extern int gSkyCount;
 
 extern MAPHEADER2 char_19AE44;
 
-extern const char *gItemText[];
-extern const char *gAmmoText[];
-extern const char *gWeaponText[];
+extern char *gItemText[];
+extern char *gAmmoText[];
+extern char *gWeaponText[];
 
 extern ushort gStatCount[kMaxStatus + 1];
 
 int InsertSprite(int nSprite, int nStat);
 void DeleteSprite(int nSprite);
-void dbDeleteXSprite(int nXSprite);
 int ChangeSpriteSect(int nSprite, int nSector);
 int ChangeSpriteStat(int nSprite, int nStatus);
 ushort dbInsertXSprite(int nSprite);
+void dbDeleteXSprite(int nXSprite);
+ushort dbInsertXWall(int nWall);
+void dbDeleteXWall(int nXWall);
+ushort dbInsertXSector(int nSector);
+void dbDeleteXSector(int nXSector);
+void dbXSpriteClean(void);
+void dbXWallClean(void);
+void dbXSectorClean(void);
+void dbInit(void);
 
-uint32_t dbReadMapCRC(char *pPath);
+ulong dbReadMapCRC(char *pPath);
 
-void dbLoadMap(char *pPath, int32_t *pX, int32_t *pY, int32_t *pZ, short *pAngle, short *pSector, uint32_t *pCRC);
+void dbLoadMap(char *pPath, long *pX, long *pY, long *pZ, short *pAngle, short *pSector, ulong *pCRC);
+void dbSaveMap(char* pPath, long nX, long nY, long nZ, short nAngle, short nSector);
 
 #endif

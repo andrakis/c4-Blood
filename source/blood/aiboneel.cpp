@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aiboneel.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"
@@ -375,6 +375,11 @@ static void MoveSwoop(SPRITE *pSprite, XSPRITE *pXSprite)
     int t1 = dmulscale30(xvel[nSprite], nCos, yvel[nSprite], nSin);
     int t2 = dmulscale30(xvel[nSprite], nSin, -yvel[nSprite], nCos);
 
+    SPRITE* pSprite2 = &sprite[pXSprite->target];
+    XSPRITE* pXSprite2 = &xsprite[pSprite2->extra];
+    int h1 = dudeInfo[pSprite->type - kDudeBase].atb;
+    int h2 = dudeInfo[pSprite2->type - kDudeBase].atb;
+
     t1 += nAccel>>1;
 
     xvel[nSprite] = dmulscale30(t1, nCos, t2, nSin);
@@ -404,6 +409,11 @@ static void MoveAscend(SPRITE *pSprite, XSPRITE *pXSprite)
     int nCos = Cos(pSprite->ang);
     int t1 = dmulscale30(xvel[nSprite], nCos, yvel[nSprite], nSin);
     int t2 = dmulscale30(xvel[nSprite], nSin, -yvel[nSprite], nCos);
+
+    SPRITE* pSprite2 = &sprite[pXSprite->target];
+    XSPRITE* pXSprite2 = &xsprite[pSprite2->extra];
+    int h1 = dudeInfo[pSprite->type - kDudeBase].atb;
+    int h2 = dudeInfo[pSprite2->type - kDudeBase].atb;
 
     t1 += nAccel>>1;
 

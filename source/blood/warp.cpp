@@ -16,7 +16,7 @@
  */
 #include <stdlib.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "debug4g.h"
 #include "gameutil.h"
@@ -187,7 +187,7 @@ int CheckLink(SPRITE *pSprite)
     return 0;
 }
 
-int CheckLink(int32_t *x, int32_t *y, int32_t *z, int *nSector)
+int CheckLink(long *x, long *y, long *z, int *nSector)
 {
     int z1, z2;
     int nUpper = gUpperLink[*nSector];
@@ -199,7 +199,7 @@ int CheckLink(int32_t *x, int32_t *y, int32_t *z, int *nSector)
             z1 = pUpper->z;
         else
             z1 = getflorzofslope(*nSector, *x, *y);
-        if (z1 <= *z)
+        if (*z >= z1)
         {
             nLower = pUpper->owner;
             dassert(nLower >= 0 && nLower < kMaxSprites, 235);
@@ -223,7 +223,7 @@ int CheckLink(int32_t *x, int32_t *y, int32_t *z, int *nSector)
             z2 = pLower->z;
         else
             z2 = getceilzofslope(*nSector, *x, *y);
-        if (z2 >= *z)
+        if (*z <= z2)
         {
             nUpper = pLower->owner;
             dassert(nUpper >= 0 && nUpper < kMaxSprites, 263);
@@ -265,6 +265,4 @@ void WarpLoadSave::Save()
 }
 
 static WarpLoadSave myLoadSave;
-
-void warp_hook() { myLoadSave.Hook(); }
 

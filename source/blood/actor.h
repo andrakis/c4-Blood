@@ -18,11 +18,12 @@
 #define _ACTOR_H_
 
 #include "typedefs.h"
+#include "globals.h"
 #include "db.h"
 #include "gameutil.h"
 #include "misc.h"
 
-enum DAMAGE_TYPE : int32_t {
+enum DAMAGE_TYPE {
     DAMAGE_TYPE_0,
     DAMAGE_TYPE_1,
     DAMAGE_TYPE_2,
@@ -33,7 +34,7 @@ enum DAMAGE_TYPE : int32_t {
     kDamageMax
 };
 
-enum VECTOR_TYPE : int32_t {
+enum VECTOR_TYPE {
     VECTOR_TYPE_0 = 0,
     VECTOR_TYPE_1,
     VECTOR_TYPE_2,
@@ -168,12 +169,12 @@ extern int gDudeDrag;
 extern short gAffectedSectors[kMaxSectors];
 extern short gAffectedXWalls[kMaxXWalls];
 
-inline QBOOL IsPlayerSprite(SPRITE *pSprite)
+inline BOOL IsPlayerSprite(SPRITE *pSprite)
 {
     return (pSprite->type >= kDudePlayer1 && pSprite->type <= kDudePlayer8) ? 1 : 0;
 }
 
-inline QBOOL IsDudeSprite(SPRITE *pSprite)
+inline BOOL IsDudeSprite(SPRITE *pSprite)
 {
     return (pSprite->type >= kDudeBase && pSprite->type < kDudeMax) ? 1 : 0;
 }
@@ -190,14 +191,14 @@ inline void actBurnSprite(int nSource, XSPRITE *pXSprite, int nTime)
     pXSprite->at2e_0 = nSource;
 }
 
-QBOOL IsItemSprite(SPRITE *);
-QBOOL IsAmmoSprite(SPRITE *);
-QBOOL IsWeaponSprite(SPRITE *);
+BOOL IsItemSprite(SPRITE *);
+BOOL IsAmmoSprite(SPRITE *);
+BOOL IsWeaponSprite(SPRITE *);
 
-QBOOL IsUnderwaterSector(int);
+BOOL IsUnderwaterSector(int);
 
-int actWallBounceVector(int32_t *, int32_t *, int, int);
-int actFloorBounceVector(int32_t *, int32_t *, int32_t *, int, int);
+int actWallBounceVector(long *, long *, int, int);
+int actFloorBounceVector(long *, long *, long *, int, int);
 SPRITE *actDropObject(SPRITE *,int);
 
 int actDamageSprite(int, SPRITE *, DAMAGE_TYPE, int);
@@ -206,9 +207,9 @@ SPRITE * actFireThing(SPRITE *pSprite, int a2, int a3, int a4, int thingType, in
 
 void func_2A620(int nSprite, int x, int y, int z, int nSector, int nDist, int a7, int a8, DAMAGE_TYPE a9, int a10, int a11, int a12 = 0, int a13 = 0);
 
-SPRITE * actSpawnSprite(int nSector, int x, int y, int z, int nStat, QBOOL a6);
+SPRITE * actSpawnSprite(int nSector, int x, int y, int z, int nStat, BOOL a6);
 
-QBOOL actCheckRespawn(SPRITE *pSprite);
+BOOL actCheckRespawn(SPRITE *pSprite);
 
 void actExplodeSprite(SPRITE *pSprite);
 
@@ -216,7 +217,7 @@ void actFireVector(SPRITE *, int, int, int, int, int, VECTOR_TYPE);
 
 SPRITE *actSpawnSprite(SPRITE *pSource, int nStat);
 
-QBOOL actHealDude(XSPRITE *,int,int);
+BOOL actHealDude(XSPRITE *,int,int);
 
 int actOwnerIdToSpriteId(int);
 int actSpriteIdToOwnerId(int);
@@ -224,7 +225,11 @@ int actSpriteOwnerToSpriteId(SPRITE *);
 
 int actGetRespawnTime(SPRITE *);
 
-SPRITE *func_36878(SPRITE *pSource, short nType, int a3, int a4);
+#if APPVER_BLOODREV >= AV_BR_BL120
+SPRITE *func_36878(SPRITE *pSource, short nType, int a3, int a4 = 0);
+#else
+SPRITE *func_36878(SPRITE *pSource, short nType, int a3);
+#endif
 
 SPRITE *actFireMissile(SPRITE *, int, int, int, int, int, int);
 

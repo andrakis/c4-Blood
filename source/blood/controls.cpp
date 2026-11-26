@@ -17,12 +17,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include "typedefs.h"
-#include "TYPES.H"
+#include "globals.h"
+#include "types.h"
 #include "config.h"
 #include "controls.h"
 #include "function.h"
 #include "globals.h"
-#include "KEYBOARD.H"
+#include "keyboard.h"
 #include "key.h"
 #include "levels.h"
 #include "loadsave.h"
@@ -30,9 +31,15 @@
 #include "misc.h"
 #include "view.h"
 
-QINPUT gInput;
+INPUT gInput;
 
-QBOOL bSilentAim;
+#if APPVER_BLOODREV < AV_BR_BL111
+BOOL gMouseAimDynamic;
+BOOL gMouseAimCenter;
+BOOL gMouseAim;
+#endif
+
+BOOL bSilentAim;
 
 int iTurnCount;
 
@@ -43,7 +50,7 @@ int32 GetTime(void)
     return gGameClock;
 }
 
-byte SendCodes(byte a1, QBOOL a2)
+byte SendCodes(byte a1, BOOL a2)
 {
     KB_KeyEvent(translateCode[a1], a2);
     return a1;
@@ -201,6 +208,10 @@ void ctrlGetInput(void)
         {
             CONTROL_ClearButton(gamefunc_Shrink_Screen);
             viewResizeView(gViewSize + 1);
+#ifdef _3DFX
+            if (gViewSize > 2)
+                gViewSize = 2;
+#endif
         }
         if (gViewMode == 2 || gViewMode == 4)
         {
@@ -394,7 +405,7 @@ void ctrlGetInput(void)
     if (BUTTON(gamefunc_Move_Backward))
         forward -= (1+run)*4;
 
-    QBOOL turnLeft = 0, turnRight = 0;
+    BOOL turnLeft = 0, turnRight = 0;
 
     if (BUTTON(gamefunc_Strafe))
     {
@@ -473,13 +484,19 @@ class ControlsLoadSave : public LoadSave
 
 void ControlsLoadSave::Load(void)
 {
+#if APPVER_BLOODREV < AV_BR_BL111
+    Read(&gMouseAimDynamic, 1);
+    Read(&gMouseAimCenter, 1);
+#endif
 }
 
 void ControlsLoadSave::Save(void)
 {
+#if APPVER_BLOODREV < AV_BR_BL111
+    Write(&gMouseAimDynamic, 1);
+    Write(&gMouseAimCenter, 1);
+#endif
 }
 
 static ControlsLoadSave myLoadSave;
-
-void controls_hook() { myLoadSave.Hook(); }
 

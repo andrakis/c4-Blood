@@ -18,20 +18,19 @@
 #define _MISC_H_
 
 #include <stdlib.h>
-#include <string.h>
 #include "typedefs.h"
-#include "system.h"
 
 char *ReadLine(char *, int, char **);
-QBOOL FileRead(int, void*, uint32_t);
-QBOOL FileLoad(const char*, void*, uint32_t);
+BOOL FileRead(int, void*, ulong);
+BOOL FileLoad(char*, void*, ulong);
 
-void ChangeExtension(char *name, const char *ext);
+void ChangeExtension(char *name, char *ext);
 
-uint32_t qrand(void);
+ulong qrand(void);
 
-uint32_t func_A8B30(void);
-uint32_t func_A8B50(void);
+ulong func_A8B30(void);
+ulong func_A8B50(void);
+ulong dpmiDetermineMaxRealAlloc(void);
 
 inline int Min(int a, int b)
 {
@@ -49,6 +48,11 @@ inline int Max(int a, int b)
         return a;
 }
 
+inline byte TestBitString(byte *pArray, int nIndex)
+{
+    return pArray[nIndex>>3] & (1<<(nIndex&7));
+}
+
 inline void SetBitString(byte *pArray, int nIndex)
 {
     pArray[nIndex>>3] |= 1<<(nIndex&7);
@@ -57,11 +61,6 @@ inline void SetBitString(byte *pArray, int nIndex)
 inline void ClearBitString(byte *pArray, int nIndex)
 {
     pArray[nIndex >> 3] &= ~(1 << (nIndex & 7));
-}
-
-inline byte TestBitString(byte *pArray, int nIndex)
-{
-    return pArray[nIndex>>3] & (1<<(nIndex&7));
 }
 
 inline int scale(int a1, int a2, int a3, int a4, int a5)
@@ -105,6 +104,16 @@ inline int DecBy(int a, int b)
     return a;
 }
 
+inline int IncStep(int a, int b)
+{
+    return (a + b) & (~(b - 1));
+}
+
+inline int DecStep(int a, int b)
+{
+    return (a - 1) & (~(b - 1));
+}
+
 inline int ClipLow(int a, int b)
 {
     if (a < b)
@@ -143,175 +152,286 @@ struct VECTOR2D {
 };
 
 struct VECTOR3D {
-    int32_t dx, dy, dz;
+    long dx, dy, dz;
 };
 
+int dmulscale30r(int, int, int, int);
+#pragma aux dmulscale30r = \
+"imul ebx", \
+"xchg eax,esi", \
+"mov ebx,edx", \
+"imul edi", \
+"add eax,esi", \
+"adc edx,ebx", \
+"add eax,20000000h", \
+"adc edx,0", \
+"shrd eax,edx,30", \
+parm nomemory  [eax] [ebx] [esi] [edi] \
+modify nomemory exact [eax ebx edx esi edi]
 
 
-static inline int dmulscale30r(int a, int b, int c, int d)
-{
-    int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
-    mul += 0x20000000;
-    return (int)(mul >> 30);
-}
+int klabs(int);
+#pragma aux klabs = \
+"test eax,eax", \
+"jns short L1", \
+"neg eax", \
+"L1:", \
+parm nomemory [eax] \
+modify nomemory exact [eax]
 
-static inline int klabs(int a)
-{
-    if (a < 0)
-        return -a;
-    return a;
-}
+int isneg(int);
+#pragma aux isneg = \
+"add eax,eax" \
+"sbb eax,eax" \
+parm nomemory [eax] \
+modify nomemory exact [eax]
 
-static inline int isneg(int a)
-{
-    return (a < 0) ? -1 : 0;
-}
+void setvmode(int);
+#pragma aux setvmode = \
+"int 0x10" \
+parm nomemory [eax]
 
-static inline int kscale(int a, int b, int c)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul / c);
-}
+int getvmode(void);
+#pragma aux getvmode = \
+"mov ah,0xf"\
+"int 0x10" \
+"and eax,0xff"\
+value [eax]
 
-static inline int ksgn(int a)
-{
-    return (a > 0) - (a < 0);
-}
+void int3(void);
+#pragma aux int3 = \
+"int 3"
 
-static inline int mulscale8(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 8);
-}
+int kscale(int, int, int);
+#pragma aux kscale = \
+"imul edx" \
+"idiv ebx" \
+parm nomemory [eax] [edx] [ebx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale14(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 14);
-}
+int ksgn(int);
+#pragma aux ksgn = \
+"add eax,eax" \
+"sbb edx,edx" \
+"cmp edx,eax" \
+"adc dl,0" \
+parm nomemory [eax] \
+value [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale16(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 16);
-}
+int mulscale8(int, int);
+#pragma aux mulscale8 = \
+"imul edx" \
+"shrd eax,edx,8" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale24(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 24);
-}
+int mulscale14(int, int);
+#pragma aux mulscale14 = \
+"imul edx" \
+"shrd eax,edx,14" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale28(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 28);
-}
+int mulscale16(int, int);
+#pragma aux mulscale16 = \
+"imul edx" \
+"shrd eax,edx,16" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale30(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> 30);
-}
+int mulscale24(int, int);
+#pragma aux mulscale24 = \
+"imul edx" \
+"shrd eax,edx,24" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int interpolate16(int a, int b, int c)
-{
-    int64_t mul = (int64_t)(b - a) * (int64_t)c;
-    return a + (int)(mul >> 16);
-}
+int mulscale28(int, int);
+#pragma aux mulscale28 = \
+"imul edx" \
+"shrd eax,edx,28" \
+parm nomemory [eax] [edx] \
+modify exact [eax edx]
 
-static inline int divscale16(int a, int b)
-{
-    int64_t d = ((int64_t)a << 16) / b;
-    return (int)d;
-}
+int mulscale30(int, int);
+#pragma aux mulscale30 = \
+"imul edx" \
+"shrd eax,edx,30" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx] \
+value [eax]
 
-static inline int divscale24(int a, int b)
-{
-    int64_t d = ((int64_t)a << 24) / b;
-    return (int)d;
-}
+int interpolate16(int, int, int);
+#pragma aux interpolate16 = \
+"sub ecx, ebx" \
+"imul ecx" \
+"shrd eax,edx,16" \
+"add eax, ebx" \
+parm nomemory [ebx] [ecx] [eax] \
+modify nomemory exact [eax ebx ecx edx esi]
 
-static inline int divscale(int a, int b, int c)
-{
-    int64_t d = ((int64_t)a << c) / b;
-    return (int)d;
-}
+int divscale16(int, int);
+#pragma aux divscale16 = \
+"mov edx,eax" \
+"sar edx,16" \
+"shl eax,16" \
+"idiv ebx" \
+parm nomemory [eax] [ebx] \
+modify nomemory exact [eax edx]
 
-extern "C" {
-void Sys_WaitVSync();
-};
+int divscale24(int, int);
+#pragma aux divscale24 = \
+"mov edx,eax" \
+"sar edx,8" \
+"shl eax,24" \
+"idiv ebx" \
+parm nomemory [eax] [ebx] \
+modify nomemory exact [eax edx]
 
-static inline void WaitVBL(void)
-{
-    Sys_WaitVSync();
-}
+int divscale(int, int, int);
+#pragma aux divscale = \
+"mov edx,eax" \
+"shl eax,cl" \
+"neg cl" \
+"sar edx,cl" \
+"idiv ebx" \
+parm nomemory [eax] [ebx] [ecx] \
+modify nomemory exact [eax edx ecx]
 
-static inline int approxDist(int a, int b)
-{
-    uint32_t a2 = klabs(a);
-    uint32_t b2 = klabs(b);
+void WaitVBL(void);
+#pragma aux WaitVBL = \
+"mov dx,0x3da" \
+"L1:" \
+"in al,dx" \
+"test al,8" \
+"jz short L1" \
+"L2:" \
+"in al,dx" \
+"test al,1" \
+"jz short L2" \
+modify nomemory exact [eax edx]
 
-    if (a2 <= b2)
-        a2 = (a2 * 3) >> 3;
-    else
-        b2 = (b2 * 3) >> 3;
-    return a2 + b2;
-}
+int approxDist(int, int);
+#pragma aux approxDist = \
+"test eax,eax" \
+"jns short L1" \
+"neg eax" \
+"L1:" \
+"test edx,edx" \
+"jns short L2" \
+"neg edx" \
+"L2:" \
+"cmp eax,edx"\
+"ja short L3"\
+"lea eax,[eax+eax*2]"\
+"shr eax,3"\
+"jmp short L4"\
+"L3:"\
+"lea edx,[edx+edx*2]"\
+"shr edx,3"\
+"L4:"\
+"add eax,edx"\
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale16r(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    mul += 0x8000;
-    return (int)(mul >> 16);
-}
+int mulscale16r(int, int);
+#pragma aux mulscale16r = \
+"imul edx" \
+"add eax,0x8000"\
+"adc edx,0"\
+"shrd eax,edx,16" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int mulscale30r(int a, int b)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    mul += 0x20000000;
-    return (int)(mul >> 30);
-}
+int mulscale30r(int, int);
+#pragma aux mulscale30r = \
+"imul edx" \
+"add eax,0x20000000"\
+"adc edx,0"\
+"shrd eax,edx,30" \
+parm nomemory [eax] [edx] \
+modify nomemory exact [eax edx]
 
-static inline int dmulscale(int a, int b, int c, int d, int e)
-{
-    int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
-    return (int)(mul >> e);
-}
 
-static inline int dmulscale16(int a, int b, int c, int d)
-{
-    int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
-    return (int)(mul >> 16);
-}
+int dmulscale(int, int, int, int, int);
+#pragma aux dmulscale = \
+"imul ebx" \
+"xchg eax,esi" \
+"mov ebx,edx" \
+"imul edi" \
+"add eax,esi" \
+"adc edx,ebx" \
+"shrd eax,edx,cl" \
+parm nomemory [eax] [ebx] [esi] [edi] [ecx] \
+modify nomemory exact [eax ebx edx esi]
 
-static inline int dmulscale30(int a, int b, int c, int d)
-{
-    int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
-    return (int)(mul >> 30);
-}
 
-static inline int dmulscale32(int a, int b, int c, int d)
-{
-    int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
-    return (int)(mul >> 32);
-}
+int dmulscale16(int, int, int, int);
+#pragma aux dmulscale16 = \
+"imul ebx" \
+"xchg eax,esi" \
+"mov ebx,edx" \
+"imul edi" \
+"add eax,esi" \
+"adc edx,ebx" \
+"shrd eax,edx,16" \
+parm nomemory [eax] [ebx] [esi] [edi] \
+modify nomemory exact [eax ebx edx esi]
 
-static inline int mulscale(int a, int b, int c)
-{
-    int64_t mul = (int64_t)a * (int64_t)b;
-    return (int)(mul >> c);
-}
+int dmulscale30(int, int, int, int);
+#pragma aux dmulscale30 = \
+"imul ebx" \
+"xchg eax,esi" \
+"mov ebx,edx" \
+"imul edi" \
+"add eax,esi" \
+"adc edx,ebx" \
+"shrd eax,edx,30" \
+parm nomemory [eax] [ebx] [esi] [edi] \
+modify nomemory exact [eax ebx edx esi]
 
-static inline int tmulscale16(int a, int b, int c, int d, int e, int f)
-{
-	int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d + (int64_t)e * (int64_t)f;
-	return (int)(mul >> 16);
-}
+int dmulscale32(int, int, int, int);
+#pragma aux dmulscale32 = \
+"imul edx" \
+"mov ebx,eax"\
+"mov eax,esi"\
+"mov esi,edx"\
+"imul edi" \
+"add eax,ebx" \
+"adc edx,esi" \
+parm nomemory [eax] [edx] [esi] [edi] \
+modify exact [eax ebx edx esi]\
+value [edx]
 
-static inline void debugTrap(void)
-{
-}
+
+int mulscale(int, int, int);
+#pragma aux mulscale = \
+"imul edx"\
+"shrd eax,edx,cl"\
+parm nomemory [eax] [edx] [ecx]\
+modify nomemory exact [eax edx]
+
+
+int tmulscale16(int, int, int, int, int, int);
+#pragma aux tmulscale16 = \
+"imul edx"\
+"xchg eax,ebx"\
+"xchg edx,ecx"\
+"imul edx"\
+"add ebx,eax"\
+"adc ecx,edx"\
+"mov eax,esi"\
+"imul edi"\
+"add eax,ebx"\
+"adc edx,ecx"\
+"shrd eax,edx,16"\
+parm nomemory [eax] [edx] [ebx] [ecx] [esi] [edi] \
+modify exact [eax ebx ecx edx]
+
+void debugTrap(void);
+#pragma aux debugTrap = \
+"int 3"
 
 inline int QRandom(int n)
 {
@@ -323,76 +443,24 @@ inline int QRandom2(int n)
     return mulscale(qrand(), n, 14) - n;
 }
 
-inline QBOOL Chance(int a1)
-{
-    return wrand() < (a1>>1);
-}
-
 inline uint Random(int a1)
 {
-    return mulscale(wrand(), a1, 15);
+    return mulscale(rand(), a1, 15);
 }
 
 inline int Random2(int a1)
 {
-    return mulscale(wrand(), a1, 14)-a1;
+    return mulscale(rand(), a1, 14)-a1;
 }
 
 inline int Random3(int a1)
 {
-    return mulscale(wrand()+wrand(), a1, 15) - a1;
+    return mulscale(rand()+rand(), a1, 15) - a1;
 }
 
-static inline void MySplitPath(const char* s, char *buf, const char** dir, const char** name, const char** ext)
+inline BOOL Chance(int a1)
 {
-    int l = strlen(s);
-
-    *buf = '\0';
-    if (dir)
-        *dir = buf;
-    if (name)
-        *name = buf;
-    if (ext)
-        *ext = buf;
-    buf++;
-
-    for (int i = l - 1; i >= 0; i--)
-    {
-        if (s[i] == '.')
-        {
-            if (ext)
-            {
-                *ext = buf;
-                memcpy(buf, s + i, l - i);
-                buf[l - i] = '\0';
-                buf += l - i + 1;
-            }
-            l = i;
-        }
-        else if (s[i] == '\\' || buf[i] == '/')
-        {
-            if (name)
-            {
-                *name = buf;
-                memcpy(buf, s + i + 1, l - i - 1);
-                buf[l - i - 1] = '\0';
-                buf += l - i;
-            }
-            if (dir)
-            {
-                *dir = buf;
-                memcpy(buf, s, i + 1);
-                buf[i + 1] = '\0';
-            }
-            return;
-        }
-    }
-    if (name)
-    {
-        *name = buf;
-        memcpy(buf, s, l);
-        buf[l] = '\0';
-    }
+    return rand() < (a1>>1);
 }
 
 #endif // !_MISC_H_

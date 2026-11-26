@@ -52,7 +52,7 @@ struct GEVENT_KEYBOARD
     } at2;
 };
 
-enum GEVENT_TYPE : int32_t {
+enum GEVENT_TYPE {
     GEVENT_TYPE_NONE = 0x00,
     GEVENT_TYPE_MOUSE_1 = 0x01,
     GEVENT_TYPE_MOUSE_2 = 0x02,
@@ -73,7 +73,7 @@ struct GEVENT
     } at6;
 };
 
-enum MODAL_RESULT : int32_t {
+enum MODAL_RESULT {
     MODAL_RESULT_0 = 0,
     MODAL_RESULT_1,
     MODAL_RESULT_2
@@ -98,7 +98,7 @@ public:
     char at1d;
     char at1e;
     char at1f;
-    QBOOL Inside(int x, int y) {
+    BOOL Inside(int x, int y) {
         return x >= at0 && y >= at4 && x < at0+at8 && y < at4+atc;
     }
     virtual void Paint(int, int, char) = 0;
@@ -143,7 +143,7 @@ public:
     virtual void Paint(int, int, char);
     virtual void HandleEvent(GEVENT*);
     virtual void EndModal(MODAL_RESULT);
-    virtual QBOOL SetFocus(int);
+    virtual BOOL SetFocus(int);
 
     void Remove(Widget*);
     void Insert(Widget*);
@@ -161,7 +161,7 @@ public:
 class TitleBar : public Widget
 {
 public:
-    TitleBar(int, int, int, int, const char*);
+    TitleBar(int, int, int, int, char*);
     virtual void Paint(int, int, char);
     virtual void HandleEvent(GEVENT*);
     char at24[256];
@@ -173,7 +173,7 @@ class Window : public Panel
 public:
     Container* at5e;
     TitleBar* at62;
-    Window(int, int, int, int, const char*);
+    Window(int, int, int, int, char*);
 };
 
 class Button : public Widget
@@ -211,7 +211,7 @@ public:
 class EditText : public Widget
 {
 public:
-    EditText(int, int, int, int, const char*);
+    EditText(int, int, int, int, char*);
     char at24[0x100];
     int at124, at128, at12c;
     virtual void Paint(int, int, char);
@@ -258,12 +258,13 @@ public:
 };
 
 
-QBOOL IsBlinkOn();
+BOOL IsBlinkOn();
 
 void SetBlinkOn();
 
 void UpdateBlinkClock(int);
 
-int GetNumberBox(const char *, int, int);
+int GetNumberBox(char *, int, int);
+MODAL_RESULT ShowModal(Container* container);
 
 #endif

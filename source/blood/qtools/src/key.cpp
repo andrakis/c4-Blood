@@ -23,23 +23,24 @@
 #include "typedefs.h"
 #include "debug4g.h"
 #include "key.h"
-#include "system.h"
 
 byte keyBuffer[256];
 int volatile bufHead;
 int bufTail;
 
-byte (*keyCallback)(byte, QBOOL);
+byte (*keyCallback)(byte, BOOL);
 byte volatile extended;
 
-QBOOL filterMake[256];
-QBOOL filterBreak[256];
+void (interrupt *oldKeyHandler)(void);
+
+BOOL filterMake[256];
+BOOL filterBreak[256];
 
 byte volatile keystatus[256];
 
 struct SCANTEXT {
     byte scan;
-    const char *text;
+    char *text;
 };
 
 SCANTEXT ScanToText[] = {
@@ -122,9 +123,20 @@ byte ScanToAsciiShifted[256] =
 };
 
 
-void newKeyHandler(void)
+void keyPragma1(void);
+#pragma aux keyPragma1 = \
+"mov ecx,0x20000" \
+"L1:" \
+"in al,0x64" \
+"test al,2" \
+"loopne L1"
+
+void interrupt newKeyHandler(void)
 {
-    byte k = kb_byte;
+    keyPragma1();
+    outp(0x64, 0xad);
+    keyPragma1();
+    byte k = inp(0x60);
     if ((k & 0xf0) == 0xe0)
     {
         extended = 0x80 | (k & 0x0f);
@@ -158,6 +170,9 @@ void newKeyHandler(void)
             }
         }
     }
+    outp(0x20, 0x20);
+    keyPragma1();
+    outp(0x64, 0xae);
 }
 
 void NEWKEYEND(void)
@@ -166,7 +181,11 @@ void NEWKEYEND(void)
 
 void keyRemove(void)
 {
-    Sys_SetKeyboardHandler(NULL);
+    if (oldKeyHandler)
+    {
+        _dos_setvect(9, oldKeyHandler);
+        oldKeyHandler = NULL;
+    }
 }
 
 void keyInstall(void)
@@ -179,8 +198,9 @@ void keyInstall(void)
     filterBreak[0xb6] = TRUE;
     filterBreak[0xc5] = TRUE;
     filterBreak[0xc6] = TRUE;
-    Sys_SetKeyboardHandler(newKeyHandler);
-    //atexit(keyRemove);
+    oldKeyHandler = _dos_getvect(9);
+    _dos_setvect(9, newKeyHandler);
+    atexit(keyRemove);
 }
 
 
@@ -193,7 +213,7 @@ byte keyGet(void)
     return key;
 }
 
-QBOOL keyCompareStream(byte *s, int c)
+BOOL keyCompareStream(byte *s, int c)
 {
     int p = (bufHead - c) & 255;
     while (--c != -1)
@@ -206,7 +226,7 @@ QBOOL keyCompareStream(byte *s, int c)
     return TRUE;
 }
 
-QBOOL keyCompareStream(byte *s, int c, int o)
+BOOL keyCompareStream(byte *s, int c, int o)
 {
     int p = (bufHead - c - o) & 255;
     while (--c != -1)
@@ -231,8 +251,10 @@ void keyReadStream(byte *s, int c)
 
 void keyPokeStream(byte k)
 {
+    _disable();
     keyBuffer[bufHead] = k;
     bufHead = (bufHead + 1) & 255;
+    _enable();
 }
 
 void keyFlushStream(void)
@@ -240,7 +262,7 @@ void keyFlushStream(void)
     bufTail = bufHead;
 }
 
-const char *keyName(byte scanCode)
+char *keyName(byte scanCode)
 {
     static char buffer[4];
     dassert(scanCode < 256, 336);

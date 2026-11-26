@@ -17,18 +17,17 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
-#include "compat.h"
+typedef unsigned char byte;
+typedef unsigned char BYTE;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+typedef signed char schar;
+typedef signed short sshort;
 
-typedef uint8_t byte;
-typedef uint8_t BYTE;
-typedef uint8_t uchar;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int8_t schar;
-typedef int16_t sshort;
 
-
-typedef uint8_t QBOOL;
+typedef unsigned char BOOL;
 #define FALSE 0
 #define TRUE 1
 

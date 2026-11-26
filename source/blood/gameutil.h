@@ -18,7 +18,7 @@
 #define _GAMEUTIL_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "misc.h"
 
 struct HITINFO {
@@ -32,12 +32,12 @@ struct HITINFO {
 
 extern POINT2D baseWall[kMaxWalls];
 extern POINT3D baseSprite[kMaxSprites];
-extern int32_t baseFloor[kMaxSectors];
-extern int32_t baseCeil[kMaxSectors];
+extern long baseFloor[kMaxSectors];
+extern long baseCeil[kMaxSectors];
 extern short gUpperLink[kMaxSectors];
 extern short gLowerLink[kMaxSectors];
-extern int32_t velFloor[kMaxSectors];
-extern int32_t velCeil[kMaxSectors];
+extern long velFloor[kMaxSectors];
+extern long velCeil[kMaxSectors];
 
 extern HITINFO gHitInfo;
 
@@ -66,17 +66,17 @@ inline void GetSpriteExtents(SPRITE *pSprite, int *pTop, int *pBottom)
     *pBottom += (tilesizy[nTile] - (tilesizy[nTile] / 2 + picanm[nTile].yoffset)) * (pSprite->yrepeat << 2);
 }
 
-QBOOL FindSector(int nX, int nY, int nZ, int *nSector);
-QBOOL FindSector(int nX, int nY, int *nSector);
-uint ClipMove(int32_t *x, int32_t *y, int32_t *z, int *nSector, int32_t xv, int32_t yv, int wd, int cd, int fd, uint32_t nMask);
-void GetZRange(SPRITE *pSprite, int32_t *ceilZ, int32_t *ceilHit, int32_t *floorZ, int32_t *floorHit, int nDist, uint32_t nMask);
+BOOL FindSector(int nX, int nY, int nZ, int *nSector);
+BOOL FindSector(int nX, int nY, int *nSector);
+uint ClipMove(long *x, long *y, long *z, int *nSector, long xv, long yv, int wd, int cd, int fd, ulong nMask);
+void GetZRange(SPRITE *pSprite, long *ceilZ, long *ceilHit, long *floorZ, long *floorHit, int nDist, ulong nMask);
 int GetWallAngle(int nWall);
 void CalcFrameRate(void);
 void GetWallNormal(int nWall, int *pX, int *pY);
 int GetClosestSpriteSectors(int nSector, int x, int y, int nDist, short *pSectors, byte *pSectBit, short *a8);
-QBOOL CheckProximity(SPRITE *pSprite, int nX, int nY, int nZ, int nSector, int nDist);
-void GetZRangeAtXYZ(int32_t x, int32_t y, int32_t z, int nSector, int32_t *ceilZ, int32_t *ceilHit, int32_t *floorZ, int32_t *floorHit, int nDist, uint32_t nMask);
-int HitScan(SPRITE *pSprite, int z, int dx, int dy, int dz, uint32_t nMask, int a8);
+BOOL CheckProximity(SPRITE *pSprite, int nX, int nY, int nZ, int nSector, int nDist);
+void GetZRangeAtXYZ(long x, long y, long z, int nSector, long *ceilZ, long *ceilHit, long *floorZ, long *floorHit, int nDist, unsigned long nMask);
+int HitScan(SPRITE *pSprite, int z, int dx, int dy, int dz, unsigned long nMask, int a8);
 int VectorScan(SPRITE *pSprite, int nOffset, int nZOffset, int dx, int dy, int dz, int nRange, int ac);
 
 

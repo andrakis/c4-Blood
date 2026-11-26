@@ -15,19 +15,28 @@
  *
  */
 #include <stdlib.h>
-#include "sound.h"
+#include <i86.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
+#include "globals.h"
 #include "config.h"
 #include "error.h"
-#include "FX_MAN.H"
+#include "fx_man.h"
 #include "gameutil.h"
 #include "misc.h"
 #include "player.h"
 #include "resource.h"
 #include "sfx.h"
-#include "qsound.h"
+#include "sound.h"
 #include "trig.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#elif APPVER_BLOODREV >= AV_BR_BL111
+#define LDIFF1 1
+#else
+#define LDIFF1 -3
+#endif
 
 POINT2D earL, earR, earL0, earR0; // Ear position
 VECTOR2D earVL, earVR; // Ear velocity ?
@@ -66,8 +75,16 @@ void sfxInit(void)
     for (int i = 0; i < 256; i++)
         BonkleCache[i] = &Bonkle[i];
     nBonkles = 0;
+#if APPVER_BLOODREV >= AV_BR_BL120
     if (FXDevice != 8) // SoundScape
         int_20E12C = FX_GetMaxReverbDelay();
+#else
+    int_20E12C = FX_GetMaxReverbDelay();
+#if APPVER_BLOODREV >= AV_BR_BL111
+    if (FXDevice == 8) // SoundScape
+        int_20E12C = 0;
+#endif
+#endif
 }
 
 void sfxTerm()
@@ -137,7 +154,7 @@ static void Calc3DValues(BONKLE *pBonkle)
 void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector)
 {
     if (soundId < 0)
-        ThrowError(207)("Invalid sound ID");
+        ThrowError(207+LDIFF1)("Invalid sound ID");
     
     DICTNODE *hRes = gSoundRes.Lookup(soundId, "SFX");
     if (!hRes)
@@ -149,7 +166,13 @@ void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector)
         return;
 
     int v1c, v18;
-    v1c = v18 = mulscale16(pEffect->pitch, GetRate(pEffect->format));
+    v1c = v18 = mulscale16(pEffect->pitch, GetRate(
+#ifdef SHAREWARE
+        1
+#else
+        pEffect->format
+#endif
+    ));
     if (FXDevice == -1)
         return;
     if (nBonkles >= 256)
@@ -166,7 +189,11 @@ void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector)
     pBonkle->at8 = hRes;
     pBonkle->at1c = pEffect->relVol;
     pBonkle->at18 = v18;
+#ifdef SHAREWARE
+    pBonkle->at3c = 1;
+#else
     pBonkle->at3c = pEffect->format;
+#endif
     int size = Resource::Size(hRes);
     char *pData = (char*)gSoundRes.Lock(hRes);
     Calc3DValues(pBonkle);
@@ -177,14 +204,14 @@ void sfxPlay3DSound(int x, int y, int z, int soundId, int nSector)
         priority = rVol;
     if (gDoppler)
     {
-        SDL_LockMutex(snd_mutex);
-        pBonkle->at0 = FX_PlayRaw(pData + lPhase, size - lPhase, lPitch, 0, lVol, lVol, 0, priority, (uintptr_t)&pBonkle->at0);
-        pBonkle->at4 = FX_PlayRaw(pData + rPhase, size - rPhase, rPitch, 0, rVol, 0, rVol, priority, (uintptr_t)&pBonkle->at4);
-        SDL_UnlockMutex(snd_mutex);
+        _disable();
+        pBonkle->at0 = FX_PlayRaw(pData + lPhase, size - lPhase, lPitch, 0, lVol, lVol, 0, priority, (long)&pBonkle->at0);
+        pBonkle->at4 = FX_PlayRaw(pData + rPhase, size - rPhase, rPitch, 0, rVol, 0, rVol, priority, (long)&pBonkle->at4);
+        _enable();
     }
     else
     {
-        pBonkle->at0 = FX_PlayRaw(pData + lPhase, size - lPhase, v1c, 0, lVol, lVol, rVol, priority, (uintptr_t)&pBonkle->at0);
+        pBonkle->at0 = FX_PlayRaw(pData + lPhase, size - lPhase, v1c, 0, lVol, lVol, rVol, priority, (long)&pBonkle->at0);
         pBonkle->at4 = 0;
     }
 }
@@ -207,7 +234,13 @@ void sfxPlay3DSound(SPRITE *pSprite, int soundId, int a3, int a4)
     if (size <= 0)
         return;
     int v14;
-    v14 = mulscale16(pEffect->pitch, GetRate(pEffect->format));
+    v14 = mulscale16(pEffect->pitch, GetRate(
+#ifdef SHAREWARE
+        1
+#else
+        pEffect->format
+#endif
+    ));
     if (FXDevice == -1)
         return;
     BONKLE *pBonkle;
@@ -272,17 +305,17 @@ void sfxPlay3DSound(SPRITE *pSprite, int soundId, int a3, int a4)
         loopStart = -1;
     char *pData = (char*)gSoundRes.Lock(hSample);
     int vc = pBonkle->at4;
-    SDL_LockMutex(snd_mutex);
+    _disable();
     if (loopStart >= 0)
     {
         if (gDoppler)
         {
-            pBonkle->at0 = FX_PlayLoopedRaw(pData+lPhase, size-lPhase, pData+loopStart, pData+loopEnd, lPitch, 0, lVol, lVol, 0, priority, (uintptr_t)&pBonkle->at0);
-            pBonkle->at4 = FX_PlayLoopedRaw(pData+rPhase, size-rPhase, pData+loopStart, pData+loopEnd, rPitch, 0, rVol, 0, rVol, priority, (uintptr_t)&pBonkle->at4);
+            pBonkle->at0 = FX_PlayLoopedRaw(pData+lPhase, size-lPhase, pData+loopStart, pData+loopEnd, lPitch, 0, lVol, lVol, 0, priority, (long)&pBonkle->at0);
+            pBonkle->at4 = FX_PlayLoopedRaw(pData+rPhase, size-rPhase, pData+loopStart, pData+loopEnd, rPitch, 0, rVol, 0, rVol, priority, (long)&pBonkle->at4);
         }
         else
         {
-            pBonkle->at0 = FX_PlayLoopedRaw(pData+lPhase, size-lPhase, pData+loopStart, pData+loopEnd, v14, 0, lVol, lVol, rVol, priority, (uintptr_t)&pBonkle->at0);
+            pBonkle->at0 = FX_PlayLoopedRaw(pData+lPhase, size-lPhase, pData+loopStart, pData+loopEnd, v14, 0, lVol, lVol, rVol, priority, (long)&pBonkle->at0);
             pBonkle->at4 = 0;
         }
     }
@@ -291,16 +324,16 @@ void sfxPlay3DSound(SPRITE *pSprite, int soundId, int a3, int a4)
         char *pData = (char*)gSoundRes.Lock(pBonkle->at8);
         if (gDoppler)
         {
-            pBonkle->at0 = FX_PlayRaw(pData+lPhase, size-lPhase, lPitch, 0, lVol, lVol, 0, priority, (uintptr_t)&pBonkle->at0);
-            pBonkle->at4 = FX_PlayRaw(pData+rPhase, size-rPhase, rPitch, 0, rVol, 0, rVol, priority, (uintptr_t)&pBonkle->at4);
+            pBonkle->at0 = FX_PlayRaw(pData+lPhase, size-lPhase, lPitch, 0, lVol, lVol, 0, priority, (long)&pBonkle->at0);
+            pBonkle->at4 = FX_PlayRaw(pData+rPhase, size-rPhase, rPitch, 0, rVol, 0, rVol, priority, (long)&pBonkle->at4);
         }
         else
         {
-            pBonkle->at0 = FX_PlayRaw(pData+lPhase, size-lPhase, v14, 0, lVol, lVol, rVol, priority, (uintptr_t)&pBonkle->at0);
+            pBonkle->at0 = FX_PlayRaw(pData+lPhase, size-lPhase, v14, 0, lVol, lVol, rVol, priority, (long)&pBonkle->at0);
             pBonkle->at4 = 0;
         }
     }
-    SDL_UnlockMutex(snd_mutex);
+    _enable();
 }
 
 void sfxKill3DSound(SPRITE *pSprite, int a2, int a3)
@@ -394,7 +427,7 @@ void sfxUpdate3DSounds(void)
                 pBonkle->at38 = pSprite->sectnum;
             }
             Calc3DValues(pBonkle);
-            SDL_LockMutex(snd_mutex);
+            _disable();
             if (pBonkle->at0 > 0)
             {
                 if (pBonkle->at4 > 0)
@@ -410,7 +443,7 @@ void sfxUpdate3DSounds(void)
                 FX_SetPan(pBonkle->at4, rVol, 0, rVol);
                 FX_SetFrequency(pBonkle->at4, rPitch);
             }
-            SDL_UnlockMutex(snd_mutex);
+            _enable();
         }
         else
         {
@@ -422,12 +455,21 @@ void sfxUpdate3DSounds(void)
     }
 }
 
-void sfxSetReverbDelay(int delay);
-
-void sfxSetReverb(QBOOL toggle)
+void sfxSetReverbDelay(int delay)
 {
+#if APPVER_BLOODREV >= AV_BR_BL120
     if (FXDevice == 8)
         return;
+#endif
+    FX_SetReverbDelay(delay);
+}
+
+void sfxSetReverb(BOOL toggle)
+{
+#if APPVER_BLOODREV >= AV_BR_BL120
+    if (FXDevice == 8)
+        return;
+#endif
     if (toggle)
     {
         FX_SetFastReverb(1);
@@ -437,10 +479,12 @@ void sfxSetReverb(QBOOL toggle)
         FX_SetFastReverb(0);
 }
 
-void sfxSetReverb2(QBOOL toggle)
+void sfxSetReverb2(BOOL toggle)
 {
+#if APPVER_BLOODREV >= AV_BR_BL120
     if (FXDevice == 8)
         return;
+#endif
     if (toggle)
     {
         FX_SetFastReverb(1);
@@ -448,11 +492,4 @@ void sfxSetReverb2(QBOOL toggle)
     }
     else
         FX_SetFastReverb(0);
-}
-
-void sfxSetReverbDelay(int delay)
-{
-    if (FXDevice == 8)
-        return;
-    FX_SetReverbDelay(delay);
 }

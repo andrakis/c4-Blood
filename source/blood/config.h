@@ -17,11 +17,11 @@
 #ifndef _config_public
 #define _config_public
 
-#include "TYPES.H"
+#include "types.h"
 extern "C" {
-#include "FX_MAN.H"
+#include "fx_man.h"
 }
-#include "CONTROL.H"
+#include "control.h"
 
 #define SETUPNAMEPARM "SETUPFILE"
 
@@ -41,35 +41,35 @@ extern int32 ScreenMode;
 extern int32 ScreenHeight;
 extern int32 ScreenWidth;
 extern fx_blaster_config SBConfig;
-extern QBOOL gDoppler;
+extern BOOL gDoppler;
 extern int32 gViewSize;
 extern controltype ControllerType;
-extern QBOOL gFollowMap;
-extern QBOOL gShowWeapon;
+extern BOOL gFollowMap;
+extern BOOL gShowWeapon;
 extern int32 gMouseAiming;
-extern QBOOL gMouseAim;
-extern QBOOL gMouseAimingFlipped;
-extern QBOOL gAutoRun;
+extern BOOL gMouseAim;
+extern BOOL gMouseAimingFlipped;
+extern BOOL gAutoRun;
 extern int32 gTurnSpeed;
-extern QBOOL gAimReticle;
-extern QBOOL gbAdultContent;
-extern QBOOL gNoClip;
-extern QBOOL gMessageState;
+extern BOOL gAimReticle;
+extern BOOL gbAdultContent;
+extern BOOL gNoClip;
+extern BOOL gMessageState;
 extern int32 gMessageFont;
 extern int32 gMessageCount;
 extern int32 gMessageTime;
 extern int32 gDetail;
 extern int32 gSkill;
-extern QBOOL gViewInterpolate;
-extern QBOOL gShowWeapon;
-extern QBOOL gViewHBobbing;
-extern QBOOL gViewVBobbing;
-extern QBOOL gSlopeTilting;
-extern QBOOL gOverlayMap;
+extern BOOL gViewInterpolate;
+extern BOOL gShowWeapon;
+extern BOOL gViewHBobbing;
+extern BOOL gViewVBobbing;
+extern BOOL gSlopeTilting;
+extern BOOL gOverlayMap;
 extern char gzAdultPassword[12];
-extern QBOOL gFullMap;
-extern QBOOL gInfiniteAmmo;
-extern QBOOL gAutoAim;
+extern BOOL gFullMap;
+extern BOOL gInfiniteAmmo;
+extern BOOL gAutoAim;
 
 extern char CommbatMacro[10][34];
 
@@ -81,7 +81,7 @@ extern char SetupFilename[128];
 
 void CONFIG_GetSetupFilename( void );
 void CONFIG_ReadSetup( void );
-const char * CONFIG_FunctionNumToName( int32 func );
+char * CONFIG_FunctionNumToName( int32 func );
 void CONFIG_WriteAdultMode( void );
 void CONFIG_ResetKeys( void );
 void CONFIG_WriteSetup( void );

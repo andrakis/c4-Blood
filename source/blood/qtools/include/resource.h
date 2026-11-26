@@ -20,38 +20,35 @@
 #include "typedefs.h"
 #include "qheap.h"
 
-#pragma pack(push, 1)
-
 struct RFFHeader
 {
     char sign[4];
     short version;
     short pad1;
-    uint32_t offset;
-    uint32_t filenum;
+    ulong offset;
+    ulong filenum;
     int pad2[4];
 };
 
+
 struct CACHENODE
 {
-    QPtr<void> ptr;
-    QPtr<CACHENODE> prev;
-    QPtr<CACHENODE> next;
-    int lockCount;
+    void* ptr;
+    CACHENODE* prev;
+    CACHENODE* next;
+    unsigned int lockCount;
 };
 
 struct DICTNODE : CACHENODE
 {
-    uint32_t offset;
-    uint32_t size;
+    ulong offset;
+    ulong size;
     int pad1[2];
     byte flags;
     char type[3];
     char name[8];
     int id;
 };
-
-#pragma pack(pop)
 
 enum {
     kResourceFlag1 = 1,
@@ -64,41 +61,31 @@ enum {
 class Resource
 {
 public:
-    Resource();
-    ~Resource();
+    Resource(void);
+    ~Resource(void);
 
-    void Init(const char *filename, const char *external);
+    void Init(char *filename, char *external);
     static void Flush(CACHENODE *h);
     void Purge(void);
-    DICTNODE **Probe(const char *fname, const char *type);
-    DICTNODE **Probe(uint32_t id, const char *type);
+    DICTNODE **Probe(char *fname, char *type);
+    DICTNODE **Probe(unsigned long id, char *type);
     void Reindex(void);
     void Grow(void);
-    void AddExternalResource(const char *name, const char *type, int size);
-    static void *Alloc(int32_t nSize);
+    void AddExternalResource(char *name, char *type, int size);
+    static void *Alloc(long nSize);
     static void Free(void *p);
-    DICTNODE *Lookup(const char *name, const char *type);
-    DICTNODE *Lookup(uint32_t id, const char *type);
+    DICTNODE *Lookup(char *name, char *type);
+    DICTNODE *Lookup(unsigned long id, char *type);
     void Read(DICTNODE *n);
     void Read(DICTNODE *n, void *p);
     void *Load(DICTNODE *h);
     void *Load(DICTNODE *h, void *p);
     void *Lock(DICTNODE *h);
     void Unlock(DICTNODE *h);
-    void Crypt(byte *p, int32_t length, int key);
-    static void AddMRU(CACHENODE* h)
-    {
-        h->prev = purgeHead->prev;
-        ((CACHENODE*)h->prev)->next = h;
-        h->next = purgeHead;
-        ((CACHENODE*)h->next)->prev = h;
-    }
-    static void RemoveMRU(CACHENODE* h)
-    {
-        ((CACHENODE*)h->prev)->next = h->next;
-        ((CACHENODE*)h->next)->prev = h->prev;
-    }
-    static int Size(DICTNODE *n) { return n->size; }
+    void Crypt(byte *p, long length, int key);
+    static inline void AddMRU(CACHENODE* h);
+    static inline void RemoveMRU(CACHENODE* h);
+    static inline int Size(DICTNODE *n) { return n->size; }
 
     DICTNODE *dict;
     DICTNODE **indexName;
@@ -106,12 +93,25 @@ public:
     int buffSize;
     int count;
     int handle;
-    QBOOL crypt;
-    QBOOL f_19;
+    BOOL crypt;
+    BOOL f_19;
     char ext[144];
 
     static QHeap *heap;
-    static CACHENODE *purgeHead;
+    static CACHENODE purgeHead;
 };
 
+static inline void Resource::AddMRU(CACHENODE* h)
+{
+    h->prev = purgeHead.prev;
+    h->prev->next = h;
+    h->next = &purgeHead;
+    h->next->prev = h;
+}
+
+static inline void Resource::RemoveMRU(CACHENODE* h)
+{
+    h->prev->next = h->next;
+    h->next->prev = h->prev;
+}
 #endif

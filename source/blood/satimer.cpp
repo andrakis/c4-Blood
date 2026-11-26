@@ -14,15 +14,16 @@
  * GNU General Public License for more details.
  *
  */
+#include <i86.h>
 #include <stdlib.h>
 #include <string.h>
 #include "typedefs.h"
 #include "globals.h"
 #include "satimer.h"
 extern "C" {
-#include "TASK_MAN.H"
+#include "task_man.h"
 }
-//#include "smack.h"
+#include "smack.h"
 
 struct CLIENT_INFO {
     void (*pCall)(void);
@@ -31,12 +32,11 @@ struct CLIENT_INFO {
 
 static CLIENT_INFO client[16];
 static int nClients;
-static QBOOL timerActive;
+static BOOL timerActive;
 
-static uint32_t timeradjust;
-static uint32_t lasttimerread;
+static ulong timeradjust;
+static ulong lasttimerread;
 
-#if 0
 ulong pascal TimerRead(void)
 {
     ulong curtime = gGameClock;
@@ -60,13 +60,12 @@ void TimerSetup(void)
     }
     timeradjust = -gGameClock;
 }
-#endif
 
 void timerRemove(void)
 {
-    //union REGS regs;
-    //regs.w.ax = 0x1600;
-    //int386(0x2f, &regs, &regs);
+    union REGS regs;
+    regs.w.ax = 0x1600;
+    int386(0x2f, &regs, &regs);
     if (timerActive)
     {
         for (int i = 0; i < nClients; i++)
@@ -76,26 +75,26 @@ void timerRemove(void)
         TS_Shutdown();
         nClients = 0;
         timerActive = FALSE;
-        //if (regs.h.al <= 1 || regs.h.ah == 0x80)
-        //{
-        //    TimerDone();
-        //}
+        if (regs.h.al <= 1 || regs.h.ah == 0x80)
+        {
+            TimerDone();
+        }
     }
 }
 
 void timerInstall(void)
 {
-    //union REGS regs;
-    //regs.w.ax = 0x1600;
-    //int386(0x2f, &regs, &regs);
+    union REGS regs;
+    regs.w.ax = 0x1600;
+    int386(0x2f, &regs, &regs);
     if (!timerActive)
     {
         timerActive = TRUE;
         TS_Dispatch();
-        //if (regs.h.al <= 1 || regs.h.ah == 0x80)
-        //{
-        //    TimerSetup();
-        //}
+        if (regs.h.al <= 1 || regs.h.ah == 0x80)
+        {
+            TimerSetup();
+        }
         atexit(timerRemove);
     }
 }
@@ -107,7 +106,7 @@ void timerRegisterClient(void(*pCall)(void), int nRate)
     if (nClients >= 16)
         return;
     client[nClients].pCall = pCall;
-    client[nClients].pTask = TS_ScheduleTask((task_cast)pCall, nRate, 1, NULL, TASK_CHANNEL_TIMER);
+    client[nClients].pTask = TS_ScheduleTask((task_cast)pCall, nRate, 1, NULL);
     nClients++;
 }
 
@@ -121,9 +120,9 @@ void timerRemoveClient(void(*pCall)(void))
     }
     if (i >= nClients)
         return;
-    //_disable();
+    _disable();
     client[i] = client[--nClients];
-    //_enable();
+    _enable();
 }
 
 void timerSetClientRate(void(*pCall)(void), int nRate)

@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aispid.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"
@@ -28,6 +28,14 @@
 #include "seq.h"
 #include "sfx.h"
 #include "trig.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#define LDIFF2 0
+#else
+#define LDIFF1 -1
+#define LDIFF2 -2
+#endif
 
 static void SpidBiteSeqCallback(int, int);
 static void SpidJumpSeqCallback(int, int);
@@ -51,7 +59,7 @@ AISTATE spid13A92C = { 0, dword_279B50, 60, NULL, NULL, NULL, &spidIdle };
 
 static char func_70D30(XSPRITE *pXDude, int a2, int a3)
 {
-    dassert(pXDude != NULL, 92);
+    dassert(pXDude != NULL, 92+LDIFF1);
     int nDude = pXDude->reference;
     SPRITE *pDude = &sprite[nDude];
     if (IsPlayerSprite(pDude))
@@ -78,11 +86,12 @@ static void SpidBiteSeqCallback(int, int nXSprite)
     SPRITE *pSprite = &sprite[nSprite];
     int dx = Cos(pSprite->ang)>>16;
     int dy = Sin(pSprite->ang)>>16;
+    int dz = 0;
     dx += Random2(2000);
     dy += Random2(2000);
-    int dz = Random2(2000);
-    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 142);
-    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 145);
+    dz += Random2(2000);
+    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 142+LDIFF1);
+    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 145+LDIFF1);
     SPRITE *pTarget = &sprite[pXSprite->target];
     XSPRITE *pXTarget = &xsprite[pTarget->extra];
     if (IsPlayerSprite(pTarget))
@@ -137,11 +146,12 @@ static void SpidJumpSeqCallback(int, int nXSprite)
     SPRITE *pSprite = &sprite[nSprite];
     int dx = Cos(pSprite->ang)>>16;
     int dy = Sin(pSprite->ang)>>16;
+    int dz = 0;
     dx += Random2(200);
     dy += Random2(200);
-    int dz = Random2(200);
-    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 245);
-    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 248);
+    dz += Random2(200);
+    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 245+LDIFF1);
+    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 248+LDIFF1);
     SPRITE *pTarget = &sprite[pXSprite->target];
     if (IsPlayerSprite(pTarget))
     {
@@ -151,7 +161,12 @@ static void SpidJumpSeqCallback(int, int nXSprite)
             switch (pSprite->type)
             {
             case 213:
+                xvel[nSprite] = dx << 16;
+                yvel[nSprite] = dy << 16;
+                zvel[nSprite] = dz << 16;
+                break;
             case 214:
+                break;
             case 215:
                 xvel[nSprite] = dx << 16;
                 yvel[nSprite] = dy << 16;
@@ -167,30 +182,32 @@ static void func_71370(int, int nXSprite)
     XSPRITE *pXSprite = &xsprite[nXSprite];
     int nSprite = pXSprite->reference;
     SPRITE *pSprite = &sprite[nSprite];
-    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 296);
+    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 296+LDIFF1);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type-kDudeBase];
-    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 299);
+    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 299+LDIFF1);
     SPRITE *pTarget = &sprite[pXSprite->target];
     DUDEEXTRA_SPIDER *pDudeExtraE = &gDudeExtra[pSprite->extra].at6.spider;
+    SPRITE* pSpawn = NULL;
     int dx = pXSprite->at20_0-pSprite->x;
     int dy = pXSprite->at24_0-pSprite->y;
     int nAngle = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
-    SPRITE *pSpawn = NULL;
     if (IsPlayerSprite(pTarget) && pDudeExtraE->at4 < 10)
     {
         if (nDist < 0x1a00 && nDist > 0x1400 && klabs(pSprite->ang-nAngle) < pDudeInfo->at1b)
-            pSpawn = func_36878(pSprite, 214, pSprite->clipdist, 0);
+            pSpawn = func_36878(pSprite, 214, pSprite->clipdist);
         else if (nDist < 0x1400 && nDist > 0xc00 && klabs(pSprite->ang-nAngle) < pDudeInfo->at1b)
-            pSpawn = func_36878(pSprite, 213, pSprite->clipdist, 0);
+            pSpawn = func_36878(pSprite, 213, pSprite->clipdist);
         else if (nDist < 0xc00 && klabs(pSprite->ang - nAngle) < pDudeInfo->at1b)
-            pSpawn = func_36878(pSprite, 213, pSprite->clipdist, 0);
-        if (pSpawn)
-        {
-            pDudeExtraE->at4++;
-            pSpawn->owner = nSprite;
-            gKillMgr.func_263E0(1);
-        }
+            pSpawn = func_36878(pSprite, 213, pSprite->clipdist);
+    }
+    if (pSpawn)
+    {
+        pDudeExtraE->at4++;
+        pSpawn->owner = nSprite;
+#if APPVER_BLOODREV >= AV_BR_BL120
+        gKillMgr.func_263E0(1);
+#endif
     }
 }
 
@@ -202,7 +219,7 @@ static void thinkSearch(SPRITE *pSprite, XSPRITE *pXSprite)
 
 static void thinkGoto(SPRITE *pSprite, XSPRITE *pXSprite)
 {
-    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 354);
+    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 354+LDIFF2);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
     int dx = pXSprite->at20_0-pSprite->x;
     int dy = pXSprite->at24_0-pSprite->y;
@@ -221,28 +238,34 @@ static void thinkChase(SPRITE *pSprite, XSPRITE *pXSprite)
         aiNewState(pSprite, pXSprite, &spidGoto);
         return;
     }
-    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 391);
+    int dx, dy, nDist;
+    dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 391+LDIFF2);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
-    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 394);
+    dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 394+LDIFF2);
     SPRITE *pTarget = &sprite[pXSprite->target];
     XSPRITE *pXTarget = &xsprite[pTarget->extra];
-    int dx = pTarget->x-pSprite->x;
-    int dy = pTarget->y-pSprite->y;
+    dx = pTarget->x-pSprite->x;
+    dy = pTarget->y-pSprite->y;
     aiChooseDirection(pSprite, pXSprite, getangle(dx, dy));
     if (pXTarget->health == 0)
     {
         aiNewState(pSprite, pXSprite, &spidSearch);
         return;
     }
-    if (IsPlayerSprite(pTarget) && powerupCheck(&gPlayer[pTarget->type-kDudePlayer1], 13) > 0)
+    if (IsPlayerSprite(pTarget))
     {
-        aiNewState(pSprite, pXSprite, &spidSearch);
-        return;
+        PLAYER *pPlayer = &gPlayer[pTarget->type - kDudePlayer1];
+        if (powerupCheck(pPlayer, 13) > 0)
+        {
+            aiNewState(pSprite, pXSprite, &spidSearch);
+            return;
+        }
     }
-    int nDist = approxDist(dx, dy);
+    nDist = approxDist(dx, dy);
     if (nDist <= pDudeInfo->at17)
     {
-        int nDeltaAngle = ((getangle(dx,dy)+1024-pSprite->ang)&2047)-1024;
+        int nAngle = getangle(dx, dy);
+        int nDeltaAngle = ((nAngle+1024-pSprite->ang)&2047)-1024;
         int height = (pDudeInfo->atb*pSprite->yrepeat)<<2;
         if (cansee(pTarget->x, pTarget->y, pTarget->z, pTarget->sectnum, pSprite->x, pSprite->y, pSprite->z - height, pSprite->sectnum))
         {

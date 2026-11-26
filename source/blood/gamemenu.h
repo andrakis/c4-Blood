@@ -21,6 +21,7 @@
 #include "inifile.h"
 #include "misc.h"
 #include "qav.h"
+#include "gfx.h"
 #include "resource.h"
 
 #define kMaxGameMenuItems 32
@@ -50,11 +51,19 @@ class CMenuTextMgr
 {
 public:
     int at0;
-    char __f_4[16];
+    DICTNODE* m_hFont;
+    QFONT* f_8;
+    int f_c;
+    int f_10;
     CMenuTextMgr();
     ~CMenuTextMgr();
-    void DrawText(const char *pString, int nFont, int x, int y, int nShade, int nPalette, QBOOL shadow );
-    void GetFontInfo(int nFont, const char *pString, int *pXSize, int *pYSize);
+    void DrawText(char *pString, int nFont, int x, int y, int nShade, int nPalette, BOOL shadow );
+    void GetFontInfo(int nFont, char *pString, int *pXSize, int *pYSize);
+#if APPVER_BLOODREV < AV_BR_BL120
+    void LockFont(int);
+    void UnlockFont(void);
+    void GetFontInfo(char *pString, int *pXSize, int *pYSize);
+#endif
 };
 
 class CGameMenu;
@@ -69,7 +78,7 @@ enum {
 class CGameMenuItem {
 public:
     CGameMenu *pMenu;
-    const char *at4;
+    char *at4;
     int at8;
     int atc;
     int at10;
@@ -77,7 +86,7 @@ public:
     int at18;
     CGameMenuItem();
     virtual void Draw(void) = 0;
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
     void func_81920(CGameMenu *a1) {
         pMenu = a1;
     }
@@ -92,16 +101,16 @@ public:
     void func_818F0(int a1) {
         at8 = a1;
     }
-    QBOOL CanShow(void) {
+    BOOL CanShow(void) {
         return (at18 & kMenuItemFlag0) ? 1 : 0;
     }
-    QBOOL CanFocus(void) {
+    BOOL CanFocus(void) {
         return (at18 & kMenuItemFlag1) ? 1 : 0;
     }
-    QBOOL Can2(void) {
+    BOOL Can2(void) {
         return (at18 & kMenuItemFlag2) ? 1 : 0;
     }
-    QBOOL Can3(void) {
+    BOOL Can3(void) {
         return (at18 & kMenuItemFlag3) ? 1 : 0;
     }
     void Set0(void) {
@@ -135,9 +144,9 @@ class CGameMenuItemText : public CGameMenuItem
 public:
     int at20;
     CGameMenuItemText();
-    CGameMenuItemText(const char *, int, int, int, int);
+    CGameMenuItemText(char *, int, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
     void SetVal(int a1) {
         at20 = a1;
     }
@@ -148,9 +157,9 @@ class CGameMenuItemTitle : public CGameMenuItem
 public:
     int at20;
     CGameMenuItemTitle();
-    CGameMenuItemTitle(const char *, int, int, int, int);
+    CGameMenuItemTitle(char *, int, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
     void SetVal(int a1) {
         at20 = a1;
     }
@@ -159,16 +168,16 @@ public:
 class CGameMenuItemZBool : public CGameMenuItem
 {
 public:
-    static const char *m_pzOnDefault;
-    static const char *m_pzOffDefault;
-    QBOOL at20;
-    const char *at21;
-    const char *at25;
+    static char *m_pzOnDefault;
+    static char *m_pzOffDefault;
+    BOOL at20;
+    char *at21;
+    char *at25;
     void (*at29)(CGameMenuItemZBool *);
     CGameMenuItemZBool();
-    CGameMenuItemZBool(const char *,int,int,int,int,QBOOL,void (*)(CGameMenuItemZBool *),const char *,const char *);
+    CGameMenuItemZBool(char *a1,int a2,int a3,int a4,int a5,BOOL a6,void (*a7)(CGameMenuItemZBool *) = NULL,char *a8 = NULL,char *a9 = NULL);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemChain : public CGameMenuItem
@@ -180,9 +189,10 @@ public:
     void(*at2c)(CGameMenuItemChain *);
     int at30;
     CGameMenuItemChain();
-    CGameMenuItemChain(const char *, int, int, int, int, int, CGameMenu *, int, void(*)(CGameMenuItemChain *), int);
+    CGameMenuItemChain(char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8 = -1, void(*a9)(CGameMenuItemChain *) = NULL, int a10 = 0);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
+    int GetValue() { return at30; }
 };
 
 class CGameMenuItem7EA1C : public CGameMenuItem
@@ -197,10 +207,10 @@ public:
     char at38[16];
     char at48[16];
     CGameMenuItem7EA1C();
-    CGameMenuItem7EA1C(const char *a1, int a2, int a3, int a4, int a5, const char *a6, const char *a7, int a8, int a9, void(*a10)(CGameMenuItem7EA1C *), int a11);
+    CGameMenuItem7EA1C(char *a1, int a2, int a3, int a4, int a5, char *a6, char *a7, int a8, int a9 = -1, void(*a10)(CGameMenuItem7EA1C *) = NULL, int a11 = 0);
     void Setup(void);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItem7EE34 : public CGameMenuItem
@@ -211,10 +221,10 @@ public:
     CGameMenu *at28;
     CGameMenu *at2c;
     CGameMenuItem7EE34();
-    CGameMenuItem7EE34(const char *a1, int a2, int a3, int a4, int a5, int a6);
+    CGameMenuItem7EE34(char *a1, int a2, int a3, int a4, int a5, int a6);
     void Setup(void);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemChain7F2F0 : public CGameMenuItemChain
@@ -222,9 +232,9 @@ class CGameMenuItemChain7F2F0 : public CGameMenuItemChain
 public:
     int at34;
     CGameMenuItemChain7F2F0();
-    CGameMenuItemChain7F2F0(const char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10, int a11);
+    CGameMenuItemChain7F2F0(char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10, int a11);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemBitmap : public CGameMenuItem
@@ -232,9 +242,9 @@ class CGameMenuItemBitmap : public CGameMenuItem
 public:
     int at20;
     CGameMenuItemBitmap();
-    CGameMenuItemBitmap(const char *, int, int, int, int);
+    CGameMenuItemBitmap(char *, int, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemBitmapLS : public CGameMenuItemBitmap
@@ -243,9 +253,9 @@ public:
     int at24;
     int at28;
     CGameMenuItemBitmapLS();
-    CGameMenuItemBitmapLS(const char *, int, int, int, int);
+    CGameMenuItemBitmapLS(char *, int, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemKeyList : public CGameMenuItem
@@ -257,12 +267,12 @@ public:
     int at2c;
     int at30;
     int at34;
-    QBOOL at38;
+    BOOL at38;
     CGameMenuItemKeyList();
-    CGameMenuItemKeyList(const char * a1, int a2, int a3, int a4, int a5, int a6, int a7, void(*a8)(CGameMenuItemKeyList *));
+    CGameMenuItemKeyList(char * a1, int a2, int a3, int a4, int a5, int a6, int a7, void(*a8)(CGameMenuItemKeyList *) = NULL);
     void Scan(void);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemSlider : public CGameMenuItem
@@ -277,14 +287,14 @@ public:
     int at38;
     int at3c;
     CGameMenuItemSlider();
-    CGameMenuItemSlider(const char *, int, int, int, int, int, int, int, int, void(*)(CGameMenuItemSlider *), int, int);
-    CGameMenuItemSlider(const char *, int, int, int, int, int *, int, int, int, void(*)(CGameMenuItemSlider *), int, int);
+    CGameMenuItemSlider(char *a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *) = NULL, int a11 = -1, int a12 = -1);
+    CGameMenuItemSlider(char *a1, int a2, int a3, int a4, int a5, int *a6, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *) = NULL, int a11 = -1, int a12 = -1);
     void SetValue(int value)
     {
         at24 = ClipRange(value, at28, at2c);
     }
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemZEdit : public CGameMenuItem
@@ -294,15 +304,16 @@ public:
     int at24;
     int at28;
     void(*at2c)(CGameMenuItemZEdit *, CGameMenuEvent *);
-    QBOOL at30;
-    QBOOL at31;
-    QBOOL at32;
+    BOOL at30;
+    BOOL at31;
+    BOOL at32;
     CGameMenuItemZEdit();
-    CGameMenuItemZEdit(const char *, int, int, int, int, char *, int, QBOOL, void(*)(CGameMenuItemZEdit *, CGameMenuEvent *), int);
+    CGameMenuItemZEdit(char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, BOOL a8, void(*a9)(CGameMenuItemZEdit *, CGameMenuEvent *) = NULL, int a10 = 0);
     void AddChar(char);
     void BackChar(void);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
+    char* getId() { return at20; }
 };
 
 class CGameMenuItemZEditBitmap : public CGameMenuItem
@@ -313,30 +324,31 @@ public:
     int at28;
     CGameMenuItemBitmapLS *at2c;
     void(*at30)(CGameMenuItemZEditBitmap *, CGameMenuEvent *);
-    QBOOL at34;
-    QBOOL at35;
-    QBOOL at36;
-    QBOOL at37;
+    BOOL at34;
+    BOOL at35;
+    BOOL at36;
+    BOOL at37;
     CGameMenuItemZEditBitmap();
-    CGameMenuItemZEditBitmap(const char *, int, int, int, int, char *, int, char, void(*)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int);
+    CGameMenuItemZEditBitmap(char *, int, int, int, int, char *, int, char, void(*)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int);
     void AddChar(char);
     void BackChar(void);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
+    int getId(void) { return at28; }
 };
 
 class CGameMenuItemQAV : public CGameMenuItem
 {
 public:
-    const char *at20;
+    char *at20;
     DICTNODE *at24;
     QAV *at28;
     int at2c;
     int at30;
     CGameMenuItemQAV();
-    CGameMenuItemQAV(const char *, int, int, int, const char *);
+    CGameMenuItemQAV(char *, int, int, int, char *);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
     void Reset(void);
 };
 
@@ -347,20 +359,21 @@ public:
     int at24;
     int at28;
     int at2c;
-    const char **at30;
-    const char *at34[kMaxGameCycleItems];
+    char **at30;
+    char *at34[kMaxGameCycleItems];
     void(*atb4)(CGameMenuItemZCycle *);
     CGameMenuItemZCycle();
-    CGameMenuItemZCycle(const char *, int, int, int, int, int, void(*)(CGameMenuItemZCycle *), const char **, int, int);
+    CGameMenuItemZCycle(char *a1, int a2, int a3, int a4, int a5, int a6, void(*a7)(CGameMenuItemZCycle *) = NULL, char **a8 = NULL, int a9 = 0, int a10 = 0);
     ~CGameMenuItemZCycle();
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
-    void Add(const char *, QBOOL);
+    virtual BOOL Event(CGameMenuEvent &);
+    void Add(char *, BOOL);
     void Next(void);
     void Prev(void);
     void Clear(void);
-    void SetTextArray(const char **, int, int);
+    void SetTextArray(char **a1, int a2, int a3 = 0);
     void SetTextIndex(int);
+    int getId(void) { return at24; }
 };
 
 class CGameMenuItemYesNoQuit : public CGameMenuItem
@@ -370,9 +383,9 @@ public:
     int at24;
     int at28;
     CGameMenuItemYesNoQuit();
-    CGameMenuItemYesNoQuit(const char *, int, int, int, int, int, int, int);
+    CGameMenuItemYesNoQuit(char *, int, int, int, int, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenuItemPicCycle : public CGameMenuItem
@@ -386,10 +399,10 @@ public:
     void(*atb0)(CGameMenuItemPicCycle *);
     int atb4;
     CGameMenuItemPicCycle();
-    CGameMenuItemPicCycle(int, int, void(*)(CGameMenuItemPicCycle *), int *, int, int);
+    CGameMenuItemPicCycle(int a1, int a2, void(*a3)(CGameMenuItemPicCycle *) = NULL, int *a4 = NULL, int a5 = 0, int a6 = 0);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
-    void Add(int, QBOOL);
+    virtual BOOL Event(CGameMenuEvent &);
+    void Add(int, BOOL);
     void Next(void);
     void Prev(void);
     void Clear(void);
@@ -409,9 +422,9 @@ public:
     int at5b;
     CGameMenuItemZBool *at5f;
     CGameMenuItemPassword();
-    CGameMenuItemPassword(const char *, int, int, int);
+    CGameMenuItemPassword(char *, int, int, int);
     virtual void Draw(void);
-    virtual QBOOL Event(CGameMenuEvent &);
+    virtual BOOL Event(CGameMenuEvent &);
 };
 
 class CGameMenu
@@ -420,27 +433,27 @@ public:
     int m_nItems;
     int m_nFocus;
     int at8;
-    QBOOL atc;
+    BOOL atc;
     CGameMenuItem *pItemList[kMaxGameMenuItems]; // atd
     CGameMenu();
     CGameMenu(int);
     ~CGameMenu();
     void InitializeItems(CGameMenuEvent &event);
     void Draw(void);
-    QBOOL Event(CGameMenuEvent &event);
-    void Add(CGameMenuItem *pItem, QBOOL active);
+    BOOL Event(CGameMenuEvent &event);
+    void Add(CGameMenuItem *pItem, BOOL active);
     void SetFocusItem(int nItem);
-    QBOOL CanSelectItem(int nItem);
+    BOOL CanSelectItem(int nItem);
     void FocusPrevItem(void);
     void FocusNextItem(void);
-    QBOOL IsFocusItem(CGameMenuItem *pItem);
+    BOOL IsFocusItem(CGameMenuItem *pItem);
 };
 
 class CGameMenuMgr
 {
 public:
-    static QBOOL m_bInitialized;
-    static QBOOL m_bActive;
+    static BOOL m_bInitialized;
+    static BOOL m_bActive;
     CGameMenu *pActiveMenu;
     CGameMenu *pMenuStack[8];
     int nMenuPointer;
@@ -448,13 +461,13 @@ public:
     ~CGameMenuMgr();
     void InitializeMenu(void);
     void func_7DF1C(void);
-    QBOOL Push(CGameMenu *pMenu, int data = -1);
+    BOOL Push(CGameMenu *pMenu, int data = -1);
     void Pop(void);
     void Draw(void);
     void Clear(void);
     void Process(void);
     void Deactivate(void);
-    static QBOOL Active() { return m_bActive; };
+    static BOOL Active() { return m_bActive; };
 };
 
 extern CMenuTextMgr gMenuTextMgr;

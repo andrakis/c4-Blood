@@ -18,9 +18,7 @@
 #define _QAV_H_
 
 #include "typedefs.h"
-#include "engine.h"
-
-#pragma pack(push, 1)
+#include "build.h"
 
 struct TILE_FRAME
 {
@@ -57,18 +55,16 @@ struct QAV
     int at10; // 10
     int x; // 14
     int y; // 18
-    int nSprite; // 1c
+    SPRITE *pSprite; // 1c
     byte pad3[4]; // 20
     FRAMEINFO frames[1]; // 24
-    void Draw(int32_t ticks, int stat, int shade, int palnum);
-    void Play(int32_t, int32_t, int, void *);
+    void Draw(long ticks, int stat, int shade, int palnum);
+    void Play(long, long, int, void *);
     void Preload(void);
 
     void PlaySound(int nSound);
     void PlaySound3D(SPRITE *pSprite, int nSound, int a3, int a4);
 };
-
-#pragma pack(pop)
 
 int qavRegisterClient(void(*pClient)(int, void *));
 

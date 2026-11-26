@@ -30,7 +30,7 @@ extern "C" {
 
 #define NUMGAMEFUNCTIONS 54
 
-extern const char * gamefunctions[];
+extern char * gamefunctions[];
 
 enum
    {

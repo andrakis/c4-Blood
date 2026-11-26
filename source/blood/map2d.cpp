@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "config.h"
 #include "gameutil.h"
 #include "levels.h"
@@ -30,12 +30,12 @@
 
 CViewMap gViewMap;
 
-int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
+int drawoverheadmap(long cposx, long cposy, long czoom, short cang)
 {
-        int32_t i, j, k, l, x1, y1, x2, y2, x3, y3, x4, y4, ox, oy, xoff, yoff;
-        int32_t dax, day, cosang, sinang, xspan, yspan, sprx, spry;
-        int32_t xrepeat, yrepeat, z1, z2, startwall, endwall, tilenum, daang;
-        int32_t xvect, yvect, xvect2, yvect2;
+        long i, j, k, l, x1, y1, x2, y2, x3, y3, x4, y4, ox, oy, xoff, yoff;
+        long dax, day, cosang, sinang, xspan, yspan, sprx, spry;
+        long xrepeat, yrepeat, z1, z2, startwall, endwall, tilenum, daang;
+        long xvect, yvect, xvect2, yvect2;
         short p;
         char col;
         WALL *wal, *wal2;
@@ -49,7 +49,11 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
                 //Draw red lines
         for(i=0;i<numsectors;i++)
         {
-                if (!gFullMap && !(show2dsector[i>>3]&(1<<(i&7)))) continue;
+                if (
+#if APPVER_BLOODREV >= AV_BR_BL111A
+                    !gFullMap &&
+#endif
+                    !(show2dsector[i>>3]&(1<<(i&7)))) continue;
 
                 startwall = sector[i].wallptr;
                 endwall = sector[i].wallptr + sector[i].wallnum;
@@ -70,7 +74,11 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
                         col = 139; //red
                         if ((wal->cstat|wall[wal->nextwall].cstat)&1) col = 234; //magenta
 
-                        if (!gFullMap && !(show2dsector[wal->nextsector>>3]&(1<<(wal->nextsector&7))))
+                        if (
+#if APPVER_BLOODREV >= AV_BR_BL111A
+                            !gFullMap &&
+#endif
+                            !(show2dsector[wal->nextsector>>3]&(1<<(wal->nextsector&7))))
                                 col = 24;
             else continue;
 
@@ -91,7 +99,11 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
         k = gView->pSprite->index;
         for(i=0;i<numsectors;i++)
         {
-                if (!gFullMap && !(show2dsector[i>>3]&(1<<(i&7)))) continue;
+                if (
+#if APPVER_BLOODREV >= AV_BR_BL111A
+                    !gFullMap &&
+#endif
+                    !(show2dsector[i>>3]&(1<<(i&7)))) continue;
                 for(j=headspritesect[i];j>=0;j=nextspritesect[j])
                         //if ((show2dsprite[j>>3]&(1<<(j&7))) > 0)
                         {
@@ -144,7 +156,7 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
                         {
                             x1 = sprx; y1 = spry;
                             tilenum = spr->picnum;
-                            xoff = (int32_t)((signed char)((picanm[tilenum]>>8)&255))+((int32_t)spr->xoffset);
+                            xoff = (long)((signed char)((picanm[tilenum]>>8)&255))+((long)spr->xoffset);
                             if ((spr->cstat&4) > 0) xoff = -xoff;
                             k = spr->ang; l = spr->xrepeat;
                             dax = sintable[k&2047]*l; day = sintable[(k+1536)&2047]*l;
@@ -168,8 +180,8 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
 
                     case 32:
                                                 tilenum = spr->picnum;
-                                                xoff = (int32_t)((signed char)((picanm[tilenum]>>8)&255))+((int32_t)spr->xoffset);
-                                                yoff = (int32_t)((signed char)((picanm[tilenum]>>16)&255))+((int32_t)spr->yoffset);
+                                                xoff = (long)((signed char)((picanm[tilenum]>>8)&255))+((long)spr->xoffset);
+                                                yoff = (long)((signed char)((picanm[tilenum]>>16)&255))+((long)spr->yoffset);
                                                 if ((spr->cstat&4) > 0) xoff = -xoff;
                                                 if ((spr->cstat&8) > 0) yoff = -yoff;
 
@@ -225,7 +237,11 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
                 //Draw white lines
         for(i=0;i<numsectors;i++)
         {
-                if (!gFullMap && !(show2dsector[i>>3]&(1<<(i&7)))) continue;
+                if (
+#if APPVER_BLOODREV >= AV_BR_BL111A
+                    !gFullMap &&
+#endif
+                    !(show2dsector[i>>3]&(1<<(i&7)))) continue;
 
                 startwall = sector[i].wallptr;
                 endwall = sector[i].wallptr + sector[i].wallnum;
@@ -273,7 +289,7 @@ int drawoverheadmap(int32_t cposx, int32_t cposy, int32_t czoom, short cang)
           if(p == gView->at57 || gGameOptions.nGameType == GAMETYPE_1 )
           {
                 i = spr->picnum;
-                int32_t ceilZ, ceilHit, floorZ, floorHit;
+                long ceilZ, ceilHit, floorZ, floorHit;
                 GetZRange(spr, &ceilZ, &ceilHit, &floorZ, &floorHit, (spr->clipdist<<2)+16, 0x13001);
                 int nTop, nBottom;
                 GetSpriteExtents(spr, &nTop, &nBottom);
@@ -300,7 +316,7 @@ CViewMap::CViewMap()
     bActive = FALSE;
 }
 
-void CViewMap::func_25C38(int a1, int a2, int a3, short a4, QBOOL a5)
+void CViewMap::func_25C38(int a1, int a2, int a3, short a4, BOOL a5)
 {
     bActive = TRUE;
     SetPos(a1, a2);
@@ -315,7 +331,8 @@ void CViewMap::func_25C74(void)
     char buffer[128];
     if (!bActive)
         return;
-    QBOOL tm = 0;
+#if APPVER_BLOODREV >= AV_BR_BL111A
+    BOOL tm = 0;
     int vdi = gViewSize;
     if (gViewSize > 2)
     {
@@ -334,11 +351,15 @@ void CViewMap::func_25C74(void)
     int nViewY = gViewSize > 3 ? gViewY1S-16 : gViewY0S+1;
     viewDrawText(3, buffer, gViewX1S, nViewY, -128, 0, 2, 0);
 
-    const char *pMsg = gViewMap.Mode() ? "MAP FOLLOW MODE" : "MAP SCROLL MODE";
+    char *pMsg = gViewMap.Mode() ? "MAP FOLLOW MODE" : "MAP SCROLL MODE";
     viewDrawText(3, pMsg, gViewX1S, nViewY+8, -128, 0, 2, 0);
 
     if (tm)
         viewResizeView(vdi);
+#else
+    drawmapview(x,y,nZoom>>2,angle);
+    drawoverheadmap(x,y,nZoom>>2,angle);
+#endif
 }
 
 void CViewMap::func_25DB0(SPRITE *pSprite)
@@ -369,7 +390,7 @@ void CViewMap::func_25E84(int *_x, int *_y)
         *_y = y;
 }
 
-void CViewMap::FollowMode(QBOOL a1)
+void CViewMap::FollowMode(BOOL a1)
 {
     bFollowMode = a1;
 }

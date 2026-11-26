@@ -20,20 +20,22 @@
 #include "typedefs.h"
 
 struct Error {
-    const char *f_0;
+    char *f_0;
     int f_4;
-    const char *f_8;
+    char *f_8;
     char f_c;
     char __f_d[7];
-    Error(const char *m, int l, const char *s) { f_0 = m; f_4 = l; f_8 = s; f_c = 0; }
+    Error(char *m, int l, char *s) { f_0 = m; f_4 = l; f_8 = s; f_c = 0; }
 };
 
 typedef void (*ErrorHandler)(const Error &);
 
 ErrorHandler errSetHandler(ErrorHandler eh);
 
-void _SetErrorLoc(const char *,int);
-void _ThrowError(const char *,...);
+void _SetErrorLoc(char *,int);
+void _ThrowError(char *,...);
+char* getErrorMsg(void);
+BOOL getErrorFlag(void);
 
 // #define ThrowError _SetErrorLoc(__FILE__,__LINE__), _ThrowError
 #define ThrowError(line) _SetErrorLoc(__FILE__,line), _ThrowError

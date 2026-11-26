@@ -30,7 +30,7 @@ void WeaponRaise(PLAYER *);
 
 void WeaponLower(PLAYER *);
 
-byte WeaponUpgrade(PLAYER *, QBOOL);
+byte WeaponUpgrade(PLAYER *, BOOL);
 
 void WeaponProcess(PLAYER*);
 

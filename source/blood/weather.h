@@ -22,7 +22,7 @@
 
 #define kMaxVectors 4096
 
-enum WEATHERTYPE : int32_t {
+enum WEATHERTYPE {
     WEATHERTYPE_0,
     WEATHERTYPE_1,
     WEATHERTYPE_2,
@@ -33,16 +33,16 @@ class CWeather {
 public:
     CWeather();
     ~CWeather();
-    void RandomizeVectors(void);
-    void SetDefaultBuffer(char *a1, int a2, int a3, int *a4);
-    void SetParticles(short nCount, short a2, short nTile);
-    void SetTranslucency(int);
-    void SetColor(char a1);
-    void SetColorShift(char);
-    void Initialize(char *, int, int, int, int, int *, short, short, short);
-    void Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile);
-    void Draw(int a1, int a2, int a3, int a4, int a5, int a6);
-    void SetWeatherType(WEATHERTYPE);
+    RandomizeVectors(void);
+    SetDefaultBuffer(char *a1, int a2, int a3, int *a4);
+    SetParticles(short nCount, short a2, short nTile);
+    SetTranslucency(int);
+    SetColor(char a1);
+    SetColorShift(char);
+    Initialize(char *, int, int, int, int, int *, short, short, short);
+    Draw(char *pBuffer, int x, int y, int a4, int a5, int *pYLookup, int a7, int a8, int a9, int a10, int a11, int nCount, int nTile);
+    Draw(int a1, int a2, int a3, int a4, int a5, int a6);
+    SetWeatherType(WEATHERTYPE);
 
     short GetCount(void) {
         return f_12d8;
@@ -52,7 +52,7 @@ public:
         f_12d8 = ClipRange(t, 0, 4095);
     }
 
-    QBOOL Status(void) {
+    BOOL Status(void) {
         return f_0.f_0 ? 1 : 0;
     }
 

@@ -36,7 +36,7 @@ struct DUDEINFO {
     int at2b;
     int at2f;
     int at33;
-    QBOOL at37;
+    BOOL at37;
     int at38; // acceleration
     int at3c; // dodge
     int at40; // unused?
@@ -48,19 +48,7 @@ struct DUDEINFO {
     int at90;
 };
 
-extern DUDEINFO dudeInfo2[];
-
-struct DUDEINFOACCESS {
-    DUDEINFO oobDude;
-    DUDEINFO& operator[](int index) {
-        if (index >= 0 && index < kDudeMax - kDudeBase)
-            return dudeInfo2[index];
-        return oobDude;
-    };
-};
-
-extern DUDEINFOACCESS dudeInfo;
-
+extern DUDEINFO dudeInfo[];
 extern DUDEINFO gPlayerTemplate[];
 
 #endif

@@ -38,7 +38,7 @@
 #include "aitchern.h"
 #include "aizomba.h"
 #include "aizombf.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "debug4g.h"
 #include "dude.h"
@@ -64,7 +64,7 @@ static AISTATE genRecoil = { 5, -1, 20, NULL, NULL, NULL, &genIdle };
 
 int int_138BB0[5] = {0x2000, 0x4000, 0x8000, 0xa000, 0xe000};
 
-QBOOL aiSeqPlaying(SPRITE *pSprite, int nSeq)
+BOOL aiSeqPlaying(SPRITE *pSprite, int nSeq)
 {
     // ???
     if (pSprite->statnum == 6 && (pSprite->type >= kDudeBase || pSprite->type < kDudeMax))
@@ -106,7 +106,7 @@ void aiNewState(SPRITE *pSprite, XSPRITE *pXSprite, AISTATE *pAIState)
         pAIState->atc(pSprite, pXSprite);
 }
 
-QBOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
+BOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
 {
     int top, bottom;
     GetSpriteExtents(pSprite, &top, &bottom);
@@ -129,11 +129,11 @@ QBOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
         return 0;
     int floorZ = getflorzofslope(nSector, x, y);
     int ceilZ = getceilzofslope(nSector, x, y);
-    QBOOL vdl = 0; // Depth
-    QBOOL vdh = 0; // Damage
-    QBOOL vbl = 0; // Underwater
-    QBOOL vbh = 0; // Warp
     int nXSector = sector[nSector].extra;
+    BOOL vdl = 0; // Depth
+    BOOL vbl = 0; // Underwater
+    BOOL vbh = 0; // Warp
+    BOOL vdh = 0; // Damage
     if (nXSector > 0)
     {
         XSECTOR *pXSector = &xsector[nXSector];
@@ -181,8 +181,7 @@ QBOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
     case 217:
         if (vdh)
             return 0;
-        // FIX: nXSector == -1 OOB
-        if ((nXSector < 0 && !xsector[nXSector].at13_4 && !xsector[nXSector].at13_5) && floorZ-bottom > 0x2000)
+        if (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5 && floorZ-bottom > 0x2000)
             return 0;
         break;
     case 204:
@@ -206,8 +205,7 @@ QBOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
     default:
         if (vdh)
             return 0;
-        // FIX: nXSector == -1 OOB
-        if ((nXSector < 0 || !xsector[nXSector].at13_4 && !xsector[nXSector].at13_5) && floorZ - bottom > 0x2000)
+        if (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5 && floorZ - bottom > 0x2000)
             return 0;
         break;
     }
@@ -319,16 +317,18 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &ghostSearch);
         else
         {
-            aiPlay3DSound(pSprite, 1600, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1600, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &ghostChase);
         }
         break;
     }
     case 201:
     case 202:
+#ifdef PLASMAPAK
     case 247:
     case 248:
     case 249:
+#endif
     {
         DUDEEXTRA_CULTIST *pDudeExtraE = &gDudeExtra[pSprite->extra].at6.cultist;
         pDudeExtraE->at8 = 1;
@@ -342,9 +342,9 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
                 if (Chance(0x8000))
                 {
                     if (pSprite->type == 201)
-                        aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1, -1);
+                        aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1);
                     else
-                        aiPlay3DSound(pSprite, 1008+Random(5), AI_SFX_PRIORITY_1, -1);
+                        aiPlay3DSound(pSprite, 1008+Random(5), AI_SFX_PRIORITY_1);
                 }
                 break;
             case 1:
@@ -358,9 +358,9 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             if (Chance(0x8000))
             {
                 if (pSprite->type == 201)
-                    aiPlay3DSound(pSprite, 4003+Random(4), AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 4003+Random(4), AI_SFX_PRIORITY_1);
                 else
-                    aiPlay3DSound(pSprite, 1003+Random(4), AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1003+Random(4), AI_SFX_PRIORITY_1);
             }
             switch (pXSprite->at17_6)
             {
@@ -391,7 +391,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             case 0:
                 aiNewState(pSprite, pXSprite, &cultistSearch);
                 if (Chance(0x8000))
-                    aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1);
                 break;
             case 1:
             case 2:
@@ -402,7 +402,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x8000))
-                aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 4008+Random(5), AI_SFX_PRIORITY_1);
             switch (pXSprite->at17_6)
             {
             case 0:
@@ -429,7 +429,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             case 0:
                 aiNewState(pSprite, pXSprite, &cultistSearch);
                 if (Chance(0x8000))
-                    aiPlay3DSound(pSprite, 1008+Random(5), AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1008+Random(5), AI_SFX_PRIORITY_1);
                 break;
             case 1:
             case 2:
@@ -440,7 +440,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x8000))
-                aiPlay3DSound(pSprite, 1003+Random(4), AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1003+Random(4), AI_SFX_PRIORITY_1);
             switch (pXSprite->at17_6)
             {
             case 0:
@@ -473,7 +473,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0xa000))
-                aiPlay3DSound(pSprite, 2000, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 2000, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &batChase);
         }
         break;
@@ -488,10 +488,10 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &eelSearch);
         else
         {
-            if (Chance(0x8000))
-                aiPlay3DSound(pSprite, 1501, AI_SFX_PRIORITY_1, -1);
+            if (Chance(0x4000))
+                aiPlay3DSound(pSprite, 1501, AI_SFX_PRIORITY_1);
             else
-                aiPlay3DSound(pSprite, 1500, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1500, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &eelChase);
         }
         break;
@@ -515,9 +515,9 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x4000))
-                aiPlay3DSound(pSprite, 1701, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1701, AI_SFX_PRIORITY_1);
             else
-                aiPlay3DSound(pSprite, 1700, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1700, AI_SFX_PRIORITY_1);
             if (pXSector && pXSector->at13_4)
                 aiNewState(pSprite, pXSprite, &gillBeastSwimChase);
             else
@@ -539,16 +539,16 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
                 switch (Random(3))
                 {
                 case 1:
-                    aiPlay3DSound(pSprite, 1104, AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1104, AI_SFX_PRIORITY_1);
                     break;
                 case 2:
-                    aiPlay3DSound(pSprite, 1105, AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1105, AI_SFX_PRIORITY_1);
                     break;
                 case 3:
-                    aiPlay3DSound(pSprite, 1103, AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1103, AI_SFX_PRIORITY_1);
                     break;
                 default:
-                    aiPlay3DSound(pSprite, 1103, AI_SFX_PRIORITY_1, -1);
+                    aiPlay3DSound(pSprite, 1103, AI_SFX_PRIORITY_1);
                     break;
                 }
             }
@@ -584,9 +584,9 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x4000))
-                aiPlay3DSound(pSprite, 1201, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1201, AI_SFX_PRIORITY_1);
             else
-                aiPlay3DSound(pSprite, 1200, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1200, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &zombieFChase);
         }
         break;
@@ -614,9 +614,9 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x4000))
-                aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1);
             else
-                aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &gargoyleFChase);
         }
         break;
@@ -632,25 +632,25 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         else
         {
             if (Chance(0x4000))
-                aiPlay3DSound(pSprite, 1451, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1451, AI_SFX_PRIORITY_1);
             else
-                aiPlay3DSound(pSprite, 1450, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 1450, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &gargoyleFChase);
         }
         break;
     }
     case 208:
         if (Chance(0x4000))
-            aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1);
         else
-            aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1);
         aiNewState(pSprite, pXSprite, &gargoyleFMorph);
         break;
     case 209:
         if (Chance(0x4000))
-            aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1401, AI_SFX_PRIORITY_1);
         else
-            aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1400, AI_SFX_PRIORITY_1);
         aiNewState(pSprite, pXSprite, &gargoyleSMorph);
         break;
     case 227:
@@ -658,7 +658,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &cerberusSearch);
         else
         {
-            aiPlay3DSound(pSprite, 2300, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 2300, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &cerberusChase);
         }
         break;
@@ -667,7 +667,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &cerberus2Search);
         else
         {
-            aiPlay3DSound(pSprite, 2300, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 2300, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &cerberus2Chase);
         }
         break;
@@ -676,7 +676,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &houndSearch);
         else
         {
-            aiPlay3DSound(pSprite, 1300, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1300, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &houndChase);
         }
         break;
@@ -685,7 +685,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &handSearch);
         else
         {
-            aiPlay3DSound(pSprite, 1900, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1900, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &handChase);
         }
         break;
@@ -694,7 +694,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &ratSearch);
         else
         {
-            aiPlay3DSound(pSprite, 2100, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 2100, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &ratChase);
         }
         break;
@@ -705,7 +705,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         {
             if (pXSprite->health > 0)
             {
-                aiPlay3DSound(pSprite, 7000+Random(6), AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 7000+Random(6), AI_SFX_PRIORITY_1);
             }
             aiNewState(pSprite, pXSprite, &innocentChase);
         }
@@ -715,7 +715,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &tchernobogSearch);
         else
         {
-            aiPlay3DSound(pSprite, 2350+Random(7), AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 2350+Random(7), AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &tchernobogChase);
         }
         break;
@@ -728,7 +728,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &spidSearch);
         else
         {
-            aiPlay3DSound(pSprite, 1800, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1800, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &spidChase);
         }
         break;
@@ -743,11 +743,12 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &spidSearch);
         else
         {
-            aiPlay3DSound(pSprite, 1853+Random(1), AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 1853+Random(1), AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &spidChase);
         }
         break;
     }
+#ifdef PLASMAPAK
     case 250:
     {
         DUDEEXTRA_TINYCALEB *pDudeExtraE = &gDudeExtra[pSprite->extra].at6.tinyCaleb;
@@ -801,7 +802,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
         }
         else
         {
-            aiPlay3DSound(pSprite, 9009+Random(2), AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 9009+Random(2), AI_SFX_PRIORITY_1);
             switch (pXSprite->at17_6)
             {
             case 0:
@@ -821,7 +822,7 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &podSearch);
         else
         {
-            aiPlay3DSound(pSprite, pSprite->type == 223 ? 2453 : 2473, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, pSprite->type == 223 ? 2453 : 2473, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &podChase);
         }
         break;
@@ -831,10 +832,11 @@ void aiActivateDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &tentacleSearch);
         else
         {
-            aiPlay3DSound(pSprite, 2503, AI_SFX_PRIORITY_1, -1);
+            aiPlay3DSound(pSprite, 2503, AI_SFX_PRIORITY_1);
             aiNewState(pSprite, pXSprite, &tentacleChase);
         }
         break;
+#endif
     }
 }
 
@@ -866,6 +868,7 @@ void aiSetTarget(XSPRITE *pXSprite, int nTarget)
 
 int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE nDmgType, int nDamage)
 {
+    SPRITE* pSource;
     dassert(nSource < kMaxSprites, 1372);
     if (pXSprite->health == 0)
         return 0;
@@ -875,7 +878,7 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
     int nSprite = pXSprite->reference;
     if (nSource >= 0)
     {
-        SPRITE *pSource = &sprite[nSource];
+        pSource = &sprite[nSource];
         if (pSource == pSprite)
             return 0;
         if (pXSprite->target == -1)
@@ -887,7 +890,7 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
         {
             int t = nDamage;
 
-            if (pSprite->type == pSource->type)
+            if (pSource->type == pSprite->type)
                 t *= pDudeInfo->at2f;
             else
                 t *= pDudeInfo->at2b;
@@ -907,8 +910,10 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
         {
         case 201:
         case 202:
+#ifdef PLASMAPAK
         case 247:
         case 248:
+#endif
             if (nDmgType != DAMAGE_TYPE_1)
             {
                 if (!aiSeqPlaying(pSprite, 14) && pXSprite->at17_6 == 0)
@@ -918,23 +923,23 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
                 else if (aiSeqPlaying(pSprite, 13) && (pXSprite->at17_6 == 1 || pXSprite->at17_6 == 2))
                     aiNewState(pSprite, pXSprite, &cultistSwimDodge);
             }
-            else if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= (unsigned int)pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
+            else if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
             {
                 pSprite->type = 240;
                 aiNewState(pSprite, pXSprite, &cultistBurnGoto);
-                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0, -1);
-                aiPlay3DSound(pSprite, 1031+Random(2), AI_SFX_PRIORITY_2, -1);
+                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0);
+                aiPlay3DSound(pSprite, 1031+Random(2), AI_SFX_PRIORITY_2);
                 gDudeExtra[pSprite->extra].at0 = gFrameClock+360;
                 actHealDude(pXSprite, dudeInfo[40].at2, dudeInfo[40].at2);
                 evKill(nSprite, 3, CALLBACK_ID_0);
             }
             break;
         case 245:
-            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= (unsigned int)pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
+            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
             {
                 pSprite->type = 239;
                 aiNewState(pSprite, pXSprite, &cultistBurnGoto);
-                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0, -1);
+                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0);
                 gDudeExtra[pSprite->extra].at0 = gFrameClock+360;
                 actHealDude(pXSprite, dudeInfo[39].at2, dudeInfo[39].at2);
                 evKill(nSprite, 3, CALLBACK_ID_0);
@@ -943,7 +948,7 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
         case 240:
             if (Chance(0x4000) && gFrameClock > gDudeExtra[pSprite->extra].at0)
             {
-                aiPlay3DSound(pSprite, 1031+Random(2), AI_SFX_PRIORITY_2, -1);
+                aiPlay3DSound(pSprite, 1031+Random(2), AI_SFX_PRIORITY_2);
                 gDudeExtra[pSprite->extra].at0 = gFrameClock+360;
             }
             if (Chance(0x600) && (pXSprite->at17_6 == 1 || pXSprite->at17_6 == 2))
@@ -963,42 +968,44 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
             aiNewState(pSprite, pXSprite, &gargoyleFChase);
             break;
         case 204:
-            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= (unsigned int)pDudeInfo->at23)
+            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= pDudeInfo->at23)
             {
-                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0, -1);
-                aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2, -1);
+                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0);
+                aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2);
                 pSprite->type = 242;
                 aiNewState(pSprite, pXSprite, &zombieFBurnGoto);
                 actHealDude(pXSprite, dudeInfo[42].at2, dudeInfo[42].at2);
                 evKill(nSprite, 3, CALLBACK_ID_0);
             }
             break;
+#ifdef PLASMAPAK
         case 250:
-            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= (unsigned int)pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
+            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= pDudeInfo->at23 && (pXSprite->at17_6 != 1 || pXSprite->at17_6 != 2))
             {
                 pSprite->type = 239;
                 aiNewState(pSprite, pXSprite, &cultistBurnGoto);
-                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0, -1);
+                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0);
                 gDudeExtra[pSprite->extra].at0 = gFrameClock+360;
                 actHealDude(pXSprite, dudeInfo[39].at2, dudeInfo[39].at2);
                 evKill(nSprite, 3, CALLBACK_ID_0);
             }
             break;
         case 249:
-            if (pXSprite->health <= (unsigned int)pDudeInfo->at23)
+            if (pXSprite->health <= pDudeInfo->at23)
             {
                 pSprite->type = 251;
-                aiPlay3DSound(pSprite, 9008, AI_SFX_PRIORITY_1, -1);
+                aiPlay3DSound(pSprite, 9008, AI_SFX_PRIORITY_1);
                 aiNewState(pSprite, pXSprite, &beastMorphFromCultist);
                 actHealDude(pXSprite, dudeInfo[51].at2, dudeInfo[51].at2);
             }
             break;
+#endif
         case 203:
         case 205:
-            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= (unsigned int)pDudeInfo->at23)
+            if (nDmgType == DAMAGE_TYPE_1 && pXSprite->health <= pDudeInfo->at23)
             {
-                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0, -1);
-                aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2, -1);
+                aiPlay3DSound(pSprite, 361, AI_SFX_PRIORITY_0);
+                aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2);
                 pSprite->type = 241;
                 aiNewState(pSprite, pXSprite, &zombieABurnGoto);
                 actHealDude(pXSprite, dudeInfo[41].at2, dudeInfo[41].at2);
@@ -1012,8 +1019,9 @@ int aiDamageSprite(SPRITE *pSprite, XSPRITE *pXSprite, int nSource, DAMAGE_TYPE 
 
 void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
 {
-    QBOOL v4 = Chance(0x8000);
-    DUDEEXTRA *pDudeExtra = &gDudeExtra[pSprite->extra];
+    BOOL v4 = Chance(0x8000);
+    int nXSprite = pSprite->extra;
+    DUDEEXTRA *pDudeExtra = &gDudeExtra[nXSprite];
     if (pSprite->statnum == 6 && pSprite->type >= kDudeBase && pSprite->type < kDudeMax)
     {
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type-kDudeBase];
@@ -1021,13 +1029,15 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
     {
     case 201:
     case 202:
+#ifdef PLASMAPAK
     case 247:
     case 248:
     case 249:
+#endif
         if (pSprite->type == 201)
-            aiPlay3DSound(pSprite, 4013+Random(2), AI_SFX_PRIORITY_2, -1);
+            aiPlay3DSound(pSprite, 4013+Random(2), AI_SFX_PRIORITY_2);
         else
-            aiPlay3DSound(pSprite, 1013+Random(2), AI_SFX_PRIORITY_2, -1);
+            aiPlay3DSound(pSprite, 1013+Random(2), AI_SFX_PRIORITY_2);
         if (!v4 && pXSprite->at17_6 == 0)
         {
             if (pDudeExtra->at4)
@@ -1058,7 +1068,7 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         aiNewState(pSprite, pXSprite, &cultistBurnGoto);
         break;
     case 204:
-        aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4)
             aiNewState(pSprite, pXSprite, &zombieFTeslaRecoil);
         else
@@ -1066,7 +1076,7 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         break;
     case 203:
     case 205:
-        aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4 && pXSprite->at14_0 > pDudeInfo->at2/3)
             aiNewState(pSprite, pXSprite, &zombieATeslaRecoil);
         else if (pXSprite->at14_0 > pDudeInfo->at2/3)
@@ -1075,54 +1085,54 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
             aiNewState(pSprite, pXSprite, &zombieARecoil);
         break;
     case 241:
-        aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1106, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &zombieABurnGoto);
         break;
     case 242:
-        aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1202, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &zombieFBurnGoto);
         break;
     case 206:
     case 207:
-        aiPlay3DSound(pSprite, 1402, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1402, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &gargoyleFRecoil);
         break;
     case 227:
-        aiPlay3DSound(pSprite, 2302+Random(2), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 2302+Random(2), AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4 && pXSprite->at14_0 > pDudeInfo->at2/3)
             aiNewState(pSprite, pXSprite, &cerberusTeslaRecoil);
         else
             aiNewState(pSprite, pXSprite, &cerberusRecoil);
         break;
     case 228:
-        aiPlay3DSound(pSprite, 2302+Random(2), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 2302+Random(2), AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &cerberus2Recoil);
         break;
     case 211:
-        aiPlay3DSound(pSprite, 1302, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1302, AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4)
             aiNewState(pSprite, pXSprite, &houndTeslaRecoil);
         else
             aiNewState(pSprite, pXSprite, &houndRecoil);
         break;
     case 229:
-        aiPlay3DSound(pSprite, 2370+Random(2), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 2370+Random(6), AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &tchernobogRecoil);
         break;
     case 212:
-        aiPlay3DSound(pSprite, 1902, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1902, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &handRecoil);
         break;
     case 220:
-        aiPlay3DSound(pSprite, 2102, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 2102, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &ratRecoil);
         break;
     case 219:
-        aiPlay3DSound(pSprite, 2002, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 2002, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &batRecoil);
         break;
     case 218:
-        aiPlay3DSound(pSprite, 1502, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1502, AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &eelRecoil);
         break;
     case 217:
@@ -1130,7 +1140,7 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         XSECTOR *pXSector = NULL;
         if (sector[pSprite->sectnum].extra > 0)
             pXSector = &xsector[sector[pSprite->sectnum].extra];
-        aiPlay3DSound(pSprite, 1702, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1702, AI_SFX_PRIORITY_2);
         if (pXSector && pXSector->at13_4)
             aiNewState(pSprite, pXSprite, &gillBeastSwimRecoil);
         else
@@ -1138,7 +1148,7 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         break;
     }
     case 210:
-        aiPlay3DSound(pSprite, 1602, AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1602, AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4)
             aiNewState(pSprite, pXSprite, &ghostTeslaRecoil);
         else
@@ -1147,20 +1157,21 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
     case 213:
     case 214:
     case 215:
-        aiPlay3DSound(pSprite, 1802+Random(1), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1802+Random(1), AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &spidDodge);
         break;
     case 216:
-        aiPlay3DSound(pSprite, 1851+Random(1), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 1851+Random(1), AI_SFX_PRIORITY_2);
         aiNewState(pSprite, pXSprite, &spidDodge);
         break;
     case 245:
-        aiPlay3DSound(pSprite, 7007+Random(2), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 7007+Random(2), AI_SFX_PRIORITY_2);
         if (pDudeExtra->at4)
             aiNewState(pSprite, pXSprite, &innocentTeslaRecoil);
         else
             aiNewState(pSprite, pXSprite, &innocentRecoil);
         break;
+#ifdef PLASMAPAK
     case 250:
         if (pXSprite->at17_6 == 0)
         {
@@ -1180,7 +1191,7 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         }
         break;
     case 251:
-        aiPlay3DSound(pSprite, 9004+Random(2), AI_SFX_PRIORITY_2, -1);
+        aiPlay3DSound(pSprite, 9004+Random(2), AI_SFX_PRIORITY_2);
         if (pXSprite->at17_6 == 0)
         {
             if (pDudeExtra->at4)
@@ -1199,12 +1210,20 @@ void RecoilDude(SPRITE *pSprite, XSPRITE *pXSprite)
         }
         break;
     case 221:
+        aiNewState(pSprite, pXSprite, &podRecoil);
+        break;
     case 223:
         aiNewState(pSprite, pXSprite, &podRecoil);
         break;
     case 222:
+        aiNewState(pSprite, pXSprite, &tentacleRecoil);
+        break;
     case 224:
         aiNewState(pSprite, pXSprite, &tentacleRecoil);
+        break;
+#endif
+    case 208:
+    case 209:
         break;
     default:
         aiNewState(pSprite, pXSprite, &genRecoil);
@@ -1296,35 +1315,33 @@ void func_5F15C(SPRITE *pSprite, XSPRITE *pXSprite)
             }
         }
     }
-    if (pXSprite->at1_6)
+    if (!pXSprite->at1_6)
+        return;
+    int x = pSprite->x;
+    int y = pSprite->y;
+    int nSector = pSprite->sectnum;
+    gAffectedSectors[0] = -1;
+    gAffectedXWalls[0] = -1;
+    byte va4[(kMaxSectors+7)>>3];
+    GetClosestSpriteSectors(nSector, x, y, 400, gAffectedSectors, va4, gAffectedXWalls);
+    for (int nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
     {
-        byte va4[(kMaxSectors+7)>>3];
-        int x = pSprite->x;
-        int y = pSprite->z;
-        int nSector = pSprite->sectnum;
-        gAffectedSectors[0] = -1;
-        gAffectedXWalls[0] = -1;
-        GetClosestSpriteSectors(nSector, x, y, 400, gAffectedSectors, va4, gAffectedXWalls);
-        for (int nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nextspritestat[nSprite2])
+        SPRITE* pSprite2 = &sprite[nSprite2];
+        int x = pSprite2->x;
+        int y = pSprite2->y;
+        int dx = x - pSprite->x;
+        int dy = y - pSprite->y;
+        int nDist = approxDist(dx, dy);
+        if (pSprite2->type != 245)
+            continue;
+        DUDEINFO* pDudeInfo = &dudeInfo[pSprite2->type - kDudeBase];
+        if (nDist <= pDudeInfo->at17 || nDist <= pDudeInfo->at13)
         {
-            SPRITE* pSprite2 = &sprite[nSprite2];
-            int x = pSprite2->x;
-            int y = pSprite2->y;
-            int dx = x - pSprite->x;
-            int dy = y - pSprite->y;
-            int nDist = approxDist(dx, dy);
-            if (pSprite2->type == 245)
-            {
-                DUDEINFO* pDudeInfo = &dudeInfo[pSprite2->type - kDudeBase];
-                if (nDist <= pDudeInfo->at17 || nDist <= pDudeInfo->at13)
-                {
-                    int nAngle = getangle(dx, dy);
-                    int nDeltaAngle = ((1024+nAngle-pSprite->ang)&2047)-1024;
-                    aiSetTarget(pXSprite, pSprite2->index);
-                    aiActivateDude(pSprite, pXSprite);
-                    return;
-                }
-            }
+            int nAngle = getangle(dx, dy);
+            int nDeltaAngle = ((1024+nAngle-pSprite->ang)&2047)-1024;
+            aiSetTarget(pXSprite, pSprite2->index);
+            aiActivateDude(pSprite, pXSprite);
+            return;
         }
     }
 }
@@ -1374,22 +1391,24 @@ void aiInit(void)
 
 void aiInitSprite(SPRITE *pSprite)
 {
-    int nXSprite = pSprite->extra;
-    XSPRITE *pXSprite = &xsprite[nXSprite];
+    XSPRITE* pXSprite = &xsprite[pSprite->extra];
     int nSector = pSprite->sectnum;
     XSECTOR *pXSector = NULL;
     if (sector[nSector].extra > 0)
         pXSector = &xsector[sector[nSector].extra];
-    DUDEEXTRA *pDudeExtra = &gDudeExtra[pSprite->extra];
+    int nXSprite = pSprite->extra;
+    DUDEEXTRA *pDudeExtra = &gDudeExtra[nXSprite];
     pDudeExtra->at4 = 0;
     pDudeExtra->at0 = 0;
     switch (pSprite->type)
     {
     case 201:
     case 202:
+#ifdef PLASMAPAK
     case 247:
     case 248:
     case 249:
+#endif
     {
         DUDEEXTRA_CULTIST *pDudeExtraE = &gDudeExtra[nXSprite].at6.cultist;
         pDudeExtraE->at8 = 0;
@@ -1542,6 +1561,7 @@ void aiInitSprite(SPRITE *pSprite)
         aiNewState(pSprite, pXSprite, &tchernobogIdle);
         break;
     }
+#ifdef PLASMAPAK
     case 250:
         aiNewState(pSprite, pXSprite, &tinycalebIdle);
         break;
@@ -1556,6 +1576,7 @@ void aiInitSprite(SPRITE *pSprite)
     case 224:
         aiNewState(pSprite, pXSprite, &tentacleIdle);
         break;
+#endif
     default:
         aiNewState(pSprite, pXSprite, &genIdle);
         break;
@@ -1570,7 +1591,7 @@ void aiInitSprite(SPRITE *pSprite)
         if (pSprite->cstat&kSpriteStat3)
             pSprite->flags |= 9;
         else
-            pSprite->flags |= 15;
+            pSprite->flags = 15;
         break;
     case 206:
     case 207:
@@ -1583,7 +1604,7 @@ void aiInitSprite(SPRITE *pSprite)
         if (pXSector && pXSector->at13_4)
             pSprite->flags |= 9;
         else
-            pSprite->flags |= 15;
+            pSprite->flags = 15;
         break;
     case 205:
     case 244:
@@ -1614,5 +1635,3 @@ void AILoadSave::Save(void)
 }
 
 static AILoadSave myLoadSave;
-
-void ai_hook() { myLoadSave.Hook(); }

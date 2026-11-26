@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "typedefs.h"
-#include "system.h"
 #include "error.h"
 #include "fire.h"
 #include "globals.h"
@@ -32,7 +31,7 @@ extern "C" byte CoolTable[1024];
 
 byte CoolTable[1024];
 
-extern "C" void CellularFrame(byte *pFrame, int sizeX, int sizeY);
+extern "C" void cdecl CellularFrame(byte *pFrame, int sizeX, int sizeY);
 
 byte FrameBuffer[17280];
 byte SeedBuffer[16][128];
@@ -43,7 +42,7 @@ void InitSeedBuffers(void)
     for (int i = 0; i < 16; i++)
         for (int j = 0; j < fireSize; j += 2)
         {
-            byte v = wrand();
+            byte v = rand();
             SeedBuffer[i][j] = v;
             SeedBuffer[i][j + 1] = v;
         }
@@ -55,23 +54,29 @@ void BuildCoolTable(void)
         CoolTable[i] = ClipLow((i-gDamping) / 4, 0);
 }
 
-void DoFireFramePragma(byte *a1, byte *a2)
-{
-    byte* s = FrameBuffer;
-    int i = fireSize;
-    do
-    {
-        int j = fireSize;
-        byte* p = a2;
-        do
-        {
-            *p = a1[*s++];
-            p += fireSize;
-        } while (--j);
-        a2++;
-        
-    } while (--i);
-}
+void DoFireFramePragma(byte *, byte *);
+
+#pragma aux DoFireFramePragma = \
+"mov esi, offset FrameBuffer"\
+"xor eax,eax"\
+"mov edx,fireSize"\
+"L1:"\
+"push edi"\
+"mov ecx,fireSize"\
+"L2:"\
+"mov al,[esi]"\
+"inc esi"\
+"mov al,[ebx+eax]"\
+"mov [edi],al"\
+"add edi,fireSize"\
+"dec ecx"\
+"jnz short L2"\
+"pop edi"\
+"inc edi"\
+"dec edx"\
+"jnz short L1"\
+parm [ebx] [edi]\
+modify [eax ecx edx esi edi]
 
 void DoFireFrame(void)
 {
@@ -100,7 +105,7 @@ void FireInit(void)
 
 void FireProcess(void)
 {
-    static int32_t lastUpdate;
+    static long lastUpdate;
     if (gGameClock < lastUpdate || lastUpdate + 2 < gGameClock)
     {
         DoFireFrame();

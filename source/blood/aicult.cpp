@@ -17,7 +17,7 @@
 #include "typedefs.h"
 #include "ai.h"
 #include "aicult.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "db.h"
 #include "dude.h"
@@ -130,9 +130,7 @@ static void ShotSeqCallback(int, int nXSprite)
     dz += Random2(2500-gGameOptions.nDifficulty*500);
     for (int i = 0; i < 8; i++)
     {
-        int r1 = Random3(500);
-        int r2 = Random3(1000);
-        actFireVector(pSprite, 0, 0, dx+Random3(1000), dy+r2, dz+r1, VECTOR_TYPE_1);
+        actFireVector(pSprite, 0, 0, dx+Random3(1000), dy+Random3(1000), dz+Random3(500), VECTOR_TYPE_1);
     }
     if (Chance(0x8000))
         sfxPlay3DSound(pSprite, 1001);
@@ -149,7 +147,7 @@ static void ThrowSeqCallback(int, int nXSprite)
     if (gGameOptions.nDifficulty > DIFFICULTY_2)
         nMissile = 419;
     char v4 = Chance(0x6000);
-    sfxPlay3DSound(pSprite, 455, -1, 0);
+    sfxPlay3DSound(pSprite, 455);
     dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 249);
     SPRITE *pTarget = &sprite[pXSprite->target];
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 253);
@@ -164,7 +162,7 @@ static void ThrowSeqCallback(int, int nXSprite)
     if (v4)
         xsprite[pMissile->extra].ate_0 = 1;
     else
-        evPost(pMissile->index, 3, 120*(1+Random(2)), COMMAND_ID_1);
+        evPost(pMissile->index, 3, 120+120*Random(2), COMMAND_ID_1);
 }
 
 static void func_68170(int, int nXSprite)
@@ -197,7 +195,7 @@ static void func_68230(int, int nXSprite)
     int dz = pTarget->z - pSprite->z;
     int nDist = approxDist(dx, dy);
     int nDist2 = nDist / 540;
-    SPRITE *pMissile = actFireThing(pSprite, 0, 0, dz/128-14500, nMissile, (nDist2<<17)/120);
+    SPRITE *pMissile = actFireThing(pSprite, 0, 0, dz/128-14500, nMissile, (nDist2<<23)/120);
     xsprite[pMissile->extra].ate_0 = 1;
 }
 

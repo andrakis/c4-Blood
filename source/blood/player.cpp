@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include "typedefs.h"
 #include "actor.h"
-#include "engine.h"
+#include "build.h"
 #include "config.h"
 #include "db.h"
 #include "debug4g.h"
@@ -35,15 +35,21 @@
 #include "map2d.h"
 #include "network.h"
 #include "player.h"
+#include "sound.h"
 #include "seq.h"
 #include "sfx.h"
-#include "qsound.h"
 #include "tile.h"
 #include "trig.h"
 #include "triggers.h"
 #include "warp.h"
 #include "weapon.h"
 #include "view.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#else
+#define LDIFF1 -7
+#endif
 
 static void PlayerSurvive(int, int);
 static void PlayerKeelsOver(int, int);
@@ -81,7 +87,7 @@ int Handicap[] = {
 };
 
 struct VICTORY {
-    const char *at0;
+    char *at0;
     int at4;
 };
 
@@ -114,7 +120,7 @@ VICTORY gVictory[] = {
 };
 
 struct SUICIDE {
-    const char *at0;
+    char *at0;
     int at4;
 };
 
@@ -330,7 +336,7 @@ int powerupCheck(PLAYER *pPlayer, int nPowerUp)
     return pPlayer->at202[nPowerUp];
 }
 
-QBOOL powerupActivate(PLAYER *pPlayer, int nPowerUp)
+BOOL powerupActivate(PLAYER *pPlayer, int nPowerUp)
 {
     if (powerupCheck(pPlayer, nPowerUp) > 0 && gPowerUpInfo[nPowerUp].at2)
         return 0;
@@ -414,7 +420,7 @@ void powerupDeactivate(PLAYER *pPlayer, int nPowerUp)
     }
 }
 
-static void powerupSetState(PLAYER *pPlayer, int nPowerUp, QBOOL bState)
+static void powerupSetState(PLAYER *pPlayer, int nPowerUp, BOOL bState)
 {
     if (bState)
         powerupActivate(pPlayer, nPowerUp);
@@ -509,7 +515,7 @@ static int powerupToPackItem(int nPowerUp)
     return -1;
 }
 
-QBOOL packAddItem(PLAYER *pPlayer, int nPack)
+BOOL packAddItem(PLAYER *pPlayer, int nPack)
 {
     switch (nPack)
     {
@@ -543,7 +549,7 @@ int packCheckItem(PLAYER *pPlayer, int nPack)
     return pPlayer->packInfo[nPack].at1;
 }
 
-QBOOL packItemActive(PLAYER *pPlayer, int nPack)
+BOOL packItemActive(PLAYER *pPlayer, int nPack)
 {
     return pPlayer->packInfo[nPack].at0;
 }
@@ -551,7 +557,7 @@ QBOOL packItemActive(PLAYER *pPlayer, int nPack)
 void packUseItem(PLAYER *pPlayer, int nPack)
 {
     PACKINFO *pPackInfo = &pPlayer->packInfo[nPack];
-    QBOOL v4 = 0;
+    BOOL v4 = 0;
     int nPowerUp = -1;
     if (pPackInfo->at1 > 0)
     {
@@ -627,7 +633,7 @@ void packNextItem(PLAYER *pPlayer)
 }
 
 
-QBOOL playerSeqPlaying(PLAYER *pPlayer, int nSeq)
+BOOL playerSeqPlaying(PLAYER *pPlayer, int nSeq)
 {
     int nCurSeq = seqGetID(3, pPlayer->pSprite->extra);
     if (nCurSeq == pPlayer->pDudeInfo->seqStartID+nSeq && seqGetStatus(3,pPlayer->pSprite->extra) >= 0)
@@ -648,7 +654,7 @@ void playerSetRace(PLAYER *pPlayer, int nLifeMode)
     }
 }
 
-void playerSetGodMode(PLAYER *pPlayer, QBOOL bGodMode)
+void playerSetGodMode(PLAYER *pPlayer, BOOL bGodMode)
 {
     if (bGodMode)
     {
@@ -674,7 +680,7 @@ void playerResetInertia(PLAYER *pPlayer)
 void playerStart(int nPlayer)
 {
     PLAYER *pPlayer = &gPlayer[nPlayer];
-    QINPUT *pInput = &pPlayer->atc;
+    INPUT *pInput = &pPlayer->atc;
     int i;
     ZONE *pStartZone;
     if (gGameOptions.nGameType >= GAMETYPE_2)
@@ -796,27 +802,36 @@ void playerReset(PLAYER *pPlayer)
         pPlayer->atcb[i] = gInfiniteAmmo;
         pPlayer->atd9[i] = 0;
     }
+#ifdef SHAREWARE
+    pPlayer->atcb[7] = 0;
+    pPlayer->atcb[8] = 0;
+    pPlayer->atcb[9] = 0;
+    pPlayer->atcb[10] = 0;
+    pPlayer->atcb[11] = 0;
+    pPlayer->atcb[12] = 0;
+    pPlayer->atcb[13] = 0;
+#endif
     pPlayer->atcb[1] = 1;
     pPlayer->atbd = 0;
     pPlayer->at2a = -1;
     pPlayer->atc.newWeapon = 1;
-    for (int i = 0; i < 14; i++)
+    for (i = 0; i < 14; i++)
     {
         pPlayer->at111[0][i] = defaultOrder1[i];
         pPlayer->at111[1][i] = defaultOrder2[i];
     }
-    for (int i = 0; i < 12; i++)
+    for (i = 0; i < 12; i++)
     {
         pPlayer->at181[i] = gInfiniteAmmo ? gAmmoInfo[i].at0 : 0;
     }
-    for (int i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)
         pPlayer->at33e[i] = 0;
     pPlayer->atbf = 0;
     pPlayer->atc3 = 0;
     pPlayer->at26 = -1;
     pPlayer->at1b1 = 0;
     pPlayer->at321 = -1;
-    for (int i = 0; i < 5; i++)
+    for (i = 0; i < 5; i++)
     {
         pPlayer->packInfo[i].at0 = 0;
         pPlayer->packInfo[i].at1 = 0;
@@ -840,7 +855,7 @@ void playerInit(int nPlayer, unsigned int a2)
         playerReset(pPlayer);
 }
 
-QBOOL func_3A158(PLAYER *a1, SPRITE *a2)
+BOOL func_3A158(PLAYER *a1, SPRITE *a2)
 {
     for (int nSprite = headspritestat[4]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
@@ -853,7 +868,7 @@ QBOOL func_3A158(PLAYER *a1, SPRITE *a2)
     return 0;
 }
 
-static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
+static BOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
 {
     char buffer[80];
     SPRITE *pSprite = pPlayer->pSprite;
@@ -864,6 +879,7 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
     {
     case 145:
     case 146:
+    {
         if (gGameOptions.nGameType != GAMETYPE_3)
             return 0;
         if (pItem->extra > 0)
@@ -957,6 +973,7 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
             }
         }
         return 0;
+    }
     case 147:
         if (gGameOptions.nGameType != GAMETYPE_3)
             return 0;
@@ -978,7 +995,7 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
     case 144:
     {
         ARMORDATA *pArmorData = &armorData[pItem->type-140];
-        QBOOL va = 0;
+        BOOL va = 0;
         if (pPlayer->at33e[1] < pArmorData->atc)
         {
             pPlayer->at33e[1] = ClipHigh(pPlayer->at33e[1]+pArmorData->at8, pArmorData->atc);
@@ -1003,6 +1020,13 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
         if (gGameOptions.nGameType == GAMETYPE_0 || !packAddItem(pPlayer, gItemData[nType].at8))
             return 0;
         break;
+    case 107:
+    case 115:
+    case 118:
+    case 125:
+        if (!packAddItem(pPlayer, gItemData[nType].at8))
+            return 0;
+        break;
     case 100:
     case 101:
     case 102:
@@ -1022,13 +1046,6 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
         if (!actHealDude(pXSprite, gPowerUpInfo[nType].at3, gPowerUpInfo[nType].at7))
             return 0;
         return 1;
-    case 107:
-    case 115:
-    case 118:
-    case 125:
-        if (!packAddItem(pPlayer, gItemData[nType].at8))
-            return 0;
-        break;
     default:
         if (!powerupActivate(pPlayer, nType))
             return 0;
@@ -1038,7 +1055,7 @@ static QBOOL PickupItem(PLAYER *pPlayer, SPRITE *pItem)
     return 1;
 }
 
-static QBOOL PickupAmmo(PLAYER *pPlayer, SPRITE *pAmmo)
+static BOOL PickupAmmo(PLAYER *pPlayer, SPRITE *pAmmo)
 {
     AMMOITEMDATA *pAmmoItemData = &gAmmoItemData[pAmmo->type-60];
     int nAmmoType = pAmmoItemData->ata;
@@ -1052,15 +1069,17 @@ static QBOOL PickupAmmo(PLAYER *pPlayer, SPRITE *pAmmo)
     return 1;
 }
 
-static QBOOL PickupWeapon(PLAYER *pPlayer, SPRITE *pWeapon)
+static BOOL PickupWeapon(PLAYER *pPlayer, SPRITE *pWeapon)
 {
     WEAPONITEMDATA *pWeaponItemData = &gWeaponItemData[pWeapon->type-40];
     int nWeaponType = pWeaponItemData->at8;
     int nAmmoType = pWeaponItemData->ata;
     if (!pPlayer->atcb[nWeaponType] || gGameOptions.nWeaponSettings == WEAPONSETTINGS_2 || gGameOptions.nWeaponSettings == WEAPONSETTINGS_3)
     {
-        if (pWeapon->type == 50 && gGameOptions.nGameType > GAMETYPE_1 && func_3A158(pPlayer, NULL))
+#ifdef PLASMAPAK
+        if (pWeapon->type == 50 && gGameOptions.nGameType > GAMETYPE_1 && func_3A158(pPlayer))
             return 0;
+#endif
         pPlayer->atcb[nWeaponType] = 1;
         if (nAmmoType != -1)
             pPlayer->at181[nAmmoType] = ClipHigh(pPlayer->at181[nAmmoType]+pWeaponItemData->atc, gAmmoInfo[nAmmoType].at0);
@@ -1070,8 +1089,13 @@ static QBOOL PickupWeapon(PLAYER *pPlayer, SPRITE *pWeapon)
         {
             pPlayer->atc3 = 0;
             pPlayer->atbe = nNewWeapon;
+#if APPVER_BLOODREV < AV_BR_BL111A
+            sfxPlay3DSound(pSprite, 777);
+#endif
         }
+#if APPVER_BLOODREV >= AV_BR_BL111A
         sfxPlay3DSound(pSprite, 777);
+#endif
         return 1;
     }
     if (actGetRespawnTime(pWeapon) == 0)
@@ -1082,14 +1106,14 @@ static QBOOL PickupWeapon(PLAYER *pPlayer, SPRITE *pWeapon)
         return 0;
     pPlayer->at181[nAmmoType] = ClipHigh(pPlayer->at181[nAmmoType]+pWeaponItemData->atc, gAmmoInfo[nAmmoType].at0);
     SPRITE *pSprite = pPlayer->pSprite;
-    sfxPlay3DSound(pPlayer->pSprite, 777);
+    sfxPlay3DSound(pSprite, 777);
     return 1;
 }
 
 static void PickUp(PLAYER *pPlayer, SPRITE *pSprite)
 {
     char buffer[80];
-    QBOOL vb = 0;
+    BOOL vb = 0;
     int nType = pSprite->type;
     if (nType >= 100 && nType <= 149)
     {
@@ -1131,22 +1155,21 @@ static void CheckPickUp(PLAYER *pPlayer)
     int nSector = pSprite->sectnum;
     int nSprite;
     int nNextSprite;
-    int dx, dy, dz;
     for (nSprite = headspritestat[3]; nSprite >= 0; nSprite = nNextSprite)
     {
         nNextSprite = nextspritestat[nSprite];
         SPRITE *pItem = &sprite[nSprite];
         if (pItem->flags&kSpriteFlag5)
             continue;
-        dx = klabs(x-pItem->x)>>4;
+        int dx = klabs(x-pItem->x)>>4;
         if (dx > 48)
             continue;
-        dy = klabs(y-pItem->y)>>4;
+        int dy = klabs(y-pItem->y)>>4;
         if (dy > 48)
             continue;
         int top, bottom;
         GetSpriteExtents(pSprite, &top, &bottom);
-        dz = 0;
+        int dz = 0;
         if (pItem->z < top)
             dz = (top-pItem->z)>>8;
         else if (pItem->z > bottom)
@@ -1199,7 +1222,7 @@ static int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
                 SPRITE *pSprite = &sprite[*a2];
                 XSPRITE *pXSprite = &xsprite[*a3];
                 int nMass = dudeInfo[pSprite->type-kDudeBase].at4;
-                if (nMass)
+                if (nMass > 0)
                 {
                     int t2 = divscale(0xccccc, nMass, 8);
                     xvel[*a2] += mulscale16(x, t2);
@@ -1243,24 +1266,27 @@ static int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
 static void ProcessInput(PLAYER *pPlayer)
 {
     SPRITE *pSprite = pPlayer->pSprite;
-    XSPRITE *pXSprite = pPlayer->pXSprite;
     int nSprite = pPlayer->at5b;
+    XSPRITE *pXSprite = pPlayer->pXSprite;
     POSTURE *pPosture = &gPosture[pPlayer->at5f][pPlayer->at2f];
-    QINPUT *pInput = &pPlayer->atc;
+    INPUT *pInput = &pPlayer->atc;
     pPlayer->at2e = pInput->syncFlags.run;
-    if (pInput->buttonFlags.byte || pInput->forward || pInput->strafe || pInput->turn)
+
+    BUTTONFLAGS bf1 = pInput->buttonFlags;
+
+    if ((bf1.byte & pInput->buttonFlags.byte) || pInput->forward || pInput->strafe || pInput->turn)
         pPlayer->at30a = 0;
     else if (pPlayer->at30a >= 0)
         pPlayer->at30a += 4;
     WeaponProcess(pPlayer);
     if (pXSprite->health == 0)
     {
-        QBOOL bSeqStat = playerSeqPlaying(pPlayer, 16);
+        BOOL bSeqStat = playerSeqPlaying(pPlayer, 16);
         if (pPlayer->at2ee != -1)
         {
-            int dx = sprite[pPlayer->at2ee].x-pSprite->x;
-            int dy = sprite[pPlayer->at2ee].y-pSprite->y;
-            pSprite->ang = getangle(dx, dy);
+            int dx = sprite[pPlayer->at2ee].x-pPlayer->pSprite->x;
+            int dy = sprite[pPlayer->at2ee].y-pPlayer->pSprite->y;
+            pPlayer->pSprite->ang = getangle(dx, dy);
         }
         pPlayer->at1fe += 4;
         if (!bSeqStat)
@@ -1283,7 +1309,7 @@ static void ProcessInput(PLAYER *pPlayer)
                 playerReset(pPlayer);
                 if (gGameOptions.nGameType == GAMETYPE_0 && numplayers == 1)
                 {
-                    if (gDemo.at0)
+                    if (gDemo.RecordStatus())
                         gDemo.Close();
                     pInput->keyFlags.restart = 1;
                 }
@@ -1458,14 +1484,22 @@ static void ProcessInput(PLAYER *pPlayer)
             pPlayer->at372 = ClipLow(pPlayer->at372-4*(6-gGameOptions.nDifficulty), 0);
         if (pPlayer->at372 <= 0 && pPlayer->at376)
         {
+#if APPVER_BLOODREV >= AV_BR_BL120
             SPRITE *pSprite2 = func_36878(pPlayer->pSprite, 212, pPlayer->pSprite->clipdist<<1, 0);
-            pSprite2->ang = (pPlayer->pSprite->ang+1024)&2047;
             int nSprite = pPlayer->pSprite->index;
+            pSprite2->ang = (pPlayer->pSprite->ang+1024)&2047;
             int x = Cos(pPlayer->pSprite->ang)>>16;
             int y = Sin(pPlayer->pSprite->ang)>>16;
-            xvel[pSprite2->index] = xvel[nSprite] + mulscale14(0x155555, x);
-            yvel[pSprite2->index] = yvel[nSprite] + mulscale14(0x155555, y);
+            xvel[pSprite2->index] = xvel[nSprite] + mulscale(0x155555, x, 14);
+            yvel[pSprite2->index] = yvel[nSprite] + mulscale(0x155555, y, 14);
             zvel[pSprite2->index] = zvel[nSprite];
+#else
+            SPRITE *pSprite2 = func_36878(pPlayer->pSprite, 212, pPlayer->pSprite->clipdist<<1);
+            int nSprite = pPlayer->pSprite->index;
+            xvel[pSprite2->index] = xvel[nSprite] << 1;
+            yvel[pSprite2->index] = yvel[nSprite] << 1;
+            zvel[pSprite2->index] = zvel[nSprite] << 1;
+#endif
             pPlayer->at376 = 0;
         }
         pInput->keyFlags.action = 0;
@@ -1516,7 +1550,7 @@ static void ProcessInput(PLAYER *pPlayer)
 
     int nSector = pSprite->sectnum;
     int hit = gSpriteHit[pSprite->extra].florhit & 0xe000;
-    QBOOL onFloor = pXSprite->at30_0 < 16 && (hit == 0x4000 || hit == 0);
+    BOOL onFloor = pXSprite->at30_0 < 16 && (hit == 0x4000 || hit == 0);
     if (onFloor && (sector[nSector].floorstat&kSectorStat1) != 0)
     {
         int floorZ = getflorzofslope(nSector, pSprite->x, pSprite->y);
@@ -1616,9 +1650,9 @@ void playerProcess(PLAYER *pPlayer)
             if (nSector == -1)
             {
                 nSector = pSprite->sectnum;
-                actDamageSprite(nSprite, pSprite, DAMAGE_TYPE_0, 500<<4);
+                actDamageSprite(pSprite->index, pSprite, DAMAGE_TYPE_0, 500<<4);
             }
-            dassert(nSector >= 0 && nSector < kMaxSectors, 2481);
+            dassert(nSector >= 0 && nSector < kMaxSectors, 2481+LDIFF1);
             ChangeSpriteSect(nSprite, nSector);
         }
     }
@@ -1683,8 +1717,8 @@ void playerProcess(PLAYER *pPlayer)
     pPlayer->at366 = ClipLow(pPlayer->at366-4, 0);
     pPlayer->at36a = ClipLow(pPlayer->at36a-4, 0);
     pPlayer->at377 = ClipLow(pPlayer->at377-4, 0);
-    if (pPlayer == gMe && gMe->pXSprite->health == 0)
-        pPlayer->at376 = 0;
+    if (gMe == pPlayer && gMe->pXSprite->health == 0)
+        gMe->at376 = 0;
     if (!pXSprite->health)
         return;
     pPlayer->at87 = 0;
@@ -1727,27 +1761,27 @@ void playerProcess(PLAYER *pPlayer)
     }
 }
 
-SPRITE *playerFireMissile(PLAYER *pPlayer, int a2, int32_t a3, int32_t a4, int32_t a5, int a6)
+SPRITE *playerFireMissile(PLAYER *pPlayer, int a2, long a3, long a4, long a5, int a6)
 {
     return actFireMissile(pPlayer->pSprite, a2, pPlayer->at6f-pPlayer->pSprite->z, a3, a4, a5, a6);
 }
 
 SPRITE * playerFireThing(PLAYER *pPlayer, int a2, int a3, int thingType, int a5)
 {
-    dassert(thingType >= kThingBase && thingType < kThingMax, 2636);
+    dassert(thingType >= kThingBase && thingType < kThingMax, 2636+LDIFF1);
     return actFireThing(pPlayer->pSprite, a2, pPlayer->at6f-pPlayer->pSprite->z, pPlayer->at83+a3, thingType, a5);
 }
 
 void playerFrag(PLAYER *pKiller, PLAYER *pVictim)
 {
-    dassert(pKiller != NULL, 2647);
-    dassert(pVictim != NULL, 2648);
+    dassert(pKiller != NULL, 2647+LDIFF1);
+    dassert(pVictim != NULL, 2648+LDIFF1);
     
     char buffer[128] = "";
     int nKiller = pKiller->pSprite->type-kDudePlayer1;
-    dassert(nKiller >= 0 && nKiller < kMaxPlayers, 2653);
+    dassert(nKiller >= 0 && nKiller < kMaxPlayers, 2653+LDIFF1);
     int nVictim = pVictim->pSprite->type-kDudePlayer1;
-    dassert(nVictim >= 0 && nVictim < kMaxPlayers, 2655);
+    dassert(nVictim >= 0 && nVictim < kMaxPlayers, 2655+LDIFF1);
     if (myconnectindex == connecthead)
     {
         sprintf(buffer, "frag %d killed %d\n", pKiller->at57+1, pVictim->at57+1);
@@ -1763,8 +1797,8 @@ void playerFrag(PLAYER *pKiller, PLAYER *pVictim)
             int_21EFB0[pVictim->at2ea]--;
         int nMessage = Random(5);
         int nSound = gSuicide[nMessage].at4;
-        const char *pzMessage = gSuicide[nMessage].at0;
-        if (pVictim == gMe && gMe->at372 <= 0)
+        char *pzMessage = gSuicide[nMessage].at0;
+        if (gMe == pVictim && pVictim->at372 <= 0)
         {
             sprintf(buffer, "You killed yourself!");
             if (gGameOptions.nGameType > GAMETYPE_0 && nSound >= 0)
@@ -1787,7 +1821,7 @@ void playerFrag(PLAYER *pKiller, PLAYER *pVictim)
         }
         int nMessage = Random(25);
         int nSound = gVictory[nMessage].at4;
-        const char *pzMessage = gVictory[nMessage].at0;
+        char *pzMessage = gVictory[nMessage].at0;
         sprintf(buffer, pzMessage, gProfile[nKiller].name, gProfile[nVictim].name);
         if (gGameOptions.nGameType > GAMETYPE_0 && nSound >= 0 && pKiller == gMe)
             sndStartSample(nSound, 255, 2);
@@ -1808,7 +1842,7 @@ void FragPlayer(PLAYER *pPlayer, int nSprite)
         int nTeam2 = pPlayer->at2ea&1;
         if (nTeam1 == 0)
         {
-            if (nTeam1 != nTeam2)
+            if (nTeam1 == nTeam2)
                 evSend(0, 0, 15, COMMAND_ID_3);
             else
                 evSend(0, 0, 16, COMMAND_ID_3);
@@ -1866,9 +1900,9 @@ SPRITE *func_40A94(PLAYER *pPlayer, int a2)
 
 int playerDamageSprite(int nSource, PLAYER *pPlayer, DAMAGE_TYPE nDamageType, int nDamage)
 {
-    dassert(nSource < kMaxSprites, 2820);
-    dassert(pPlayer != NULL, 2821);
-    dassert(nDamageType >= 0 && nDamageType < kDamageMax, 2822);
+    dassert(nSource < kMaxSprites, 2820+LDIFF1);
+    dassert(pPlayer != NULL, 2821+LDIFF1);
+    dassert(nDamageType >= 0 && nDamageType < kDamageMax, 2822+LDIFF1);
     if (pPlayer->ata1[nDamageType])
         return 0;
     nDamage = playerDamageArmor(pPlayer, nDamageType, nDamage);
@@ -1879,12 +1913,13 @@ int playerDamageSprite(int nSource, PLAYER *pPlayer, DAMAGE_TYPE nDamageType, in
     int nSprite = pSprite->index;
     int nXSprite = pSprite->extra;
     int nXSector = sector[pSprite->sectnum].extra;
+    int v18;
     int nType = pSprite->type - kDudeBase;
     DUDEINFO *pDudeInfo = &dudeInfo[nType];
     int nDeathSeqID = -1;
-    int v18 = -1;
-    QBOOL va = playerSeqPlaying(pPlayer, 16);
-    if (!pXSprite->health)
+    v18 = -1;
+    BOOL va = playerSeqPlaying(pPlayer, 16);
+    if (pXSprite->health == 0)
     {
         if (va)
         {
@@ -2005,7 +2040,7 @@ int playerDamageSprite(int nSource, PLAYER *pPlayer, DAMAGE_TYPE nDamageType, in
         FragPlayer(pPlayer, nSource);
         trTriggerSprite(nSprite, pXSprite, 0);
     }
-    dassert(gSysRes.Lookup(pDudeInfo->seqStartID + nDeathSeqID, "SEQ") != NULL, 3030);
+    dassert(gSysRes.Lookup(pDudeInfo->seqStartID + nDeathSeqID, "SEQ") != NULL, 3030+LDIFF1);
     seqSpawn(pDudeInfo->seqStartID+nDeathSeqID, 3, nXSprite, v18);
     return nDamage;
 }
@@ -2142,5 +2177,3 @@ void PlayerLoadSave::Save(void)
 }
 
 static PlayerLoadSave myLoadSave;
-
-void player_hook() { myLoadSave.Hook(); }

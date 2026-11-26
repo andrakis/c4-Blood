@@ -20,7 +20,7 @@
 #include "typedefs.h"
 #include "cdrom.h"
 #include "config.h"
-#include "CONTROL.H"
+#include "control.h"
 #include "debug4g.h"
 #include "demo.h"
 #include "gamemenu.h"
@@ -33,7 +33,7 @@
 #include "network.h"
 #include "resource.h"
 #include "screen.h"
-#include "qsound.h"
+#include "sound.h"
 #include "view.h"
 
 void SaveGame(CGameMenuItemZEditBitmap *, CGameMenuEvent *);
@@ -80,21 +80,25 @@ char strRestoreGameStrings[][16] =
     "<Empty>",
 };
 
-const char *zNetGameTypes[] =
+char *zNetGameTypes[] =
 {
     "Cooperative",
     "Bloodbath",
+#ifdef SHAREWARE
+    "Teams (retail)",
+#else
     "Teams",
+#endif
 };
 
-const char *zMonsterStrings[] =
+char *zMonsterStrings[] =
 {
     "None",
     "Bring 'em on",
     "Respawn",
 };
 
-const char *zWeaponStrings[] =
+char *zWeaponStrings[] =
 {
     "Do not Respawn",
     "Are Permanent",
@@ -102,21 +106,21 @@ const char *zWeaponStrings[] =
     "Respawn with Markers",
 };
 
-const char *zItemStrings[] =
+char *zItemStrings[] =
 {
     "Do not Respawn",
     "Respawn",
     "Respawn with Markers",
 };
 
-const char *zRespawnStrings[] =
+char *zRespawnStrings[] =
 {
     "At Random Locations",
     "Close to Weapons",
     "Away from Enemies",
 };
 
-const char *zDiffStrings[] =
+char *zDiffStrings[] =
 {
     "STILL KICKING",
     "PINK ON THE INSIDE",
@@ -126,8 +130,8 @@ const char *zDiffStrings[] =
 };
 
 char zUserMapName[13];
-char *zEpisodeNames[6];
-char *zLevelNames[6][16];
+char *zEpisodeNames[kMaxEpisodes];
+char *zLevelNames[kMaxEpisodes][16];
 
 CGameMenu menuMain;
 CGameMenu menuMainWithSave;
@@ -153,32 +157,44 @@ CGameMenu menuSorry2;
 
 CGameMenuItemQAV itemBloodQAV("", 3, 160, 100, "BDRIP");
 CGameMenuItemQAV itemCreditsQAV("", 3, 160, 100, "CREDITS");
+#ifdef SHAREWARE
+CGameMenuItemQAV itemHelp1QAV("", 3, 160, 100, "HELP1");
+CGameMenuItemQAV itemHelp2QAV("", 3, 160, 100, "HELP2");
+#endif
 CGameMenuItemQAV itemHelp3QAV("", 3, 160, 100, "HELP3");
 CGameMenuItemQAV itemHelp3BQAV("", 3, 160, 100, "HELP3B");
 CGameMenuItemQAV itemHelp4QAV("", 3, 160, 100, "HELP4");
 CGameMenuItemQAV itemHelp5QAV("", 3, 160, 100, "HELP5");
 
 CGameMenuItemTitle itemMainTitle("BLOOD", 1, 160, 20, 2038);
-CGameMenuItemChain itemMain1("NEW GAME", 1, 0, 45, 320, 1, &menuEpisode, -1, NULL, 0);
-CGameMenuItemChain itemMain2("PLAY ONLINE", 1, 0, 65, 320, 1, &menuOnline, -1, NULL, 0);
-CGameMenuItemChain itemMain3("OPTIONS", 1, 0, 85, 320, 1, &menuOptions, -1, NULL, 0);
-CGameMenuItemChain itemMain4("LOAD GAME", 1, 0, 105, 320, 1, &menuLoadGame, -1, NULL, 0);
-CGameMenuItemChain itemMain5("HELP", 1, 0, 125, 320, 1, &menuOrder, -1, NULL, 0);
-CGameMenuItemChain itemMain6("CREDITS", 1, 0, 145, 320, 1, &menuCredits, -1, NULL, 0);
-CGameMenuItemChain itemMain7("QUIT", 1, 0, 165, 320, 1, &menuQuit, -1, NULL, 0);
+CGameMenuItemChain itemMain1("NEW GAME", 1, 0, 45, 320, 1, &menuEpisode);
+CGameMenuItemChain itemMain2("PLAY ONLINE", 1, 0, 65, 320, 1, &menuOnline);
+CGameMenuItemChain itemMain3("OPTIONS", 1, 0, 85, 320, 1, &menuOptions);
+CGameMenuItemChain itemMain4("LOAD GAME", 1, 0, 105, 320, 1, &menuLoadGame);
+#ifdef SHAREWARE
+CGameMenuItemChain itemMain5("HELP / ORDERING", 1, 0, 125, 320, 1, &menuOrder);
+#else
+CGameMenuItemChain itemMain5("HELP", 1, 0, 125, 320, 1, &menuOrder);
+#endif
+CGameMenuItemChain itemMain6("CREDITS", 1, 0, 145, 320, 1, &menuCredits);
+CGameMenuItemChain itemMain7("QUIT", 1, 0, 165, 320, 1, &menuQuit);
 
 CGameMenuItemTitle itemMainSaveTitle("BLOOD", 1, 160, 20, 2038);
-CGameMenuItemChain itemMainSave1("NEW GAME", 1, 0, 45, 320, 1, &menuEpisode, -1, NULL, 0);
-CGameMenuItemChain itemMainSave2("PLAY ONLINE", 1, 0, 60, 320, 1, &menuOnline, -1, NULL, 0);
-CGameMenuItemChain itemMainSave3("OPTIONS", 1, 0, 75, 320, 1, &menuOptions, -1, NULL, 0);
-CGameMenuItemChain itemMainSave4("SAVE GAME", 1, 0, 90, 320, 1, &menuSaveGame, -1, SaveGameProcess, 0);
-CGameMenuItemChain itemMainSave5("LOAD GAME", 1, 0, 105, 320, 1, &menuLoadGame, -1, NULL, 0);
-CGameMenuItemChain itemMainSave6("HELP", 1, 0, 120, 320, 1, &menuOrder, -1, NULL, 0);
-CGameMenuItemChain itemMainSave7("CREDITS", 1, 0, 135, 320, 1, &menuCredits, -1, NULL, 0);
-CGameMenuItemChain itemMainSave8("QUIT", 1, 0, 150, 320, 1, &menuQuit, -1, NULL, 0);
+CGameMenuItemChain itemMainSave1("NEW GAME", 1, 0, 45, 320, 1, &menuEpisode);
+CGameMenuItemChain itemMainSave2("PLAY ONLINE", 1, 0, 60, 320, 1, &menuOnline);
+CGameMenuItemChain itemMainSave3("OPTIONS", 1, 0, 75, 320, 1, &menuOptions);
+CGameMenuItemChain itemMainSave4("SAVE GAME", 1, 0, 90, 320, 1, &menuSaveGame, -1, SaveGameProcess);
+CGameMenuItemChain itemMainSave5("LOAD GAME", 1, 0, 105, 320, 1, &menuLoadGame);
+#ifdef SHAREWARE
+CGameMenuItemChain itemMainSave6("HELP / ORDERING", 1, 0, 120, 320, 1, &menuOrder);
+#else
+CGameMenuItemChain itemMainSave6("HELP", 1, 0, 120, 320, 1, &menuOrder);
+#endif
+CGameMenuItemChain itemMainSave7("CREDITS", 1, 0, 135, 320, 1, &menuCredits);
+CGameMenuItemChain itemMainSave8("QUIT", 1, 0, 150, 320, 1, &menuQuit);
 
 CGameMenuItemTitle itemEpisodeTitle("EPISODES", 1, 160, 20, 2038);
-CGameMenuItemChain7F2F0 itemEpisodes[6];
+CGameMenuItemChain7F2F0 itemEpisodes[kMaxEpisodes];
 
 CGameMenuItemTitle itemDifficultyTitle("DIFFICULTY", 1, 160, 20, 2038);
 CGameMenuItemChain itemDifficulty1("STILL KICKING", 1, 0, 60, 320, 1, NULL, -1, SetDifficultyAndStart, 0);
@@ -188,40 +204,40 @@ CGameMenuItemChain itemDifficulty4("WELL DONE", 1, 0, 120, 320, 1, NULL, -1, Set
 CGameMenuItemChain itemDifficulty5("EXTRA CRISPY", 1, 0, 140, 320, 1, NULL, -1, SetDifficultyAndStart, 4);
 
 CGameMenuItemTitle itemOptionsTitle("OPTIONS", 1, 160, 20, 2038);
-CGameMenuItemChain itemOption1("CONTROLS...", 3, 0, 40, 320, 1, &menuControls, -1, NULL, 0);
-CGameMenuItemSlider sliderDetail("DETAIL:", 3, 66, 50, 180, gDetail, 0, 4, 1, SetDetail, -1, -1);
-CGameMenuItemSlider sliderGamma("GAMMA:", 3, 66, 60, 180, gGamma, 0, 15, 2, SetGamma, -1, -1);
-CGameMenuItemSlider sliderMusic("MUSIC:", 3, 66, 70, 180, MusicVolume, 0, 256, 48, SetMusicVol, -1, -1);
-CGameMenuItemSlider sliderSound("SOUND:", 3, 66, 80, 180, FXVolume, 0, 256, 48, SetSoundVol, -1, -1);
-CGameMenuItemSlider sliderCDAudio("CD AUDIO:", 3, 66, 90, 180, CDVolume, 0, 256, 48, SetCDVol, -1, -1);
-CGameMenuItemZBool boolDoppler("3D AUDIO:", 3, 66, 100, 180, gDoppler, SetDoppler, NULL, NULL);
-CGameMenuItemZBool boolCrosshair("CROSSHAIR:", 3, 66, 110, 180, gAimReticle, SetCrosshair, NULL, NULL);
-CGameMenuItemZBool boolShowWeapons("SHOW WEAPONS:", 3, 66, 120, 180, gShowWeapon, SetShowWeapons, NULL, NULL);
-CGameMenuItemZBool boolSlopeTilting("SLOPE TILTING:", 3, 66, 130, 180, gSlopeTilting, SetSlopeTilting, NULL, NULL);
-CGameMenuItemZBool boolViewBobbing("VIEW BOBBING:", 3, 66, 140, 180, gViewVBobbing, SetViewBobbing, NULL, NULL);
-CGameMenuItemZBool boolViewSwaying("VIEW SWAYING:", 3, 66, 150, 180, gViewHBobbing, SetViewSwaying, NULL, NULL);
+CGameMenuItemChain itemOption1("CONTROLS...", 3, 0, 40, 320, 1, &menuControls);
+CGameMenuItemSlider sliderDetail("DETAIL:", 3, 66, 50, 180, gDetail, 0, 4, 1, SetDetail);
+CGameMenuItemSlider sliderGamma("GAMMA:", 3, 66, 60, 180, gGamma, 0, 15, 2, SetGamma);
+CGameMenuItemSlider sliderMusic("MUSIC:", 3, 66, 70, 180, MusicVolume, 0, 256, 48, SetMusicVol);
+CGameMenuItemSlider sliderSound("SOUND:", 3, 66, 80, 180, FXVolume, 0, 256, 48, SetSoundVol);
+CGameMenuItemSlider sliderCDAudio("CD AUDIO:", 3, 66, 90, 180, CDVolume, 0, 255, 48, SetCDVol);
+CGameMenuItemZBool boolDoppler("3D AUDIO:", 3, 66, 100, 180, gDoppler, SetDoppler);
+CGameMenuItemZBool boolCrosshair("CROSSHAIR:", 3, 66, 110, 180, gAimReticle, SetCrosshair);
+CGameMenuItemZBool boolShowWeapons("SHOW WEAPONS:", 3, 66, 120, 180, gShowWeapon, SetShowWeapons);
+CGameMenuItemZBool boolSlopeTilting("SLOPE TILTING:", 3, 66, 130, 180, gSlopeTilting, SetSlopeTilting);
+CGameMenuItemZBool boolViewBobbing("VIEW BOBBING:", 3, 66, 140, 180, gViewVBobbing, SetViewBobbing);
+CGameMenuItemZBool boolViewSwaying("VIEW SWAYING:", 3, 66, 150, 180, gViewHBobbing, SetViewSwaying);
 CGameMenuItem7EE34 itemVideoMode("VIDEO MODE...", 3, 0, 160, 320, 1);
-CGameMenuItemChain itemChainParentalLock("PARENTAL LOCK", 3, 0, 170, 320, 1, &menuParentalLock, -1, NULL, 0);
+CGameMenuItemChain itemChainParentalLock("PARENTAL LOCK", 3, 0, 170, 320, 1, &menuParentalLock);
 
 CGameMenuItemTitle itemControlsTitle("CONTROLS", 1, 160, 20, 2038);
-CGameMenuItemSlider sliderMouseSpeed("Mouse Sensitivity:", 1, 10, 70, 300, gMouseSensitivity, 0, 0x20000, 0x1000, SetMouseSensitivity, -1,-1);
-CGameMenuItemZBool boolMouseFlipped("Invert Mouse Aim:", 1, 10, 90, 300, gMouseAimingFlipped, SetMouseAimFlipped, NULL, NULL);
-CGameMenuItemSlider sliderTurnSpeed("Key Turn Speed:", 1, 10, 110, 300, gTurnSpeed, 64, 128, 4, SetTurnSpeed, -1, -1);
-CGameMenuItemChain itemChainKeyList("Configure Keys...", 1, 0, 130, 320, 1, &menuKeys, -1, NULL, 0);
-CGameMenuItemChain itemChainKeyReset("Reset Keys...", 1, 0, 160, 320, 1, &menuKeys, -1, ResetKeys, 0);
+CGameMenuItemSlider sliderMouseSpeed("Mouse Sensitivity:", 1, 10, 70, 300, gMouseSensitivity, 0, 0x20000, 0x1000, SetMouseSensitivity);
+CGameMenuItemZBool boolMouseFlipped("Invert Mouse Aim:", 1, 10, 90, 300, gMouseAimingFlipped, SetMouseAimFlipped);
+CGameMenuItemSlider sliderTurnSpeed("Key Turn Speed:", 1, 10, 110, 300, gTurnSpeed, 64, 128, 4, SetTurnSpeed);
+CGameMenuItemChain itemChainKeyList("Configure Keys...", 1, 0, 130, 320, 1, &menuKeys);
+CGameMenuItemChain itemChainKeyReset("Reset Keys...", 1, 0, 160, 320, 1, &menuKeys, -1, ResetKeys);
 
 CGameMenuItemTitle itemMessagesTitle("MESSAGES", 1, 160, 20, 2038);
-CGameMenuItemZBool boolMessages("MESSAGES:", 3, 66, 70, 180, 0, SetMessages, NULL, NULL);
-CGameMenuItemSlider sliderMsgCount("MESSAGE COUNT:", 3, 66, 80, 180, gMessageCount, 1, 16, 1, NULL, -1, -1);
-CGameMenuItemSlider sliderMsgTime("MESSAGE TIME:", 3, 66, 90, 180, gMessageTime, 1, 8, 1, NULL, -1, -1);
-CGameMenuItemZBool boolMsgFont("LARGE FONT:", 3, 66, 100, 180, 0, 0, NULL, NULL);
-CGameMenuItemZBool boolMsgIncoming("INCOMING:", 3, 66, 110, 180, 0, 0, NULL, NULL);
-CGameMenuItemZBool boolMsgSelf("SELF PICKUP:", 3, 66, 120, 180, 0, 0, NULL, NULL);
-CGameMenuItemZBool boolMsgOther("OTHER PICKUP:", 3, 66, 130, 180, 0, 0, NULL, NULL);
-CGameMenuItemZBool boolMsgRespawn("RESPAWN:", 3, 66, 140, 180, 0, 0, NULL, NULL);
+CGameMenuItemZBool boolMessages("MESSAGES:", 3, 66, 70, 180, 0, SetMessages);
+CGameMenuItemSlider sliderMsgCount("MESSAGE COUNT:", 3, 66, 80, 180, gMessageCount, 1, 16, 1);
+CGameMenuItemSlider sliderMsgTime("MESSAGE TIME:", 3, 66, 90, 180, gMessageTime, 1, 8, 1);
+CGameMenuItemZBool boolMsgFont("LARGE FONT:", 3, 66, 100, 180, 0);
+CGameMenuItemZBool boolMsgIncoming("INCOMING:", 3, 66, 110, 180, 0);
+CGameMenuItemZBool boolMsgSelf("SELF PICKUP:", 3, 66, 120, 180, 0);
+CGameMenuItemZBool boolMsgOther("OTHER PICKUP:", 3, 66, 130, 180, 0);
+CGameMenuItemZBool boolMsgRespawn("RESPAWN:", 3, 66, 140, 180, 0);
 
 CGameMenuItemTitle itemKeysTitle("KEY SETUP", 1, 160, 20, 2038);
-CGameMenuItemKeyList itemKeyList("", 3, 56, 40, 200, 16, 54, 0);
+CGameMenuItemKeyList itemKeyList("", 3, 56, 40, 200, 16, 54);
 
 CGameMenuItemTitle itemSaveTitle("Save Game", 1, 160, 20, 2038);
 CGameMenuItemZEditBitmap itemSaveGame1(NULL, 3, 20, 60, 320, strRestoreGameStrings[0], 16, 1, SaveGame, 0);
@@ -247,39 +263,39 @@ CGameMenuItemZEditBitmap itemLoadGame7(NULL, 3, 20, 120, 320, strRestoreGameStri
 CGameMenuItemZEditBitmap itemLoadGame8(NULL, 3, 20, 130, 320, strRestoreGameStrings[7], 16, 1, LoadGame, 7);
 CGameMenuItemZEditBitmap itemLoadGame9(NULL, 3, 20, 140, 320, strRestoreGameStrings[8], 16, 1, LoadGame, 8);
 CGameMenuItemZEditBitmap itemLoadGame10(NULL, 3, 20, 150, 320, strRestoreGameStrings[9], 16, 1, LoadGame, 9);
-CGameMenuItemBitmapLS itemLoadGamePic(NULL, 3, 0, 0, 2518);
+CGameMenuItemBitmapLS itemLoadGamePic(NULL, 3, 0, 0, BACKTILE);
 
 CGameMenuItemTitle itemNetStartTitle("NETWORK GAME", 1, 160, 20, 2038);
-CGameMenuItemZCycle itemNetStart1("GAME", 1, 20, 35, 280, 0, 0, zNetGameTypes, 3, 0);
-CGameMenuItemZCycle itemNetStart2("EPISODE", 1, 20, 50, 280, 0, SetupNetLevels, NULL, 0, 0);
-CGameMenuItemZCycle itemNetStart3("LEVEL", 1, 20, 65, 280, 0, NULL, NULL, 0, 0);
-CGameMenuItemZCycle itemNetStart4("DIFFICULTY", 1, 20, 80, 280, 0, 0, zDiffStrings, 5, 0);
-CGameMenuItemZCycle itemNetStart5("MONSTERS", 1, 20, 95, 280, 0, 0, zMonsterStrings, 3, 0);
-CGameMenuItemZCycle itemNetStart6("WEAPONS", 1, 20, 110, 280, 0, 0, zWeaponStrings, 4, 0);
-CGameMenuItemZCycle itemNetStart7("ITEMS", 1, 20, 125, 280, 0, 0, zItemStrings, 3, 0);
-CGameMenuItemZEdit itemNetStart9("USER MAP:", 1, 20, 155, 280, zUserMapName, 13, 0, NULL, 0);
-CGameMenuItemChain itemNetStart10("START GAME", 1, 20, 170, 280, 0, 0, -1, StartNetGame, 0);
+CGameMenuItemZCycle itemNetStart1("GAME", 1, 20, 35, 280, 0, 0, zNetGameTypes, 3);
+CGameMenuItemZCycle itemNetStart2("EPISODE", 1, 20, 50, 280, 0, SetupNetLevels);
+CGameMenuItemZCycle itemNetStart3("LEVEL", 1, 20, 65, 280, 0, 0);
+CGameMenuItemZCycle itemNetStart4("DIFFICULTY", 1, 20, 80, 280, 0, 0, zDiffStrings, 5);
+CGameMenuItemZCycle itemNetStart5("MONSTERS", 1, 20, 95, 280, 0, 0, zMonsterStrings, 3);
+CGameMenuItemZCycle itemNetStart6("WEAPONS", 1, 20, 110, 280, 0, 0, zWeaponStrings, 4);
+CGameMenuItemZCycle itemNetStart7("ITEMS", 1, 20, 125, 280, 0, 0, zItemStrings, 3);
+CGameMenuItemZEdit itemNetStart9("USER MAP:", 1, 20, 155, 280, zUserMapName, 13, 0);
+CGameMenuItemChain itemNetStart10("START GAME", 1, 20, 170, 280, 0, 0, -1, StartNetGame);
 
 CGameMenuItemText itemLoadingText("LOADING...", 1, 160, 100, 1);
 
 CGameMenuItemTitle itemSoundsTitle("SOUNDS", 1, 160, 20, 2038);
-CGameMenuItemSlider itemSoundsMusic("MUSIC:", 3, 40, 60, 180, MusicVolume, 0, 256, 48, SetMusicVol, -1, -1);
-CGameMenuItemSlider itemSoundsSound("SOUND:", 3, 40, 70, 180, FXVolume, 0, 256, 48, SetSoundVol, -1, -1);
-CGameMenuItemSlider itemSoundsCDAudio("CD AUDIO:", 3, 40, 80, 180, CDVolume, 0, 256, 48, SetCDVol, -1, -1);
-CGameMenuItemZBool itemSoundsDoppler("3D SOUND:", 3, 40, 90, 180, gDoppler, SetDoppler, NULL, NULL);
+CGameMenuItemSlider itemSoundsMusic("MUSIC:", 3, 40, 60, 180, MusicVolume, 0, 256, 48, SetMusicVol);
+CGameMenuItemSlider itemSoundsSound("SOUND:", 3, 40, 70, 180, FXVolume, 0, 256, 48, SetSoundVol);
+CGameMenuItemSlider itemSoundsCDAudio("CD AUDIO:", 3, 40, 80, 180, CDVolume, 0, 256, 48, SetCDVol);
+CGameMenuItemZBool itemSoundsDoppler("3D SOUND:", 3, 40, 90, 180, gDoppler, SetDoppler);
 
 CGameMenuItemTitle itemQuitTitle("QUIT", 1, 160, 20, 2038);
 CGameMenuItemText itemQuitText1("Do you really want to quit?", 0, 160, 100, 1);
 CGameMenuItemYesNoQuit itemQuitYesNo("[Y/N]", 0, 20, 110, 280, 1, -1, 0);
 
-CGameMenuItemPicCycle itemCreditsPicCycle(0, 0, NULL, NULL, 0, 0);
-CGameMenuItemPicCycle itemOrderPicCycle(0, 0, NULL, NULL, 0, 0);
+CGameMenuItemPicCycle itemCreditsPicCycle(0, 0);
+CGameMenuItemPicCycle itemOrderPicCycle(0, 0);
 
 CGameMenuItemTitle itemParentalLockTitle("PARENTAL LOCK", 1, 160, 20, 2038);
-CGameMenuItemZBool itemParentalLockToggle("LOCK:", 3, 66, 70, 180, 0, SetParentalLock, NULL, NULL);
+CGameMenuItemZBool itemParentalLockToggle("LOCK:", 3, 66, 70, 180, 0, SetParentalLock);
 CGameMenuItemPassword itemParentalLockPassword("SET PASSWORD:", 3, 160, 80);
 
-CGameMenuItemPicCycle itemSorryPicCycle(0, 0, NULL, NULL, 0, 0);
+CGameMenuItemPicCycle itemSorryPicCycle(0, 0);
 
 CGameMenuItemText itemSorryText1("Loading and saving games", 0, 160, 90, 1);
 CGameMenuItemText itemSorryText2("not supported", 0, 160, 100, 1);
@@ -290,12 +306,28 @@ CGameMenuItemText itemSorry2Text2("Blood for three new episodes", 0, 160, 100, 1
 CGameMenuItemText itemSorry2Text3("plus eight BloodBath-only levels!", 0, 160, 110, 1);
 
 CGameMenuItemTitle itemOnlineTitle(" ONLINE ", 1, 160, 20, 2038);
-CGameMenuItem7EA1C itemOnline1("DWANGO", 1, 0, 45, 320, "matt", "DWANGO", 1, -1, NULL, NULL);
-CGameMenuItem7EA1C itemOnline2("RTIME", 1, 0, 65, 320, "matt", "RTIME", 1, -1, NULL, NULL);
-CGameMenuItem7EA1C itemOnline3("HEAT", 1, 0, 85, 320, "matt", "HEAT", 1, -1, NULL, NULL);
-CGameMenuItem7EA1C itemOnline4("KALI", 1, 0, 105, 320, "matt", "KALI", 1, -1, NULL, NULL);
-CGameMenuItem7EA1C itemOnline5("MPATH", 1, 0, 125, 320, "matt", "MPATH", 1, -1, NULL, NULL);
-CGameMenuItemChain itemOnline6("TEN", 1, 0, 145, 320, 1, NULL, -1, TenProcess, NULL);
+CGameMenuItem7EA1C itemOnline1("DWANGO", 1, 0, 45, 320, "matt", "DWANGO", 1);
+CGameMenuItem7EA1C itemOnline2(
+#if APPVER_BLOODREV >= AV_BR_BL121
+    "RTIME"
+#else
+    "ENGAGE"
+#endif
+    , 1, 0, 65, 320, "matt",
+#if APPVER_BLOODREV >= AV_BR_BL121
+    "RTIME"
+#else
+    "ENGAGE"
+#endif
+    , 1);
+CGameMenuItem7EA1C itemOnline3("HEAT", 1, 0, 85, 320, "matt", "HEAT", 1);
+CGameMenuItem7EA1C itemOnline4("KALI", 1, 0, 105, 320, "matt", "KALI", 1);
+CGameMenuItem7EA1C itemOnline5("MPATH", 1, 0, 125, 320, "matt", "MPATH", 1);
+#if defined(SHAREWARE) && !defined(SWRETAIL)
+CGameMenuItem7EA1C itemOnline6("TEN", 1, 0, 145, 320, "matt", "TEN", 1);
+#else
+CGameMenuItemChain itemOnline6("TEN", 1, 0, 145, 320, 1, NULL, -1, TenProcess);
+#endif
 
 void SetupLoadingScreen(void)
 {
@@ -326,8 +358,10 @@ void SetupMessagesMenu(void)
 void SetupControlsMenu(void)
 {
     sliderMouseSpeed.at24 = ClipRange(gMouseSensitivity, sliderMouseSpeed.at28, sliderMouseSpeed.at2c);
+#if APPVER_BLOODREV >= AV_BR_BL111
     sliderTurnSpeed.at24 = ClipRange(gTurnSpeed, sliderTurnSpeed.at28, sliderTurnSpeed.at2c);
     boolMouseFlipped.at20 = gMouseAimingFlipped;
+#endif
     menuControls.Add(&itemControlsTitle, 0);
     menuControls.Add(&sliderMouseSpeed, 1);
     menuControls.Add(&boolMouseFlipped, 0);
@@ -380,21 +414,30 @@ void SetupDifficultyMenu(void)
     menuDifficulty.Add(&itemBloodQAV, 0);
 }
 
+#if APPVER_BLOODREV >= AV_BR_BL121
+#define LDIFF1 0
+#else
+#define LDIFF1 1
+#endif
+
 void SetupLevelMenuItem(int nEpisode)
 {
-    dassert(nEpisode >= 0 && nEpisode < gEpisodeCount, 471);
+    dassert(nEpisode >= 0 && nEpisode < gEpisodeCount, 471+LDIFF1);
     EPISODEINFO *pEpisdeInfo = &gEpisodeInfo[nEpisode];
-    itemNetStart3.SetTextArray((const char**)zLevelNames[nEpisode], pEpisdeInfo->nLevels, 0);
+    itemNetStart3.SetTextArray(zLevelNames[nEpisode], pEpisdeInfo->nLevels);
 }
 
 void SetupEpisodeMenu(void)
 {
     menuEpisode.Add(&itemEpisodeTitle, 0);
-    QBOOL unk = 0;
+    BOOL unk = 0;
+#ifdef SHAREWARE
+    unk = 1;
+#endif
     int height;
     gMenuTextMgr.GetFontInfo(1, NULL, NULL, &height);
     int j = 0;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < kMaxEpisodes; i++)
     {
         EPISODEINFO *pEpisode = &gEpisodeInfo[i];
         if (!pEpisode->bloodbath || gGameOptions.nGameType != GAMETYPE_0)
@@ -412,7 +455,7 @@ void SetupEpisodeMenu(void)
                 pEpisodeItem->at34 = i;
                 if (!unk || j == 0)
                 {
-                    pEpisodeItem = &itemEpisodes[j];
+                    CGameMenuItemChain7F2F0* pEpisodeItem = &itemEpisodes[j];
                     pEpisodeItem->at24 = &menuDifficulty;
                     pEpisodeItem->at28 = 3;
                 }
@@ -423,7 +466,7 @@ void SetupEpisodeMenu(void)
                 }
                 pEpisodeItem = &itemEpisodes[j];
                 pEpisodeItem->at18 |= 3;
-                QBOOL first = j == 0 ? 1 : 0;
+                BOOL first = j == 0 ? 1 : 0;
                 menuEpisode.Add(&itemEpisodes[j], first);
                 if (first)
                     SetupLevelMenuItem(j);
@@ -497,10 +540,13 @@ void SetupMainMenuWithSave(void)
 
 void SetupNetStartMenu(void)
 {
-    QBOOL oneEpisode = 0;
+    BOOL oneEpisode = 0;
+#ifdef SHAREWARE
+    oneEpisode = 1;
+#endif
     menuNetStart.Add(&itemNetStartTitle, 0);
     menuNetStart.Add(&itemNetStart1, 1);
-    for (int i = 0; i < (oneEpisode ? 1 : 6); i++)
+    for (int i = 0; i < (oneEpisode ? 1 : kMaxEpisodes); i++)
     {
         EPISODEINFO *pEpisode = &gEpisodeInfo[i];
         if (i < gEpisodeCount)
@@ -641,10 +687,18 @@ void SetupHelpOrderMenu(void)
 {
     menuOrder.Add(&itemHelp4QAV, 1);
     menuOrder.Add(&itemHelp5QAV, 0);
+#ifdef SHAREWARE
+    menuOrder.Add(&itemHelp1QAV, 0);
+    menuOrder.Add(&itemHelp2QAV, 0);
+#endif
     menuOrder.Add(&itemHelp3QAV, 0);
     menuOrder.Add(&itemHelp3BQAV, 0);
     itemHelp4QAV.at18 |= 10;
     itemHelp5QAV.at18 |= 10;
+#ifdef SHAREWARE
+    itemHelp1QAV.at18 |= 10;
+    itemHelp2QAV.at18 |= 10;
+#endif
     itemHelp3QAV.at18 |= 10;
     itemHelp3BQAV.at18 |= 10;
 }
@@ -788,7 +842,7 @@ void SetCDVol(CGameMenuItemSlider *pItem)
 
 void SetMessages(CGameMenuItemZBool *pItem)
 {
-    QBOOL t = pItem->at20;
+    BOOL t = pItem->at20;
     gGameMessageMgr.SetState(t);
 }
 
@@ -810,11 +864,10 @@ void SetTurnSpeed(CGameMenuItemSlider *pItem)
 
 void SetDifficultyAndStart(CGameMenuItemChain *pItem)
 {
-    DIFFICULTY t = (DIFFICULTY)pItem->at30;
+    DIFFICULTY t = (DIFFICULTY)pItem->GetValue();
     gSkill = gGameOptions.nDifficulty = t;
     gGameOptions.nLevel = 0;
-    QBOOL s = gDemo.at1;
-    if (s)
+    if (gDemo.PlaybackStatus())
         gDemo.StopPlayback();
     gStartNewGame = 1;
     gCheatMgr.func_5BCF4();
@@ -827,8 +880,8 @@ void SetVideoMode(CGameMenuItemChain *pItem)
     if (t == validmodecnt)
     {
         ScreenMode = 2;
-        ScreenWidth = 640;
-        ScreenHeight = 480;
+        ScreenWidth = 320;
+        ScreenHeight = 200;
     }
     else
     {
@@ -852,14 +905,6 @@ int tenBnStart(void);
 
 void TenButtonCommand(char *);
 
-void tenBnSetCommandLine(void (*a1)(char*))
-{
-}
-int tenBnStart(void)
-{
-    return 0xed9;
-}
-
 void TenProcess(CGameMenuItemChain *)
 {
     tenBnSetCommandLine(TenButtonCommand);
@@ -871,6 +916,7 @@ void TenProcess(CGameMenuItemChain *)
         gTenQuit = TRUE;
         gGameMenuMgr.Deactivate();
     }
+#ifdef REGISTERED
     switch (ret)
     {
         case 0xedd:
@@ -886,6 +932,7 @@ void TenProcess(CGameMenuItemChain *)
             viewSetMessage("You can only run TEN from Windows 95.");
             break;
     }
+#endif
 }
 
 void func_5A164(void)
@@ -894,7 +941,7 @@ void func_5A164(void)
     IniFile bloodIni("BlOOD.INI");
     if (!bloodIni.KeyExists("INSTALL", "SourcePath"))
         return;
-    const char *vs = bloodIni.GetKeyString("INSTALL", "SourcePath", NULL);
+    char *vs = bloodIni.GetKeyString("INSTALL", "SourcePath", NULL);
     strcpy(buffer, vs);
     strcpy(buffer, "heat01bl.exe");
     strcpy(int_148E10, buffer);
@@ -905,25 +952,28 @@ void func_5A164(void)
 
 void SaveGame(CGameMenuItemZEditBitmap *pItem, CGameMenuEvent *event)
 {
+    int nSlot = pItem->getId();
     char strSaveGameName[13] = "";
-    int nSlot = pItem->at28;
-    if (gGameOptions.nGameType > GAMETYPE_0 || gGameStarted == 0)
+    if (gGameOptions.nGameType > GAMETYPE_0)
+        return;
+    if (gGameStarted == 0)
         return;
     switch (event->at0)
     {
         case 6:
-            if (strSaveGameName[0])
-                break;
-            sprintf(strSaveGameName, "GAME00%02d.SAV", nSlot);
-            strcpy(gGameOptions.szUserGameName, strRestoreGameStrings[nSlot]);
-            sprintf(gGameOptions.szSaveGameName, strSaveGameName);
-            gGameOptions.nSaveGameSlot = nSlot;
-            if (!gSaveGamePic[nSlot])
-                gSaveGamePic[nSlot] = (byte*)Resource::Alloc(0xfa00);
-            func_1EC78(2518, "Saving", "Saving Your Game", strRestoreGameStrings[nSlot]);
-            gSaveGameNum = nSlot;
-            LoadSave::SaveGame(strSaveGameName);
-            gQuickSaveSlot = nSlot;
+            if (!strSaveGameName[0])
+            {
+                sprintf(strSaveGameName, "GAME00%02d.SAV", nSlot);
+                strcpy(gGameOptions.szUserGameName, strRestoreGameStrings[nSlot]);
+                sprintf(gGameOptions.szSaveGameName, strSaveGameName);
+                gGameOptions.nSaveGameSlot = nSlot;
+                if (!gSaveGamePic[nSlot])
+                    gSaveGamePic[nSlot] = (byte*)Resource::Alloc(0xfa00);
+                func_1EC78(BACKTILE, "Saving", "Saving Your Game", strRestoreGameStrings[nSlot]);
+                gSaveGameNum = nSlot;
+                LoadSave::SaveGame(strSaveGameName);
+                gQuickSaveSlot = nSlot;
+            }
             break;
     }
     gGameMenuMgr.Deactivate();
@@ -943,7 +993,7 @@ void QuickSaveGame(void)
     strcpy(gGameOptions.szUserGameName, strRestoreGameStrings[gQuickSaveSlot]);
     sprintf(gGameOptions.szSaveGameName, strSaveGameName);
     gGameOptions.nSaveGameSlot = gQuickSaveSlot;
-    func_1EC78(2518, "Saving", "Saving Your Game", strRestoreGameStrings[gQuickSaveSlot]);
+    func_1EC78(BACKTILE, "Saving", "Saving Your Game", strRestoreGameStrings[gQuickSaveSlot]);
     LoadSave::SaveGame(strSaveGameName);
     gGameOptions.picEntry = gSavedOffset;
     memcpy(&gSaveGameOptions[gQuickSaveSlot], &gGameOptions, sizeof(GAMEOPTIONS));
@@ -960,10 +1010,10 @@ void LoadGame(CGameMenuItemZEditBitmap *pItem, CGameMenuEvent *event)
     sprintf(strLoadGameName, "GAME00%02d.SAV", nSlot);
     if (access(strLoadGameName, 4) == -1)
         return;
-    QBOOL t = gDemo.at1;
+    BOOL t = gDemo.at1;
     if (t)
         gDemo.Close();
-    func_1EC78(2518, "Loading", "Loading Saved Game", strRestoreGameStrings[nSlot]);
+    func_1EC78(BACKTILE, "Loading", "Loading Saved Game", strRestoreGameStrings[nSlot]);
     LoadSave::LoadGame(strLoadGameName);
     gGameMenuMgr.Deactivate();
     gQuickLoadSlot = nSlot;
@@ -977,7 +1027,7 @@ void QuickLoadGame(void)
     sprintf(strLoadGameName, "GAME00%02d.SAV", gQuickLoadSlot);
     if (access(strLoadGameName, 4) == -1)
         return;
-    func_1EC78(2518, "Loading", "Loading Saved Game", strRestoreGameStrings[gQuickLoadSlot]);
+    func_1EC78(BACKTILE, "Loading", "Loading Saved Game", strRestoreGameStrings[gQuickLoadSlot]);
     LoadSave::LoadGame(strLoadGameName);
     gGameMenuMgr.Deactivate();
 }
@@ -989,21 +1039,24 @@ void SetupNetLevels(CGameMenuItemZCycle *pItem)
 
 void StartNetGame(CGameMenuItemChain *pItem)
 {
-    gPacketStartGame.gameType = itemNetStart1.at24+1;
+    gPacketStartGame.gameType = itemNetStart1.getId() + 1;
     if (gPacketStartGame.gameType == 0)
         gPacketStartGame.gameType = 2;
-    gPacketStartGame.episodeId = itemNetStart2.at24;
-    gPacketStartGame.levelId = itemNetStart3.at24;
-    gPacketStartGame.difficulty = itemNetStart4.at24;
-    gPacketStartGame.monsterSettings = itemNetStart5.at24;
-    gPacketStartGame.weaponSettings = itemNetStart6.at24;
-    gPacketStartGame.itemSettings = itemNetStart7.at24;
+    gPacketStartGame.episodeId = itemNetStart2.getId();
+    gPacketStartGame.levelId = itemNetStart3.getId();
+    gPacketStartGame.difficulty = itemNetStart4.getId();
+    gPacketStartGame.monsterSettings = itemNetStart5.getId();
+    gPacketStartGame.weaponSettings = itemNetStart6.getId();
+    gPacketStartGame.itemSettings = itemNetStart7.getId();
     gPacketStartGame.respawnSettings = 0;
     gPacketStartGame.unk = 0;
     gPacketStartGame.userMapName[0] = 0;
-    strncpy(gPacketStartGame.userMapName, zUserMapName, 13);
+    strncpy(gPacketStartGame.userMapName, itemNetStart9.getId(), 13);
     gPacketStartGame.userMapName[12] = 0;
-    gPacketStartGame.userMap = gPacketStartGame.userMapName[0] != 0;
+    if (gPacketStartGame.userMapName[0])
+        gPacketStartGame.userMap = 1;
+    else
+        gPacketStartGame.userMap = 0;
 
     netBroadcastNewGame();
     gStartNewGame = 1;
@@ -1021,7 +1074,7 @@ void Quit(CGameMenuItemChain *pItem)
 
 void SetParentalLock(CGameMenuItemZBool *pItem)
 {
-    QBOOL t = pItem->at20;
+    BOOL t = pItem->at20;
     if (!t)
     {
         pItem->at20 = 1;
@@ -1052,7 +1105,7 @@ void MenuSetupEpisodeInfo(void)
 {
     memset(zEpisodeNames, 0, sizeof(zEpisodeNames));
     memset(zLevelNames, 0, sizeof(zLevelNames));
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < kMaxEpisodes; i++)
     {
         if (i < gEpisodeCount)
         {
@@ -1079,7 +1132,7 @@ void func_5A828(void)
     char buffer[80];
     if (gGameOptions.nGameType == GAMETYPE_0)
     {
-        QBOOL t = gDemo.at1;
+        BOOL t = gDemo.at1;
         if (t)
             sprintf(buffer, "Loading Demo");
         else

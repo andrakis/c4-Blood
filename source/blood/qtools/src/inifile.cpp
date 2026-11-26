@@ -27,7 +27,7 @@
 #include "misc.h"
 
 
-IniFile::IniFile(const char *file)
+IniFile::IniFile(char *file)
 {
     f_0.next = &f_0;
     strcpy(f_11, file);
@@ -146,7 +146,7 @@ void IniFile::Load(void)
 void IniFile::Save(void)
 {
     char line[256];
-    int hFile = open(f_11, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IREAD | S_IWRITE);
+    int hFile = open(f_11, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, S_IRUSR | S_IWUSR);
     dassert(hFile != -1, 257);
     curNode = f_0.next;
     while (curNode != &f_0)
@@ -158,7 +158,7 @@ void IniFile::Save(void)
     close(hFile);
 }
 
-QBOOL IniFile::FindSection(const char *section)
+BOOL IniFile::FindSection(char *section)
 {
     char buffer[256];
     curNode = f_9 = &f_0;
@@ -179,7 +179,7 @@ QBOOL IniFile::FindSection(const char *section)
     return TRUE;
 }
 
-QBOOL IniFile::FindKey(const char *key)
+BOOL IniFile::FindKey(char *key)
 {
     f_9 = curNode;
     curNode = curNode->next;
@@ -220,7 +220,7 @@ QBOOL IniFile::FindKey(const char *key)
     return FALSE;
 }
 
-void IniFile::AddSection(const char *section)
+void IniFile::AddSection(char *section)
 {
     char buf[256];
     if (f_9 != &f_0)
@@ -241,41 +241,41 @@ void IniFile::AddSection(const char *section)
     f_9 = newNode;
 }
 
-void IniFile::AddKeyString(const char *key, const char *val)
+void IniFile::AddKeyString(char *key, char *val)
 {
     char buf[256];
     sprintf(buf, "%s=%s", key, val);
     IniNode *newNode = (IniNode*)malloc(5 + strlen(buf));
-    dassert(newNode != NULL, 375);
+    dassert(newNode != NULL, 393);
     strcpy(newNode->f_4, buf);
     newNode->next = f_9->next;
     f_9->next = newNode;
-    f_9 = newNode;
+    curNode = newNode;
 }
 
-void IniFile::ChangeKeyString(const char *key, const char *val)
+void IniFile::ChangeKeyString(char *key, char *val)
 {
     char buf[256];
     sprintf(buf, "%s=%s", key, val);
     IniNode *newNode = (IniNode*)realloc(curNode, 5 + strlen(buf));
-    dassert(newNode != NULL, 375);
+    dassert(newNode != NULL, 411);
     strcpy(newNode->f_4, buf);
     f_9->next = newNode;
 }
 
-QBOOL IniFile::SectionExists(const char *section)
+BOOL IniFile::SectionExists(char *section)
 {
     return FindSection(section);
 }
 
-QBOOL IniFile::KeyExists(const char *section, const char *key)
+BOOL IniFile::KeyExists(char *section, char *key)
 {
     if (FindSection(section) && FindKey(key))
         return TRUE;
     return FALSE;
 }
 
-void IniFile::PutKeyString(const char *section, const char *key, const char *val)
+void IniFile::PutKeyString(char *section, char *key, char *val)
 {
     if (FindSection(section))
     {
@@ -290,45 +290,45 @@ void IniFile::PutKeyString(const char *section, const char *key, const char *val
     AddKeyString(key, val);
 }
 
-const char *IniFile::GetKeyString(const char *section, const char *key, const char *val)
+char *IniFile::GetKeyString(char *section, char *key, char *val)
 {
     if (FindSection(section) && FindKey(key))
         return f_d;
     return val;
 }
 
-void IniFile::PutKeyInt(const char *section, const char *key, int val)
+void IniFile::PutKeyInt(char *section, char *key, int val)
 {
     char buffer[256];
     itoa(val, buffer, 10);
     PutKeyString(section, key, buffer);
 }
 
-int IniFile::GetKeyInt(const char *section, const char *key, int val)
+int IniFile::GetKeyInt(char *section, char *key, int val)
 {
     if (FindSection(section) && FindKey(key))
         return strtol(f_d, NULL, 0);
     return val;
 }
 
-QBOOL IniFile::GetKeyBool(const char *section, const char *key, int val)
+BOOL IniFile::GetKeyBool(char *section, char *key, int val)
 {
     return GetKeyInt(section, key, val);
 }
 
-void IniFile::PutKeyHex(const char *section, const char *key, int val)
+void IniFile::PutKeyHex(char *section, char *key, int val)
 {
     char sValue[256] = "0x";
     itoa(val, sValue + 2, 16);
     PutKeyString(section, key, sValue);
 }
 
-int IniFile::GetKeyHex(const char *section, const char *key, int val)
+int IniFile::GetKeyHex(char *section, char *key, int val)
 {
     return GetKeyInt(section, key, val);
 }
 
-void IniFile::RemoveKey(const char *section, const char *key)
+void IniFile::RemoveKey(char *section, char *key)
 {
     if (FindSection(section) && FindKey(key))
     {
@@ -338,7 +338,7 @@ void IniFile::RemoveKey(const char *section, const char *key)
     }
 }
 
-void IniFile::RemoveSection(const char *section)
+void IniFile::RemoveSection(char *section)
 {
     if (FindSection(section))
     {

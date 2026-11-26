@@ -27,13 +27,13 @@ public:
     void Upheap(void);
     void Downheap(uint);
     void Delete(uint);
-    void Insert(uint32_t, uint32_t);
-    uint32_t Remove(void);
+    void Insert(ulong, ulong);
+    ulong Remove(void);
 
     struct queueItem
     {
-        uint32_t at0; // priority
-        uint32_t at4; // data
+        ulong at0; // priority
+        ulong at4; // data
     } queueItems[kPQueueSize + 1];
 
     int fNodeCount; // at2008

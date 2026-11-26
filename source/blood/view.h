@@ -18,11 +18,13 @@
 #define _VIEW_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "config.h"
 #include "controls.h"
 #include "misc.h"
+#include "gfx.h"
 
+#if APPVER_BLOODREV >= AV_BR_BL120
 struct FONT {
     int tile;
     int xSize;
@@ -31,23 +33,31 @@ struct FONT {
 };
 
 extern FONT gFont[];
+#endif
 
 extern int gViewMode;
 extern int gZoom;
+#if APPVER_BLOODREV >= AV_BR_BL111A
 extern int gViewX0S;
 extern int gViewX1S;
 extern int gViewY0S;
 extern int gViewY1S;
+#else
+extern int gViewX0;
+extern int gViewX1;
+extern int gViewY0;
+extern int gViewY1;
+#endif
 extern int gViewIndex;
 
 extern int gShowFrameRate;
 
-extern int32_t gScreenTilt;
+extern long gScreenTilt;
 extern int deliriumTilt;
 extern int deliriumPitch;
 extern int deliriumTurn;
 
-enum VIEWPOS : int32_t {
+enum VIEWPOS {
     VIEWPOS_0,
     VIEWPOS_1,
     VIEWPOS_2,
@@ -55,7 +65,7 @@ enum VIEWPOS : int32_t {
 
 extern VIEWPOS gViewPos;
 
-enum INTERPOLATE_TYPE : int32_t {
+enum INTERPOLATE_TYPE {
     INTERPOLATE_TYPE_INT = 0,
     INTERPOLATE_TYPE_SHORT,
 };
@@ -73,27 +83,6 @@ extern byte gInterpolateSector[(kMaxSectors+7)>>3];
 
 void viewAddInterpolation(void *, INTERPOLATE_TYPE);
 
-inline void viewInterpolateSector(int nSector, SECTOR *pSector)
-{
-    if (!TestBitString(gInterpolateSector, nSector))
-    {
-        viewAddInterpolation(&pSector->floorz, INTERPOLATE_TYPE_INT);
-        viewAddInterpolation(&pSector->ceilingz, INTERPOLATE_TYPE_INT);
-        viewAddInterpolation(&pSector->floorheinum, INTERPOLATE_TYPE_SHORT);
-        SetBitString(gInterpolateSector, nSector);
-    }
-}
-
-inline void viewInterpolateWall(int nWall, WALL *pWall)
-{
-    if (!TestBitString(gInterpolateWall, nWall))
-    {
-        viewAddInterpolation(&pWall->x, INTERPOLATE_TYPE_INT);
-        viewAddInterpolation(&pWall->y, INTERPOLATE_TYPE_INT);
-        SetBitString(gInterpolateWall, nWall);
-    }
-}
-
 inline void viewBackupSpriteLoc(int nSprite, SPRITE *pSprite)
 {
     if (!TestBitString(gInterpolateSprite, nSprite))
@@ -107,22 +96,54 @@ inline void viewBackupSpriteLoc(int nSprite, SPRITE *pSprite)
     }
 }
 
-void func_1EC78(int, const char *, const char *, const char *);
+inline void viewInterpolateWall(int nWall, WALL *pWall)
+{
+    if (!TestBitString(gInterpolateWall, nWall))
+    {
+        viewAddInterpolation(&pWall->x, INTERPOLATE_TYPE_INT);
+        viewAddInterpolation(&pWall->y, INTERPOLATE_TYPE_INT);
+        SetBitString(gInterpolateWall, nWall);
+    }
+}
+
+inline void viewInterpolateSector(int nSector, SECTOR *pSector)
+{
+    if (!TestBitString(gInterpolateSector, nSector))
+    {
+        viewAddInterpolation(&pSector->floorz, INTERPOLATE_TYPE_INT);
+        viewAddInterpolation(&pSector->ceilingz, INTERPOLATE_TYPE_INT);
+        viewAddInterpolation(&pSector->floorheinum, INTERPOLATE_TYPE_SHORT);
+        SetBitString(gInterpolateSector, nSector);
+    }
+}
+
+#ifdef PLASMAPAK
+#define BACKTILE 2518
+#else
+#define BACKTILE 2046
+#endif
+
+void func_1EC78(int, char *, char *, char *);
 void viewResizeView(int);
 void viewToggle(int);
-void viewSetMessage(const char *);
-void viewDrawText(int, const char *, int, int, int, int, int position = 0, QBOOL shadow = 0);
-void viewGetFontInfo(int nFont, const char *pString, int *pXSize, int *pYSize);
+void viewSetMessage(char *);
+void viewDrawText(int, char *, int, int, int, int, int position = 0, BOOL shadow = 0);
+#if APPVER_BLOODREV >= AV_BR_BL120
+void viewGetFontInfo(int nFont, char *pString, int *pXSize, int *pYSize);
+#endif
+void viewDrawChar(QFONT *pFont, char chr, int x, int y, byte *pLookup);
+#if APPVER_BLOODREV >= AV_BR_BL111A
 void viewUpdatePages(void);
-void viewDrawSprite(int32_t,int32_t,int32_t,int,int,schar,byte,ushort,int32_t,int32_t,int32_t,int32_t);
+#endif
+void viewDrawSprite(long,long,long,int,int,schar,byte,ushort,long,long,long,long);
 void viewInit(void);
 void viewBackupView(int);
 void viewInitializePrediction(void);
 void viewProcessSprites(int cX, int cY, int cZ);
-void viewSetErrorMessage(const char *);
+void viewSetErrorMessage(char *);
 void viewDrawScreen(void);
 void viewClearInterpolations(void);
 void viewCorrectPrediction(void);
-void viewUpdatePrediction(QINPUT *);
+void viewUpdatePrediction(INPUT *);
 
 #endif // !_VIEW_H_

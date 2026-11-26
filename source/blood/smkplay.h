@@ -24,16 +24,16 @@ public:
     CSMKPlayer();
     ~CSMKPlayer();
 
-    int PlaySMK(const char*);
-    int PlaySMKWithWAV(const char*, int);
-    int PlaySMKWithWAV(const char*, const char*);
+    int PlaySMK(char*);
+    int PlaySMKWithWAV(char*, int);
+    int PlaySMKWithWAV(char*, char*);
 
     int f_0;
     int f_4;
 
     char __f_8[4];
 
-    QBOOL f_c;
+    BOOL f_c;
 };
 
 #endif // !_SMKPLAY_H_

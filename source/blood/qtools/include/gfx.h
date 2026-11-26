@@ -55,15 +55,15 @@ public:
     Rect(int a1, int a2, int a3, int a4) : f_0(a1), f_4(a2), f_8(a3), f_c(a4) { }
     Rect(Rect &other) { f_0 = other.f_0; f_4 = other.f_4; f_8 = other.f_8; f_c = other.f_c; }
 
-    QBOOL isValid(void) const {
+    BOOL isValid(void) const {
         return f_0 < f_8 && f_4 < f_c;
     }
 
-    QBOOL isEmpty(void) const {
+    BOOL isEmpty(void) const {
         return !isValid();
     }
 
-    QBOOL operator! (void) const {
+    BOOL operator! (void) const {
         return isEmpty();
     }
 
@@ -93,27 +93,27 @@ public:
         return f_c - f_4;
     }
 
-    QBOOL testXY(int x, int y)
+    BOOL testXY(int x, int y)
     {
-        return x >= f_0 && x <= f_8 && y >= f_4 && y <= f_c;
+        return x >= f_0 && x < f_8 && y >= f_4 && y < f_c;
     }
 
-    QBOOL testRect(Rect& other)
+    BOOL testRect(Rect& other)
     {
-        return other.f_0 >= f_0 && other.f_8 <= f_8 && other.f_4 <= f_4 && other.f_c >= f_c;
+        return other.f_0 >= f_0 && other.f_8 <= f_8 && other.f_4 >= f_4 && other.f_c <= f_c;
     }
 };
 
-void gfxDrawText(int x, int y, int color, const char *pzText, QFONT *pFont);
+void gfxDrawText(int x, int y, int color, char *pzText, QFONT *pFont);
 void gfxSetClip(int a1, int a2, int a3, int a4);
-int gfxGetLabelLen(const char *a1, QFONT *a2);
-void gfxDrawLabel(int x, int y, int color, const char* pzLabel, QFONT* pFont);
+int gfxGetLabelLen(char *a1, QFONT *a2);
+void gfxDrawLabel(int x, int y, int color, char* pzLabel, QFONT* pFont);
 void gfxHLine(int a1, int a2, int a3);
 void gfxVLine(int a1, int a2, int a3);
 void gfxFillBox(int a1, int a2, int a3, int a4);
 void gfxDrawBitmap(QBITMAP *qbm, int a2, int a3);
 void gfxPixel(int x, int y);
-int gfxFindTextPos(const char *a1, QFONT *a2, int a3);
-int gfxGetTextNLen(const char *a1, QFONT *a2, int a3);
+int gfxFindTextPos(char *a1, QFONT *a2, int a3);
+int gfxGetTextNLen(char *a1, QFONT *a2, int a3);
 
 #endif

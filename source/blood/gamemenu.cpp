@@ -19,17 +19,17 @@
 #include <string.h>
 #include <stdio.h>
 #include "typedefs.h"
-#include "TYPES.H"
-#include "engine.h"
-#include "CONTROL.H"
+#include "types.h"
+#include "globals.h"
+#include "build.h"
+#include "control.h"
 #include "config.h"
 #include "debug4g.h"
 #include "error.h"
 #include "gamemenu.h"
-#include "globals.h"
 #include "gui.h"
 #include "key.h"
-#include "KEYBOARD.H"
+#include "keyboard.h"
 #include "levels.h"
 #include "menu.h"
 #include "misc.h"
@@ -37,39 +37,149 @@
 #include "resource.h"
 #include "view.h"
 
-QBOOL CGameMenuMgr::m_bInitialized = FALSE;
-QBOOL CGameMenuMgr::m_bActive = FALSE;
+#if APPVER_BLOODREV >= AV_BR_BL120
+#define LDIFF1 0
+#define LDIFF3 0
+#define LDIFF4 0
+#define LDIFF5 0
+#define LDIFF2 0
+#elif APPVER_BLOODREV >= AV_BR_BL111A
+#define LDIFF1 71
+#define LDIFF3 71
+#define LDIFF4 71
+#define LDIFF5 71
+#define LDIFF2 57
+#else
+#define LDIFF1 71
+#define LDIFF3 68
+#define LDIFF4 67
+#define LDIFF5 66
+#define LDIFF2 37
+#endif
+
+BOOL CGameMenuMgr::m_bInitialized = FALSE;
+BOOL CGameMenuMgr::m_bActive = FALSE;
 
 CGameMenuMgr gGameMenuMgr;
 CMenuTextMgr gMenuTextMgr;
 
-static char buffer[21][45];
+#if APPVER_BLOODREV >= AV_BR_BL111A
+#define RESCOUNT 21
+#else
+#define RESCOUNT 10
+#endif
+static char buffer[RESCOUNT][45];
 
 CMenuTextMgr::CMenuTextMgr()
 {
+#if APPVER_BLOODREV < AV_BR_BL120
+    m_hFont = NULL;
+#endif
     at0 = -1;
 }
 
 CMenuTextMgr::~CMenuTextMgr()
 {
+#if APPVER_BLOODREV < AV_BR_BL120
+    if (m_hFont)
+        UnlockFont();
+    m_hFont = NULL;
+#endif
     at0 = -1;
 }
 
-void CMenuTextMgr::DrawText(const char *pString, int nFont, int x, int y, int nShade, int nPalette, QBOOL shadow )
+void CMenuTextMgr::DrawText(char * string, int nFont, int x, int y, int nShade, int nPalette, BOOL shadow )
 {
-    viewDrawText(nFont, pString, x, y, nShade, nPalette, 0, shadow);
+#if APPVER_BLOODREV >= AV_BR_BL120
+    viewDrawText(nFont, string, x, y, nShade, nPalette, 0, shadow);
+#else
+    char *s;
+    dassert(string != NULL, 70);
+
+    LockFont(nFont);
+    byte* pPalookup = palookup[nPalette] + (getpalookup(0, nShade) << 8);
+    byte* pShadowPal = palookup[nPalette] + (getpalookup(0, 127) << 8);
+
+    setupmvlineasm(16);
+    for (s = string; *s; s++)
+    {
+        if (shadow)
+        {
+            viewDrawChar(f_8, *s, x + 1, y + 1, pShadowPal);
+        }
+        viewDrawChar(f_8, *s, x, y, pPalookup);
+        x += f_8->at20[*s].ox + f_8->at11;
+    }
+    UnlockFont();
+#endif
 }
 
-void CMenuTextMgr::GetFontInfo(int nFont, const char *pString, int *pXSize, int *pYSize)
+void CMenuTextMgr::GetFontInfo(int nFont, char *pString, int *pXSize, int *pYSize)
 {
+#if APPVER_BLOODREV >= AV_BR_BL120
     if (nFont < 0 || nFont >= 5)
         return;
     viewGetFontInfo(nFont, pString, pXSize, pYSize);
+#else
+    LockFont(nFont);
+    GetFontInfo(pString, pXSize, pYSize);
+    UnlockFont();
+#endif
 }
+
+#if APPVER_BLOODREV < AV_BR_BL120
+void CMenuTextMgr::LockFont(int nFont)
+{
+    if (m_hFont)
+        UnlockFont();
+
+    m_hFont = gSysRes.Lookup(nFont, "QFN");
+    dassert(m_hFont != NULL, 107);
+    
+    at0 = nFont;
+    f_8 = (QFONT*)gSysRes.Lock(m_hFont);
+    GetFontInfo(NULL, &f_c, &f_10);
+}
+
+void CMenuTextMgr::UnlockFont(void)
+{
+    if (!m_hFont)
+        return;
+
+    gSysRes.Unlock(m_hFont);
+    at0 = -1;
+    m_hFont = NULL;
+    f_8 = NULL;
+}
+
+void CMenuTextMgr::GetFontInfo(char *pString, int *pXSize, int *pYSize)
+{
+    dassert(m_hFont != NULL, 129);
+
+    if (pString == NULL)
+    {
+        if (pXSize)
+            *pXSize = f_8->at12;
+        if (pYSize)
+            *pYSize = f_8->at13;
+        return;
+    }
+    int width = -f_8->at11;
+    for (char *pBuf = pString; *pBuf; pBuf++)
+    {
+        width += f_8->at20[*pBuf].ox + f_8->at11;
+    }
+    if (pXSize)
+        *pXSize = width;
+    if (pYSize)
+        *pYSize = f_8->at13;
+}
+
+#endif
 
 CGameMenuMgr::CGameMenuMgr()
 {
-    dassert(!m_bInitialized, 90);
+    dassert(!m_bInitialized, 90+LDIFF1);
     m_bInitialized = TRUE;
     Clear();
 }
@@ -102,9 +212,9 @@ void CGameMenuMgr::func_7DF1C(void)
     }
 }
 
-QBOOL CGameMenuMgr::Push(CGameMenu *pMenu, int nItem)
+BOOL CGameMenuMgr::Push(CGameMenu *pMenu, int nItem)
 {
-    dassert(pMenu != NULL, 137);
+    dassert(pMenu != NULL, 137+LDIFF1);
     if (nMenuPointer == 8)
         return FALSE;
     pActiveMenu = pMenu;
@@ -136,7 +246,9 @@ void CGameMenuMgr::Draw(void)
     if (pActiveMenu)
     {
         pActiveMenu->Draw();
+#if APPVER_BLOODREV >= AV_BR_BL111A
         viewUpdatePages();
+#endif
     }
 }
 
@@ -238,7 +350,7 @@ CGameMenu::~CGameMenu()
         return;
     for (int i = 0; i < m_nItems; i++)
     {
-        if (pItemList[i] != &itemBloodQAV && pItemList[i] != &itemSorryPicCycle)
+        if (pItemList[i] != &itemBloodQAV)
             delete pItemList[i];
         pItemList[i] = NULL;
     }
@@ -261,9 +373,9 @@ void CGameMenu::Draw(void)
     }
 }
 
-QBOOL CGameMenu::Event(CGameMenuEvent &event)
+BOOL CGameMenu::Event(CGameMenuEvent &event)
 {
-    QBOOL ret = 1;
+    BOOL ret = 1;
     if (m_nItems <= 0)
         return TRUE;
     switch (event.at0)
@@ -280,10 +392,10 @@ QBOOL CGameMenu::Event(CGameMenuEvent &event)
     return ret;
 }
 
-void CGameMenu::Add(CGameMenuItem *pItem, QBOOL active)
+void CGameMenu::Add(CGameMenuItem *pItem, BOOL active)
 {
-    dassert(pItem != NULL, 390);
-    dassert(m_nItems < kMaxGameMenuItems, 391);
+    dassert(pItem != NULL, 390+LDIFF3);
+    dassert(m_nItems < kMaxGameMenuItems, 391+LDIFF3);
     pItemList[m_nItems] = pItem;
     pItem->pMenu = this;
     if (active)
@@ -293,14 +405,14 @@ void CGameMenu::Add(CGameMenuItem *pItem, QBOOL active)
 
 void CGameMenu::SetFocusItem(int nItem)
 {
-    dassert(nItem >= 0 && nItem < m_nItems && nItem < kMaxGameMenuItems, 408);
+    dassert(nItem >= 0 && nItem < m_nItems && nItem < kMaxGameMenuItems, 408+LDIFF3);
     if (CanSelectItem(nItem))
         m_nFocus = at8 = nItem;
 }
 
-QBOOL CGameMenu::CanSelectItem(int nItem)
+BOOL CGameMenu::CanSelectItem(int nItem)
 {
-    dassert(nItem >= 0 && nItem < m_nItems && nItem < kMaxGameMenuItems, 418);
+    dassert(nItem >= 0 && nItem < m_nItems && nItem < kMaxGameMenuItems, 418+LDIFF3);
     CGameMenuItem *pItem = pItemList[nItem];
     if (pItem->CanShow() && pItem->CanFocus())
         return 1;
@@ -309,7 +421,8 @@ QBOOL CGameMenu::CanSelectItem(int nItem)
 
 void CGameMenu::FocusPrevItem(void)
 {
-    dassert(m_nFocus >= -1 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 432);
+    dassert(m_nFocus >= -1 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 432+LDIFF3);
+#if APPVER_BLOODREV >= AV_BR_BL111A
     int t = m_nFocus;
     do
     {
@@ -317,11 +430,20 @@ void CGameMenu::FocusPrevItem(void)
         if (CanSelectItem(m_nFocus))
             break;
     } while(t != m_nFocus);
+#else
+    while (1)
+    {
+        m_nFocus = DecRotate(m_nFocus, m_nItems);
+        if (CanSelectItem(m_nFocus))
+            break;
+    }
+#endif
 }
 
 void CGameMenu::FocusNextItem(void)
 {
-    dassert(m_nFocus >= -1 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 443);
+    dassert(m_nFocus >= -1 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 443+LDIFF4);
+#if APPVER_BLOODREV >= AV_BR_BL111A
     int t = m_nFocus;
     do
     {
@@ -329,13 +451,21 @@ void CGameMenu::FocusNextItem(void)
         if (CanSelectItem(m_nFocus))
             break;
     } while(t != m_nFocus);
+#else
+    while (1)
+    {
+        m_nFocus = IncRotate(m_nFocus, m_nItems);
+        if (CanSelectItem(m_nFocus))
+            break;
+    }
+#endif
 }
 
-QBOOL CGameMenu::IsFocusItem(CGameMenuItem *pItem)
+BOOL CGameMenu::IsFocusItem(CGameMenuItem *pItem)
 {
     if (m_nFocus < 0)
         return FALSE;
-    dassert(m_nFocus >= 0 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 457);
+    dassert(m_nFocus >= 0 && m_nFocus < m_nItems && m_nFocus < kMaxGameMenuItems, 457+LDIFF5);
     return (pItemList[m_nFocus] == pItem) ? 1 : 0;
 }
 
@@ -351,9 +481,9 @@ CGameMenuItem::CGameMenuItem()
     func_81920(NULL);
 }
 
-QBOOL CGameMenuItem::Event(CGameMenuEvent &event)
+BOOL CGameMenuItem::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 7:
@@ -375,7 +505,7 @@ CGameMenuItemText::CGameMenuItemText()
     Clear1();
 }
 
-CGameMenuItemText::CGameMenuItemText(const char *a1, int a2, int a3, int a4, int a5)
+CGameMenuItemText::CGameMenuItemText(char *a1, int a2, int a3, int a4, int a5)
 {
     //at14 = 0;
     at4 = a1;
@@ -413,7 +543,7 @@ void CGameMenuItemText::Draw(void)
     }
 }
 
-QBOOL CGameMenuItemText::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemText::Event(CGameMenuEvent &event)
 {
     return CGameMenuItem::Event(event);
 }
@@ -424,7 +554,7 @@ CGameMenuItemTitle::CGameMenuItemTitle()
     Clear1();
 }
 
-CGameMenuItemTitle::CGameMenuItemTitle(const char *a1, int a2, int a3, int a4, int a5)
+CGameMenuItemTitle::CGameMenuItemTitle(char *a1, int a2, int a3, int a4, int a5)
 {
     //at14 = 0;
     at4 = a1;
@@ -448,13 +578,13 @@ void CGameMenuItemTitle::Draw(void)
     }
 }
 
-QBOOL CGameMenuItemTitle::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemTitle::Event(CGameMenuEvent &event)
 {
     return CGameMenuItem::Event(event);
 }
 
-const char *CGameMenuItemZBool::m_pzOnDefault = "On";
-const char *CGameMenuItemZBool::m_pzOffDefault = "Off";
+static char *CGameMenuItemZBool::m_pzOnDefault = "On";
+static char *CGameMenuItemZBool::m_pzOffDefault = "Off";
 
 CGameMenuItemZBool::CGameMenuItemZBool()
 {
@@ -464,7 +594,7 @@ CGameMenuItemZBool::CGameMenuItemZBool()
     at25 = m_pzOffDefault;
 }
 
-CGameMenuItemZBool::CGameMenuItemZBool(const char *a1, int a2, int a3, int a4, int a5, QBOOL a6, void(*a7)(CGameMenuItemZBool *), const char *a8, const char *a9)
+CGameMenuItemZBool::CGameMenuItemZBool(char *a1, int a2, int a3, int a4, int a5, BOOL a6, void(*a7)(CGameMenuItemZBool *), char *a8, char *a9)
 {
     at4 = a1;
     at8 = a2;
@@ -486,16 +616,16 @@ void CGameMenuItemZBool::Draw(void)
     int v4 = at10;
     if (at4)
         gMenuTextMgr.DrawText(at4, at8, vc, v4, shade, 0, FALSE);
-    const char *value = at20 ? at21 : at25;
+    char *value = at20 ? at21 : at25;
     int width;
     gMenuTextMgr.GetFontInfo(at8, value, &width, NULL);
     vc = at14 - 1 + atc - width;
     gMenuTextMgr.DrawText(value, at8, vc, v4, shade, 0, FALSE);
 }
 
-QBOOL CGameMenuItemZBool::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemZBool::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 6:
@@ -520,7 +650,7 @@ CGameMenuItemChain::CGameMenuItemChain()
     at30 = 0;
 }
 
-CGameMenuItemChain::CGameMenuItemChain(const char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10)
+CGameMenuItemChain::CGameMenuItemChain(char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10)
 {
     at4 = a1;
     at8 = a2;
@@ -561,9 +691,9 @@ void CGameMenuItemChain::Draw(void)
     }
     gMenuTextMgr.DrawText(at4, at8, x, at10, shade, 0, TRUE);
 }
-QBOOL CGameMenuItemChain::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemChain::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 6:
@@ -591,7 +721,7 @@ CGameMenuItem7EA1C::CGameMenuItem7EA1C()
     at48[0] = 0;
 }
 
-CGameMenuItem7EA1C::CGameMenuItem7EA1C(const char *a1, int a2, int a3, int a4, int a5, const char *a6, const char *a7, int a8, int a9, void(*a10)(CGameMenuItem7EA1C *), int a11)
+CGameMenuItem7EA1C::CGameMenuItem7EA1C(char *a1, int a2, int a3, int a4, int a5, char *a6, char *a7, int a8, int a9, void(*a10)(CGameMenuItem7EA1C *), int a11)
 {
     at4 = a1;
     at8 = a2;
@@ -640,17 +770,17 @@ void CGameMenuItem7EA1C::Setup(void)
         return;
     if (!at34->SectionExists(at48))
         return;
-    const char *title = at34->GetKeyString(at48, "Title", at48);
+    char *title = at34->GetKeyString(at48, "Title", at48);
     CGameMenuItemTitle *pItem = new CGameMenuItemTitle(title, 1, 160, 20, 2038);
     at24->Add(pItem, FALSE);
     at24->Add(&itemSorryPicCycle, TRUE);
     int y = 40;
-    for (int i = 0; i < 21; i++)
+    for (int i = 0; i < RESCOUNT; i++)
     {
         sprintf(buffer[i], "Line%ld", i+1);
         if (!at34->KeyExists(at48, buffer[i]))
             break;
-        const char *line = at34->GetKeyString(at48, buffer[i], NULL);
+        char *line = at34->GetKeyString(at48, buffer[i], NULL);
         if (line)
         {
             if (!*line)
@@ -666,9 +796,9 @@ void CGameMenuItem7EA1C::Setup(void)
     at24->Add(&itemBloodQAV, FALSE);
 }
 
-QBOOL CGameMenuItem7EA1C::Event(CGameMenuEvent &event)
+BOOL CGameMenuItem7EA1C::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 6:
@@ -715,7 +845,7 @@ CGameMenuItem7EE34::CGameMenuItem7EE34()
     at2c = NULL;
 }
 
-CGameMenuItem7EE34::CGameMenuItem7EE34(const char *a1, int a2, int a3, int a4, int a5, int a6)
+CGameMenuItem7EE34::CGameMenuItem7EE34(char *a1, int a2, int a3, int a4, int a5, int a6)
 {
     at4 = NULL;
     at28 = NULL;
@@ -763,21 +893,29 @@ void CGameMenuItem7EE34::Setup(void)
         return;
     CGameMenuItemTitle *pTitle = new CGameMenuItemTitle("Video Mode", 1, 160, 20, 2038);
     at28->Add(pTitle, FALSE);
+#if APPVER_BLOODREV < AV_BR_BL111A
+    at28->Add(&itemSorryPicCycle, TRUE);
+#endif
     if (!at2c)
     {
         at2c = new CGameMenu(1);
         pTitle = new CGameMenuItemTitle(" Mode Change ", 1, 160, 20, 2038);
         at2c->Add(pTitle, FALSE);
         at2c->Add(&itemSorryPicCycle, TRUE);
+#if APPVER_BLOODREV >= AV_BR_BL111A
         CGameMenuItem *pItem1 = new CGameMenuItemText("VIDEO MODE WAS SET", 1, 160, 90, 1);
         CGameMenuItem *pItem2 = new CGameMenuItemText("NOT ALL MODES Work correctly", 1, 160, 110, 1);
         CGameMenuItem *pItem3 = new CGameMenuItemText("Press ESC to exit", 3, 160, 140, 1);
         at2c->Add(pItem1, FALSE);
         pItem1->Clear1();
         at2c->Add(pItem2, FALSE);
-        pItem1->Clear1();
+        pItem2->Clear1();
         at2c->Add(pItem3, TRUE);
         pItem3->Set1();
+#else
+        CGameMenuItem* pItem = new CGameMenuItemText("VIDEO MODE WAS SET", 1, 160, 90, 1);
+        at2c->Add(pItem, FALSE);
+#endif
         at2c->Add(&itemBloodQAV, FALSE);
     }
     getvalidvesamodes();
@@ -786,22 +924,28 @@ void CGameMenuItem7EE34::Setup(void)
     CGameMenuItemChain *pChain = new CGameMenuItemChain(buffer[0], 3, 0, y, 320, 1, at2c, -1, SetVideoMode, validmodecnt);
     at28->Add(pChain, TRUE);
     y += 20;
-    for (int i = 0; i < validmodecnt && i < 20; i++)
+    for (int i = 0; i < validmodecnt
+#if APPVER_BLOODREV >= AV_BR_BL111A
+        && i < 20
+#endif
+        ; i++)
     {
         sprintf(buffer[i+1], "%d x %d", validmodexdim[i], validmodeydim[i]);
         pChain = new CGameMenuItemChain(buffer[i+1], 3, 0, y, 320, 1, at2c, -1, SetVideoMode, i);
         at28->Add(pChain, FALSE);
+#if APPVER_BLOODREV >= AV_BR_BL111A
         if (validmodecnt > 10)
             y += 7;
         else
+#endif
             y += 15;
     }
     at28->Add(&itemBloodQAV, FALSE);
 }
 
-QBOOL CGameMenuItem7EE34::Event(CGameMenuEvent &event)
+BOOL CGameMenuItem7EE34::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 6:
@@ -836,7 +980,7 @@ CGameMenuItemChain7F2F0::CGameMenuItemChain7F2F0()
     at34 = -1;
 }
 
-CGameMenuItemChain7F2F0::CGameMenuItemChain7F2F0(const char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10, int a11) :
+CGameMenuItemChain7F2F0::CGameMenuItemChain7F2F0(char *a1, int a2, int a3, int a4, int a5, int a6, CGameMenu *a7, int a8, void(*a9)(CGameMenuItemChain *), int a10, int a11) :
     CGameMenuItemChain(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
 {
     at34 = a11;
@@ -847,9 +991,9 @@ void CGameMenuItemChain7F2F0::Draw(void)
     CGameMenuItemChain::Draw();
 }
 
-QBOOL CGameMenuItemChain7F2F0::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemChain7F2F0::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 6:
@@ -869,7 +1013,7 @@ CGameMenuItemBitmap::CGameMenuItemBitmap()
     at4 = NULL;
 }
 
-CGameMenuItemBitmap::CGameMenuItemBitmap(const char *a1, int a2, int a3, int a4, int a5)
+CGameMenuItemBitmap::CGameMenuItemBitmap(char *a1, int a2, int a3, int a4, int a5)
 {
     at4 = a1;
     at8 = a2;
@@ -895,7 +1039,7 @@ void CGameMenuItemBitmap::Draw(void)
     rotatesprite(x<<15,y<<15, 65536, 0, at20, 0, 0, 82, 0, 0, xdim-1,ydim-1);
 }
 
-QBOOL CGameMenuItemBitmap::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemBitmap::Event(CGameMenuEvent &event)
 {
     if (CanFocus() && pMenu->IsFocusItem(this))
         pMenu->FocusNextItem();
@@ -907,7 +1051,7 @@ CGameMenuItemBitmapLS::CGameMenuItemBitmapLS()
     at4 = NULL;
 }
 
-CGameMenuItemBitmapLS::CGameMenuItemBitmapLS(const char *a1, int a2, int a3, int a4, int a5)
+CGameMenuItemBitmapLS::CGameMenuItemBitmapLS(char *a1, int a2, int a3, int a4, int a5)
 {
     at24 = -1;
     at4 = a1;
@@ -959,7 +1103,7 @@ void CGameMenuItemBitmapLS::Draw(void)
     rotatesprite(200<<15,215<<15, 32768, ang, picnum, 0, 0, stat, 0, 0, xdim-1, ydim-1);
 }
 
-QBOOL CGameMenuItemBitmapLS::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemBitmapLS::Event(CGameMenuEvent &event)
 {
     if (CanFocus() && pMenu->IsFocusItem(this))
         pMenu->FocusNextItem();
@@ -979,7 +1123,7 @@ CGameMenuItemKeyList::CGameMenuItemKeyList()
     at38 = FALSE;
 }
 
-CGameMenuItemKeyList::CGameMenuItemKeyList(const char *a1, int a2, int a3, int a4, int a5, int a6, int a7, void(*a8)(CGameMenuItemKeyList *))
+CGameMenuItemKeyList::CGameMenuItemKeyList(char *a1, int a2, int a3, int a4, int a5, int a6, int a7, void(*a8)(CGameMenuItemKeyList *))
 {
     at2c = 0;
     at30 = 0;
@@ -1017,8 +1161,8 @@ void CGameMenuItemKeyList::Draw(void)
     {
         int32 key1, key2;
         CONTROL_GetKeyMap(k, &key1, &key2);
-        const char *sKey1 = KB_ScanCodeToString(key1);
-        const char *sKey2 = KB_ScanCodeToString(key2);
+        char *sKey1 = KB_ScanCodeToString(key1);
+        char *sKey2 = KB_ScanCodeToString(key2);
         sprintf(buffer, "%s", CONFIG_FunctionNumToName(k));
         if (key2 == 0)
         {
@@ -1033,7 +1177,7 @@ void CGameMenuItemKeyList::Draw(void)
         if (k == at30)
         {
             int shade;
-            const char* sVal;
+            char* sVal;
             int width1;
             shade = 32;
             if (pMenu->IsFocusItem(this))
@@ -1061,9 +1205,9 @@ void CGameMenuItemKeyList::Draw(void)
     }
 }
 
-QBOOL CGameMenuItemKeyList::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemKeyList::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     if (at38)
     {
         if (KB_GetLastScanCode() != 0 && KB_GetLastScanCode() != sc_Pause)
@@ -1142,7 +1286,7 @@ CGameMenuItemSlider::CGameMenuItemSlider()
     at3c = 2028;
 }
 
-CGameMenuItemSlider::CGameMenuItemSlider(const char *a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *), int a11, int a12)
+CGameMenuItemSlider::CGameMenuItemSlider(char *a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *), int a11, int a12)
 {
     at4 = a1;
     at8 = a2;
@@ -1162,7 +1306,7 @@ CGameMenuItemSlider::CGameMenuItemSlider(const char *a1, int a2, int a3, int a4,
         at3c = a12;
 }
 
-CGameMenuItemSlider::CGameMenuItemSlider(const char *a1, int a2, int a3, int a4, int a5, int *pnValue, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *), int a11, int a12)
+CGameMenuItemSlider::CGameMenuItemSlider(char *a1, int a2, int a3, int a4, int a5, int *pnValue, int a7, int a8, int a9, void(*a10)(CGameMenuItemSlider *), int a11, int a12)
 {
     at4 = a1;
     at8 = a2;
@@ -1172,7 +1316,7 @@ CGameMenuItemSlider::CGameMenuItemSlider(const char *a1, int a2, int a3, int a4,
     at28 = a7;
     at2c = a8;
     at30 = a9;
-    dassert(pnValue != NULL, 1703);
+    dassert(pnValue != NULL, 1703+LDIFF2);
     at20 = pnValue;
     SetValue(*pnValue);
     at34 = a10;
@@ -1205,17 +1349,17 @@ void CGameMenuItemSlider::Draw(void)
     sliderX = atc+(at14-1)-tilesizx[at38]/2;
     rotatesprite(sliderX<<16, (at10+height/2)<<16, 65536, 0, at38, 0, 0, 10, 0, 0, xdim-1, ydim-1);
     nRange = at2c - at28;
-    dassert(nRange > 0, 1744);
+    dassert(nRange > 0, 1744+LDIFF2);
     nValue = at24 - at28;
     nWidth = tilesizx[at38]-8;
     cursorX = sliderX + ksgn(at30)*(nValue * nWidth / nRange - nWidth / 2);
     rotatesprite(cursorX<<16, (at10+height/2)<<16, 65536, 0, at3c, 0, 0, 10, 0, 0, xdim-1, ydim-1);
 }
 
-QBOOL CGameMenuItemSlider::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemSlider::Event(CGameMenuEvent &event)
 {
     at24 = !at20 ? at24 : *at20;
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 2:
@@ -1268,7 +1412,7 @@ CGameMenuItemZEdit::CGameMenuItemZEdit()
     at31 = 1;
 }
 
-CGameMenuItemZEdit::CGameMenuItemZEdit(const char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, QBOOL a8, void(*a9)(CGameMenuItemZEdit *, CGameMenuEvent *), int a10)
+CGameMenuItemZEdit::CGameMenuItemZEdit(char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, BOOL a8, void(*a9)(CGameMenuItemZEdit *, CGameMenuEvent *), int a10)
 {
     at30 = 0;
     at31 = 1;
@@ -1332,10 +1476,10 @@ void CGameMenuItemZEdit::Draw(void)
         gMenuTextMgr.DrawText("_", at8, x, at10, shade, 0, FALSE);
 }
 
-QBOOL CGameMenuItemZEdit::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemZEdit::Event(CGameMenuEvent &event)
 {
     static char buffer[256] = "";
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 7:
@@ -1420,7 +1564,7 @@ CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap()
     at35 = 1;
 }
 
-CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap(const char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, char a8, void(*a9)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int a10)
+CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap(char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, char a8, void(*a9)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int a10)
 {
     at2c = NULL;
     at34 = 0;
@@ -1487,10 +1631,10 @@ void CGameMenuItemZEditBitmap::Draw(void)
         gMenuTextMgr.DrawText("_", at8, x, at10, shade, 0, FALSE);
 }
 
-QBOOL CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
 {
     static char buffer[256] = "";
-    QBOOL r;
+    BOOL r;
     byte key;
     r = 0;
     switch (event.at0)
@@ -1578,7 +1722,7 @@ CGameMenuItemQAV::CGameMenuItemQAV()
     Clear1();
 }
 
-CGameMenuItemQAV::CGameMenuItemQAV(const char *a1, int a2, int a3, int a4, const char *a5)
+CGameMenuItemQAV::CGameMenuItemQAV(char *a1, int a2, int a3, int a4, char *a5)
 {
     at14 = 0;
     at4 = a1;
@@ -1614,8 +1758,8 @@ void CGameMenuItemQAV::Draw(void)
     wx2 = windowx2;
     wy2 = windowy2;
 
-    windowx1 = 0;
     windowy1 = 0;
+    windowx1 = 0;
     windowx2 = xdim-1;
     windowy2 = ydim-1;
     at28->Draw(t2, 10, 0, 0);
@@ -1627,9 +1771,9 @@ void CGameMenuItemQAV::Draw(void)
     gFrameClock = backFC;
 }
 
-QBOOL CGameMenuItemQAV::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemQAV::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 4:
@@ -1646,24 +1790,24 @@ QBOOL CGameMenuItemQAV::Event(CGameMenuEvent &event)
     case 0x8000:
         if (at20)
         {
-            if (!at28)
+            if (at28 == NULL)
             {
                 at24 = gSysRes.Lookup(at20, "QAV");
                 if (!at24)
-                    ThrowError(2336)("Could not load QAV %s\n", at20);
+                    ThrowError(2336+LDIFF2)("Could not load QAV %s\n", at20);
                 at28 = (QAV*)gSysRes.Lock(at24);
                 at28->x = atc;
                 at28->y = at10;
                 at28->Preload();
                 at2c = at28->at10;
                 at30 = totalclock;
-                break;
             }
-            gSysRes.Lock(at24);
+            else
+                gSysRes.Lock(at24);
         }
         break;
     case 0x8001:
-        if (at20 && at28)
+        if (at20 && at28 != NULL)
         {
             gSysRes.Unlock(at24);
             if (at24->lockCount == 0)
@@ -1693,7 +1837,7 @@ CGameMenuItemZCycle::CGameMenuItemZCycle()
     at30 = 0;
 }
 
-CGameMenuItemZCycle::CGameMenuItemZCycle(const char *a1, int a2, int a3, int a4, int a5, int a6, void(*a7)(CGameMenuItemZCycle *), const char **a8, int a9, int a10)
+CGameMenuItemZCycle::CGameMenuItemZCycle(char *a1, int a2, int a3, int a4, int a5, int a6, void(*a7)(CGameMenuItemZCycle *), char **a8, int a9, int a10)
 {
     at4 = a1;
     at8 = a2;
@@ -1748,16 +1892,16 @@ void CGameMenuItemZCycle::Draw(void)
         }
         gMenuTextMgr.DrawText(at4, at8, x, y, shade, 0, FALSE);
     }
-    const char *pzText = !m_nItems ? "????" : at34[at24];
-    dassert(pzText != NULL, 2463);
+    char *pzText = !m_nItems ? "????" : at34[at24];
+    dassert(pzText != NULL, 2463+LDIFF2);
     gMenuTextMgr.GetFontInfo(at8, pzText, &width3, NULL);
     x = atc + (at14 - 1) - width3;
     gMenuTextMgr.DrawText(pzText, at8, x, y, shade, 0, FALSE);
 }
 
-QBOOL CGameMenuItemZCycle::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemZCycle::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 5:
@@ -1780,10 +1924,10 @@ QBOOL CGameMenuItemZCycle::Event(CGameMenuEvent &event)
     return r;
 }
 
-void CGameMenuItemZCycle::Add(const char *pItem, QBOOL active)
+void CGameMenuItemZCycle::Add(char *pItem, BOOL active)
 {
-    dassert(pItem != NULL, 2504);
-    dassert(m_nItems < kMaxGameCycleItems, 2505);
+    dassert(pItem != NULL, 2504+LDIFF2);
+    dassert(m_nItems < kMaxGameCycleItems, 2505+LDIFF2);
     at34[m_nItems] = pItem;
     if (active)
         at24 = m_nItems;
@@ -1814,12 +1958,12 @@ void CGameMenuItemZCycle::Clear(void)
     at30 = 0;
 }
 
-void CGameMenuItemZCycle::SetTextArray(const char **pTextArray, int nTextPtrCount, int nIndex)
+void CGameMenuItemZCycle::SetTextArray(char **pTextArray, int nTextPtrCount, int nIndex)
 {
     Clear();
     at30 = pTextArray;
     at2c = nTextPtrCount;
-    dassert(nTextPtrCount <= kMaxGameCycleItems, 2547);
+    dassert(nTextPtrCount <= kMaxGameCycleItems, 2547+LDIFF2);
     for (int i = 0; i < nTextPtrCount; i++)
         Add(pTextArray[i], FALSE);
     SetTextIndex(nIndex);
@@ -1837,7 +1981,7 @@ CGameMenuItemYesNoQuit::CGameMenuItemYesNoQuit()
     at28 = 0;
 }
 
-CGameMenuItemYesNoQuit::CGameMenuItemYesNoQuit(const char *a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+CGameMenuItemYesNoQuit::CGameMenuItemYesNoQuit(char *a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     at4 = a1;
     at8 = a2;
@@ -1877,9 +2021,9 @@ void CGameMenuItemYesNoQuit::Draw(void)
     gMenuTextMgr.DrawText(at4, at8, x, at10, shade, 0, TRUE);
 }
 
-QBOOL CGameMenuItemYesNoQuit::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemYesNoQuit::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 1:
@@ -1929,9 +2073,9 @@ void CGameMenuItemPicCycle::Draw(void)
         rotatesprite(0, 0, 65536, 0, at30[at24], 0, 0, 82, 0, 0, xdim - 1, ydim - 1);
 }
 
-QBOOL CGameMenuItemPicCycle::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemPicCycle::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (event.at0)
     {
     case 5:
@@ -1954,9 +2098,9 @@ QBOOL CGameMenuItemPicCycle::Event(CGameMenuEvent &event)
     return r;
 }
 
-void CGameMenuItemPicCycle::Add(int nItem, QBOOL active)
+void CGameMenuItemPicCycle::Add(int nItem, BOOL active)
 {
-    dassert(m_nItems < kMaxPicCycleItems, 2736);
+    dassert(m_nItems < kMaxPicCycleItems, 2736+LDIFF2);
     at30[m_nItems] = nItem;
     if (active)
         at24 = m_nItems;
@@ -1990,7 +2134,7 @@ void CGameMenuItemPicCycle::SetPicArray(int *pArray, int nTileCount, int nIndex)
 {
     Clear();
     at2c = nTileCount;
-    dassert(nTileCount <= kMaxPicCycleItems, 2776);
+    dassert(nTileCount <= kMaxPicCycleItems, 2776+LDIFF2);
     for (int i = 0; i < nTileCount; i++)
         Add(pArray[i], FALSE);
     SetPicIndex(nIndex);
@@ -2010,7 +2154,7 @@ CGameMenuItemPassword::CGameMenuItemPassword()
     at5b = 0;
 }
 
-CGameMenuItemPassword::CGameMenuItemPassword(const char *a1, int a2, int a3, int a4)
+CGameMenuItemPassword::CGameMenuItemPassword(char *a1, int a2, int a3, int a4)
 {
     at37 = 0;
     at14 = 0;
@@ -2023,14 +2167,14 @@ CGameMenuItemPassword::CGameMenuItemPassword(const char *a1, int a2, int a3, int
     at10 = a4;
 }
 
-const char *kCheckPasswordMsg = "ENTER PASSWORD: ";
-const char *kOldPasswordMsg = "ENTER OLD PASSWORD: ";
-const char *kNewPasswordMsg = "ENTER NEW PASSWORD: ";
-const char *kInvalidPasswordMsg = "INVALID PASSWORD.";
+char *kCheckPasswordMsg = "ENTER PASSWORD: ";
+char *kOldPasswordMsg = "ENTER OLD PASSWORD: ";
+char *kNewPasswordMsg = "ENTER NEW PASSWORD: ";
+char *kInvalidPasswordMsg = "INVALID PASSWORD.";
 
 void CGameMenuItemPassword::Draw(void)
 {
-    QBOOL focus = pMenu->IsFocusItem(this);
+    BOOL focus = pMenu->IsFocusItem(this);
     int shade = 32;
     int shadef = 32-(totalclock&63);
     int width;
@@ -2088,9 +2232,9 @@ enum {
     kPasswordState4 = 4,
 };
 
-QBOOL CGameMenuItemPassword::Event(CGameMenuEvent &event)
+BOOL CGameMenuItemPassword::Event(CGameMenuEvent &event)
 {
-    QBOOL r = 0;
+    BOOL r = 0;
     switch (at37)
     {
     case kPasswordState0:

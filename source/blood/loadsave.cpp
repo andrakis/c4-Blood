@@ -14,20 +14,16 @@
  * GNU General Public License for more details.
  *
  */
-//#pragma initialize library
+#pragma initialize library
 #include <stdio.h>
 #include <dos.h>
 #include <io.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/stat.h>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#endif
+#include <sys\stat.h>
 #include "typedefs.h"
 #include "asound.h"
-#include "engine.h"
+#include "build.h"
 #include "cdrom.h"
 #include "config.h"
 #include "db.h"
@@ -45,8 +41,14 @@
 #include "sectorfx.h"
 #include "seq.h"
 #include "sfx.h"
-#include "qsound.h"
+#include "sound.h"
 #include "view.h"
+
+#if APPVER_BLOODREV >= AV_BR_BL111
+#define LDIFF1 0
+#else
+#define LDIFF1 -10
+#endif
 
 GAMEOPTIONS gSaveGameOptions[10];
 byte *gSaveGamePic[10];
@@ -57,44 +59,8 @@ unsigned int int_27AA3C = 0;
 unsigned int int_27AA40 = 0;
 byte *int_27AA44 = NULL;
 
-LoadSave LoadSave::head;
+LoadSave LoadSave::head(123);
 int LoadSave::hFile = -1;
-
-void ChainLoadSave()
-{
-    void actor_hook();
-    void ai_hook();
-    void blood_hook();
-    void controls_hook();
-    void endgame_hook();
-    void eventq_hook();
-    void levels_hook();
-    void messages_hook();
-    void mirrors_hook();
-    void player_hook();
-    void seq_hook();
-    void triggers_hook();
-    void view_hook();
-    void warp_hook();
-    void weapon_hook();
-
-    LoadSave::head.HookRoot();
-    blood_hook();
-    view_hook();
-    endgame_hook();
-    levels_hook();
-    controls_hook();
-    actor_hook();
-    player_hook();
-    triggers_hook();
-    eventq_hook();
-    weapon_hook();
-    seq_hook();
-    mirrors_hook();
-    warp_hook();
-    messages_hook();
-    ai_hook();
-}
 
 short short_27AA54 = 0;
 
@@ -104,12 +70,12 @@ void func_76FD4(void)
         int_27AA44 = (byte*)Resource::Alloc(0x186a0);
 }
 
-void LoadSave::Save(void)
+void LoadSave::Load(void)
 {
     ThrowError(66)("Pure virtual function called");
 }
 
-void LoadSave::Load(void)
+void LoadSave::Save(void)
 {
     ThrowError(72)("Pure virtual function called");
 }
@@ -192,7 +158,7 @@ void LoadSave::LoadGame(char *pzFile)
     gFrame = 0;
     gCacheMiss = 0;
     gFrameRate = 0;
-    gGameClock_set(0);
+    gGameClock = 0;
     gPaused = 0;
     gGameStarted = 1;
     if (!bNoCDAudio && gRedBookInstalled && Redbook.preprocess())
@@ -232,25 +198,41 @@ public:
     virtual void Save(void);
 };
 
+#ifdef SHAREWARE
+#ifdef SWRETAIL
+#define RELEASEID 2
+#else
+#define RELEASEID 1
+#endif
+#else
+#ifdef PLASMAPAK
+#define RELEASEID 4
+#else
+#define RELEASEID 3
+#endif
+#endif
+
 void MyLoadSave::Load(void)
 {
+    int nNumSprites;
     int id;
+    int release;
+    int nGameClock;
+    int i;
+    ushort version;
     Read(&id, sizeof(id));
     if (id != 'DULB')
         ThrowError(291)("Old saved game found");
-    ushort version;
     Read(&version, sizeof(version));
     if (version != gGameVersion.w)
         ThrowError(296)("Incompatible version of saved game found!");
-    int release;
     Read(&release, sizeof(release));
-    id = 4;
+    id = RELEASEID;
     if (release != id)
         ThrowError(314)("Saved game is from another release of Blood");
     Read(&gGameOptions, sizeof(gGameOptions));
     Read(&numsectors, sizeof(numsectors));
     Read(&numwalls, sizeof(numwalls));
-    int nNumSprites;
     Read(&nNumSprites, sizeof(nNumSprites));
     memset(sector, 0, sizeof(sector));
     memset(wall, 0, sizeof(wall));
@@ -282,9 +264,8 @@ void MyLoadSave::Load(void)
     Read(&gFrameClock, sizeof(gFrameClock));
     Read(&gFrameTicks, sizeof(gFrameTicks));
     Read(&gFrame, sizeof(gFrame));
-    int nGameClock;
     Read(&nGameClock, sizeof(nGameClock));
-    gGameClock_set(nGameClock);
+    gGameClock = nGameClock;
     Read(&gPaused, sizeof(gPaused));
     Read(&gAdultContent, sizeof(gAdultContent));
     Read(baseWall, sizeof(baseWall[0])*numwalls);
@@ -297,34 +278,43 @@ void MyLoadSave::Load(void)
     Read(&char_1A76C6, sizeof(char_1A76C6));
     Read(&char_1A76C8, sizeof(char_1A76C8));
     Read(&char_1A76C7, sizeof(char_1A76C7));
+#ifdef REGISTERED
     Read(&char_19AE44, sizeof(char_19AE44));
+#endif
     Read(gStatCount, sizeof(gStatCount));
     Read(nextXSprite, sizeof(nextXSprite));
     Read(nextXWall, sizeof(nextXWall));
     Read(nextXSector, sizeof(nextXSector));
     memset(xsprite, 0, sizeof(xsprite));
-    for (int nSprite = 0; nSprite < kMaxSprites; nSprite++)
+    for (i = 0; i < kMaxSprites; i++)
     {
-        if (sprite[nSprite].statnum < kMaxStatus)
+        if (sprite[i].statnum < kMaxStatus)
         {
-            int nXSprite = sprite[nSprite].extra;
+            int nXSprite = sprite[i].extra;
             if (nXSprite > 0)
-                Read(&xsprite[nXSprite], sizeof(XSPRITE));
+            {
+                XSPRITE* pXSprite = &xsprite[nXSprite];
+                Read(pXSprite, sizeof(XSPRITE));
+            }
         }
     }
     memset(xwall, 0, sizeof(xwall));
-    for (int nWall = 0; nWall < numwalls; nWall++)
+    for (i = 0; i < numwalls; i++)
     {
-        int nXWall = wall[nWall].extra;
-        if (nXWall > 0)
-            Read(&xwall[nXWall], sizeof(XWALL));
+        if (wall[i].extra > 0)
+        {
+            XWALL* pXWall = &xwall[wall[i].extra];
+            Read(pXWall, sizeof(XWALL));
+        }
     }
     memset(xsector, 0, sizeof(xsector));
-    for (int nSector = 0; nSector < numsectors; nSector++)
+    for (i = 0; i < numsectors; i++)
     {
-        int nXSector = sector[nSector].extra;
-        if (nXSector > 0)
-            Read(&xsector[nXSector], sizeof(XSECTOR));
+        if (sector[i].extra > 0)
+        {
+            XSECTOR* pXSector = &xsector[sector[i].extra];
+            Read(pXSector, sizeof(XSECTOR));
+        }
     }
     Read(xvel, nNumSprites*sizeof(xvel[0]));
     Read(yvel, nNumSprites*sizeof(yvel[0]));
@@ -342,12 +332,12 @@ void MyLoadSave::Save(void)
     Write(&id, sizeof(id));
     ushort version = gGameVersion.w;
     Write(&version, sizeof(version));
-    id = 4;
+    id = RELEASEID;
     Write(&id, sizeof(id));
-    for (int nSprite = 0; nSprite < kMaxSprites; nSprite++)
+    for (int i = 0; i < kMaxSprites; i++)
     {
-        if (sprite[nSprite].statnum < kMaxStatus && nSprite > nNumSprites)
-            nNumSprites = nSprite;
+        if (sprite[i].statnum < kMaxStatus && i > nNumSprites)
+            nNumSprites = i;
     }
     nNumSprites += 2;
     Write(&gGameOptions, sizeof(gGameOptions));
@@ -395,31 +385,39 @@ void MyLoadSave::Save(void)
     Write(&char_1A76C6, sizeof(char_1A76C6));
     Write(&char_1A76C8, sizeof(char_1A76C8));
     Write(&char_1A76C7, sizeof(char_1A76C7));
+#ifdef REGISTERED
     Write(&char_19AE44, sizeof(char_19AE44));
+#endif
     Write(gStatCount, sizeof(gStatCount));
     Write(nextXSprite, sizeof(nextXSprite));
     Write(nextXWall, sizeof(nextXWall));
     Write(nextXSector, sizeof(nextXSector));
-    for (int nSprite = 0; nSprite < kMaxSprites; nSprite++)
+    for (i = 0; i < kMaxSprites; i++)
     {
-        if (sprite[nSprite].statnum < kMaxStatus)
+        if (sprite[i].statnum < kMaxStatus)
         {
-            int nXSprite = sprite[nSprite].extra;
-            if (nXSprite > 0)
-                Write(&xsprite[nXSprite], sizeof(XSPRITE));
+            if (sprite[i].extra > 0)
+            {
+                XSPRITE* pXSprite = &xsprite[sprite[i].extra];
+                Write(pXSprite, sizeof(XSPRITE));
+            }
         }
     }
-    for (int nWall = 0; nWall < numwalls; nWall++)
+    for (i = 0; i < numwalls; i++)
     {
-        int nXWall = wall[nWall].extra;
-        if (nXWall > 0)
-            Write(&xwall[nXWall], sizeof(XWALL));
+        if (wall[i].extra > 0)
+        {
+            XWALL* pXWall = &xwall[wall[i].extra];
+            Write(pXWall, sizeof(XWALL));
+        }
     }
-    for (int nSector = 0; nSector < numsectors; nSector++)
+    for (i = 0; i < numsectors; i++)
     {
-        int nXSector = sector[nSector].extra;
-        if (nXSector > 0)
-            Write(&xsector[nXSector], sizeof(XSECTOR));
+        if (sector[i].extra > 0)
+        {
+            XSECTOR* pXSector = &xsector[sector[i].extra];
+            Write(pXSector, sizeof(XSECTOR));
+        }
     }
     Write(xvel, nNumSprites*sizeof(xvel[0]));
     Write(yvel, nNumSprites*sizeof(yvel[0]));
@@ -432,24 +430,12 @@ void MyLoadSave::Save(void)
 
 void LoadSavedInfo(void)
 {
-#ifdef _WIN32
-    WIN32_FIND_DATAA find;
-    HANDLE h = FindFirstFileA("GAME*.SAV", &find);
-    if (h == INVALID_HANDLE_VALUE)
-        return;
-    int nStatus = 0;
-#else
     struct find_t find;
     int nStatus = _dos_findfirst("GAME*.SAV", 0, &find);
-#endif
     int nCount = 0;
     while (!nStatus && nCount < 10)
     {
-#ifdef _WIN32
-        int hFile = open(find.cFileName, O_BINARY);
-#else
         int hFile = open(find.name, O_BINARY);
-#endif
         if (hFile == -1)
             ThrowError(694)("File error #%d loading save file header.", errno);
         int vc, v8;
@@ -459,66 +445,58 @@ void LoadSavedInfo(void)
         v4 = short_27AA54;
         if (read(hFile, &vc, sizeof(vc)) == -1)
         {
+#if APPVER_BLOODREV >= AV_BR_BL111
             close(hFile);
-            nCount++;
-#ifdef _WIN32
-            nStatus = !FindNextFileA(h, &find);
-#else
-            nStatus = _dos_findnext(&find);
 #endif
-            continue;
+            goto next;
         }
         if (vc != 'DULB')
         {
+#if APPVER_BLOODREV >= AV_BR_BL111
             close(hFile);
-            nCount++;
-#ifdef _WIN32
-            nStatus = !FindNextFileA(h, &find);
-#else
-            nStatus = _dos_findnext(&find);
 #endif
-            continue;
+            goto next;
         }
         read(hFile, &v4, sizeof(v4));
         if (v4 != gGameVersion.w)
         {
+#if APPVER_BLOODREV >= AV_BR_BL111
             close(hFile);
-#ifdef _WIN32
-            nStatus = !FindNextFileA(h, &find);
-#else
-            nStatus = _dos_findnext(&find);
 #endif
-            continue;
+            goto next;
         }
         read(hFile, &v8, sizeof(v8));
-        vc = 4;
+        vc = RELEASEID;
         if (v8 != vc)
         {
+#if APPVER_BLOODREV >= AV_BR_BL111
             close(hFile);
-#ifdef _WIN32
-            nStatus = !FindNextFileA(h, &find);
-#else
-            nStatus = _dos_findnext(&find);
 #endif
-            continue;
+            goto next;
         }
         if (read(hFile, &gSaveGameOptions[nCount], sizeof(gSaveGameOptions[0])) == -1)
-            ThrowError(752)("File error #%d reading save file.", errno);
+            ThrowError(752+LDIFF1)("File error #%d reading save file.", errno);
         close(hFile);
         strcpy(strRestoreGameStrings[gSaveGameOptions[nCount].nSaveGameSlot], gSaveGameOptions[nCount].szUserGameName);
-#ifdef _WIN32
-        nStatus = !FindNextFileA(h, &find);
-#else
-        nStatus = _dos_findnext(&find);
-#endif
+next:
+        nCount++; nStatus = _dos_findnext(&find);
     }
-#ifdef _WIN32
-    FindClose(h);
-#endif
 }
 
 void UpdateSavedInfo(int nSlot)
 {
+#if APPVER_BLOODREV < AV_BR_BL111
+    int hFile = open(gSaveGameOptions[nSlot].szSaveGameName, O_BINARY | O_WRONLY);
+    if (hFile == -1)
+    {
+        ThrowError(770)("File error #%d updating save file header.", errno);
+    }
+    if (write(hFile, &gSaveGameOptions[nSlot], sizeof(GAMEOPTIONS)) == -1)
+    {
+        ThrowError(773)("File error #%d writing to save file.", errno);
+    }
+    close(hFile);
+#endif
     strcpy(strRestoreGameStrings[gSaveGameOptions[nSlot].nSaveGameSlot], gSaveGameOptions[nSlot].szUserGameName);
 }
 

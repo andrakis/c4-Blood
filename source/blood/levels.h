@@ -21,7 +21,13 @@
 
 #include "weather.h"
 
-enum GAMETYPE : uint8_t
+#ifdef PLASMAPAK
+#define kMaxEpisodes 6
+#else
+#define kMaxEpisodes 5
+#endif
+
+enum GAMETYPE
 {
     GAMETYPE_0 = 0,
     GAMETYPE_1,
@@ -29,7 +35,7 @@ enum GAMETYPE : uint8_t
     GAMETYPE_3,
 };
 
-enum DIFFICULTY : uint8_t
+enum DIFFICULTY
 {
     DIFFICULTY_0 = 0,
     DIFFICULTY_1,
@@ -38,14 +44,14 @@ enum DIFFICULTY : uint8_t
     DIFFICULTY_4,
 };
 
-enum MONSTERSETTINGS : uint8_t
+enum MONSTERSETTINGS
 {
     MONSTERSETTINGS_0 = 0,
     MONSTERSETTINGS_1,
     MONSTERSETTINGS_2,
 };
 
-enum WEAPONSETTINGS : uint8_t
+enum WEAPONSETTINGS
 {
     WEAPONSETTINGS_0 = 0,
     WEAPONSETTINGS_1,
@@ -53,49 +59,46 @@ enum WEAPONSETTINGS : uint8_t
     WEAPONSETTINGS_3,
 };
 
-enum ITEMSETTINGS : uint8_t
+enum ITEMSETTINGS
 {
     ITEMSETTINGS_0 = 0,
     ITEMSETTINGS_1,
     ITEMSETTINGS_2,
 };
 
-enum RESPAWNSETTINGS : uint8_t
+enum RESPAWNSETTINGS
 {
     RESPAWNSETTINGS_0 = 0,
 };
 
-enum TEAMSETTINGS : uint8_t
+enum TEAMSETTINGS
 {
     TEAMSETTINGS_0 = 0,
-    TEAMSETTINGS_1,
-    TEAMSETTINGS_2
 };
 
 #define kMaxFileKeyLen 16
 #define kMaxMessages 32
 
-#pragma pack(push, 1)
 struct GAMEOPTIONS
 {
     GAMETYPE        nGameType;
     DIFFICULTY      nDifficulty;
     int             nEpisode;
     int             nLevel;
-    char            zLevelName[WMAX_PATH];
-    char            zLevelSong[WMAX_PATH];
+    char            zLevelName[_MAX_PATH];
+    char            zLevelSong[_MAX_PATH];
     int             nTrackNumber;
     char            szSaveGameName[kMaxFileKeyLen];
     char            szUserGameName[kMaxFileKeyLen];
     short           nSaveGameSlot;
     int             picEntry;
-    uint32_t           uMapCRC;
+    ulong           uMapCRC;
     MONSTERSETTINGS nMonsterSettings;
 
-    uint32_t           uGameFlags;
+    ulong           uGameFlags;
 
     // net game options/data only
-    uint32_t           uNetGameFlags;
+    ulong           uNetGameFlags;
 
     WEAPONSETTINGS  nWeaponSettings;
     ITEMSETTINGS    nItemSettings;
@@ -118,8 +121,8 @@ struct LEVELINFO
     int ate4; // EndingA
     int ate8; // EndingB
     char atec[kMaxMessages][64]; // Messages
-    QBOOL at8ec; // Fog
-    QBOOL at8ed; // Weather
+    BOOL at8ec; // Fog
+    BOOL at8ed; // Weather
 }; // 0x8ee bytes
 
 struct EPISODEINFO
@@ -133,18 +136,18 @@ struct EPISODEINFO
     char at8f98[144];
     int at9028;
     int at902c;
+#ifdef REGISTERED
     char at9030[144];
     char at90c0[144];
+#endif
 };
-
-#pragma pack(pop)
 
 extern EPISODEINFO gEpisodeInfo[];
 extern GAMEOPTIONS gGameOptions;
 
 extern int gEpisodeCount;
 
-extern QBOOL gGameStarted;
+extern BOOL gGameStarted;
 
 extern WEATHERTYPE gWeatherType;
 
@@ -160,10 +163,10 @@ char *levelGetFilename(int nEpisode, int nLevel);
 char *levelGetMessage(int);
 void levelSetupOptions(int nEpisode, int nLevel);
 void levelPlayIntroScene(int);
-void levelAddUserMap(const char*);
+void levelAddUserMap(char*);
 void levelRestart(void);
 void levelPlayEndScene(int nEpisode);
-void func_269D8(const char* pzIni);
+void func_269D8(char* pzIni);
 void func_26988(void);
 void levelLoadDefaults(void);
 

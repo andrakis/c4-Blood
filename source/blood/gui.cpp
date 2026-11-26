@@ -18,7 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "gfx.h"
 #include "globals.h"
@@ -26,7 +26,7 @@
 #include "helix.h"
 #include "key.h"
 #include "misc.h"
-#include "qmouse.h"
+#include "mouse.h"
 #include "resource.h"
 #include "screen.h"
 
@@ -48,7 +48,7 @@ void SetBlinkOff()
     blinkClock = 60;
 }
 
-QBOOL IsBlinkOn(void)
+BOOL IsBlinkOn(void)
 {
     return blinkClock < 60;
 }
@@ -157,7 +157,7 @@ Container::~Container()
     }
 }
 
-QBOOL Container::SetFocus(int a1)
+BOOL Container::SetFocus(int a1)
 {
     do
     {
@@ -295,7 +295,7 @@ void Panel::Paint(int x, int y, char a3)
     Container::Paint(x, y, a3);
 }
 
-TitleBar::TitleBar(int a1, int a2, int a3, int a4, const char *a5) : Widget(a1, a2, a3, a4)
+TitleBar::TitleBar(int a1, int a2, int a3, int a4, char *a5) : Widget(a1, a2, a3, a4)
 {
     strcpy(at24, a5);
     at124 = strlen(at24);
@@ -329,7 +329,7 @@ void TitleBar::HandleEvent(GEVENT *event)
     }
 }
 
-Window::Window(int a1, int a2, int a3, int a4, const char* a5) : Panel(a1, a2, a3, a4, 1, 1, -1)
+Window::Window(int a1, int a2, int a3, int a4, char* a5) : Panel(a1, a2, a3, a4, 1, 1, -1)
 {
     at62 = new TitleBar(3, 3, a3-6, 12, a5);
     at5e = new Container(3, 15, a3-6, a4-18);
@@ -364,7 +364,7 @@ void Button::HandleEvent(GEVENT* event)
     }
     else if ((event->at0 & GEVENT_TYPE_MOUSE_MASK))
     {
-        if (event->at6.mouse.at4 == 0)
+        if (event->at6.mouse.at4)
             return;
         switch (event->at0)
         {
@@ -456,7 +456,7 @@ void BitButton::Paint(int x, int y, char a3)
         gfxDrawBitmap(pQBM, bx - pQBM->cols / 2, by - pQBM->rows / 2);
 }
 
-EditText::EditText(int a1, int a2, int a3, int a4, const char *a5) : Widget(a1,a2,a3,a4)
+EditText::EditText(int a1, int a2, int a3, int a4, char *a5) : Widget(a1,a2,a3,a4)
 {
     at1c = 1;
     strcpy(at24, a5);
@@ -475,8 +475,7 @@ void EditText::Paint(int x, int y, char a3)
     if (a3 && IsBlinkOn())
     {
         Video.SetColor(gStdColor[0]);
-        y += atc / 2;
-        gfxVLine(x + gfxGetTextNLen(at24, pFont, at128) + 3, y - 4, y + 3);
+        gfxVLine(x + gfxGetTextNLen(at24, pFont, at128) + 3, y + atc / 2 - 4, y + atc / 2 + 3);
     }
 }
 
@@ -698,14 +697,14 @@ GEVENT_TYPE GetEvent(GEVENT* event)
     byte key = keyGet();
     if (key != 0)
     {
-        if (keystatus[bsc_Left])
+        if (keystatus[bsc_LShift])
             event->at6.keyboard.at2.bits.at3 = 1;
-        if (keystatus[bsc_Right])
+        if (keystatus[bsc_RShift])
             event->at6.keyboard.at2.bits.at4 = 1;
         event->at6.keyboard.at2.bits.at0 = event->at6.keyboard.at2.bits.at3 | event->at6.keyboard.at2.bits.at4;
         if (keystatus[bsc_LCtrl])
             event->at6.keyboard.at2.bits.at5 = 1;
-        if (keystatus[bsc_RShift])
+        if (keystatus[bsc_RCtrl])
             event->at6.keyboard.at2.bits.at6 = 1;
         event->at6.keyboard.at2.bits.at1 = event->at6.keyboard.at2.bits.at5 | event->at6.keyboard.at2.bits.at6;
         if (keystatus[bsc_LAlt])
@@ -819,7 +818,7 @@ MODAL_RESULT ShowModal(Container* container)
     container->at24 = 1;
     while (container->at24)
     {
-        gFrameTicks = totalclock - gFrameClock;
+        gFrameTicks = gGameClock - gFrameClock;
         gFrameClock += gFrameTicks;
         UpdateBlinkClock((int)gFrameTicks);
 
@@ -891,7 +890,7 @@ int GetStringBox(char *a1, char *a2)
     return 1;
 }
 
-int GetNumberBox(const char *a1, int a2, int a3)
+int GetNumberBox(char *a1, int a2, int a3)
 {
     Window window(0, 0, 168, 40, a1);
     EditNumber* editnumber = new EditNumber(4, 4, 154, 16, a2);

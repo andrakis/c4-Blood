@@ -15,7 +15,7 @@
  *
  */
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "debug4g.h"
 #include "misc.h"
 #include "qav.h"
@@ -54,7 +54,7 @@ static void DrawFrame(int x, int y, TILE_FRAME *pTile, int stat, int shade, int 
                  windowx1, windowy1, windowx2, windowy2);
 }
 
-void QAV::Draw(int32_t ticks, int stat, int shade, int palnum)
+void QAV::Draw(long ticks, int stat, int shade, int palnum)
 {
     dassert(ticksPerFrame > 0, 72);
     int nFrame = ticks / ticksPerFrame;
@@ -67,7 +67,7 @@ void QAV::Draw(int32_t ticks, int stat, int shade, int palnum)
     }
 }
 
-void QAV::Play(int32_t start, int32_t end, int nCallback, void *pData)
+void QAV::Play(long start, long end, int nCallback, void *pData)
 {
     dassert(ticksPerFrame > 0, 87);
     int frame;
@@ -85,10 +85,10 @@ void QAV::Play(int32_t start, int32_t end, int nCallback, void *pData)
             SOUNDINFO *pSound = &pFrame->sound;
             if (pSound->sound > 0)
             {
-                if (!nSprite)
+                if (!pSprite)
                     PlaySound(pSound->sound);
                 else
-                    PlaySound3D(&sprite[nSprite - 1], pSound->sound, 16 + pSound->at4, 6);
+                    PlaySound3D(pSprite, pSound->sound, 16+pSound->at4, 6);
             }
             if (pFrame->nCallbackId > 0 && nCallback != -1)
             {

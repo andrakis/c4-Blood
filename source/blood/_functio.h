@@ -27,7 +27,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-const char * gamefunctions[] =
+char * gamefunctions[] =
    {
    "Move_Forward",
    "Move_Backward",
@@ -87,7 +87,7 @@ const char * gamefunctions[] =
 
 #define NUMKEYENTRIES 54
 
-static const char * keydefaults[] =
+static char * keydefaults[] =
    {
    "Move_Forward", "Up", "Kpad8",
    "Move_Backward", "Down", "Kpad2",
@@ -146,7 +146,7 @@ static const char * keydefaults[] =
    };
 
 
-static const char * mousedefaults[] =
+static char * mousedefaults[] =
    {
    "Weapon_Fire",
    "Move_Forward",
@@ -154,7 +154,7 @@ static const char * mousedefaults[] =
    };
 
 
-static const char * mouseclickeddefaults[] =
+static char * mouseclickeddefaults[] =
    {
    "",
    "Open",
@@ -162,7 +162,7 @@ static const char * mouseclickeddefaults[] =
    };
 
 
-static const char * joystickdefaults[] =
+static char * joystickdefaults[] =
    {
    "Weapon_Fire",
    "Strafe",
@@ -175,7 +175,7 @@ static const char * joystickdefaults[] =
    };
 
 
-static const char * joystickclickeddefaults[] =
+static char * joystickclickeddefaults[] =
    {
    "",
    "Inventory_Use",
@@ -188,14 +188,14 @@ static const char * joystickclickeddefaults[] =
    };
 
 
-static const char * mouseanalogdefaults[] =
+static char * mouseanalogdefaults[] =
    {
    "analog_turning",
    "analog_moving",
    };
 
 
-static const char * mousedigitaldefaults[] =
+static char * mousedigitaldefaults[] =
    {
    "",
    "",
@@ -204,7 +204,7 @@ static const char * mousedigitaldefaults[] =
    };
 
 
-static const char * gamepaddigitaldefaults[] =
+static char * gamepaddigitaldefaults[] =
    {
    "Turn_Left",
    "Turn_Right",
@@ -213,7 +213,7 @@ static const char * gamepaddigitaldefaults[] =
    };
 
 
-static const char * joystickanalogdefaults[] =
+static char * joystickanalogdefaults[] =
    {
    "analog_turning",
    "analog_moving",
@@ -222,7 +222,7 @@ static const char * joystickanalogdefaults[] =
    };
 
 
-static const char * joystickdigitaldefaults[] =
+static char * joystickdigitaldefaults[] =
    {
    "",
    "",

@@ -17,22 +17,22 @@
 #ifndef _MAP2D_H_
 #define _MAP2D_H_
 
-#include "engine.h"
+#include "build.h"
 #include "typedefs.h"
 
 class CViewMap {
 public:
-    QBOOL bActive;
+    BOOL bActive;
     int x, y, nZoom;
     short angle;
-    QBOOL bFollowMode;
+    BOOL bFollowMode;
     int forward, turn, strafe;
     CViewMap();
-    void func_25C38(int, int, int, short, QBOOL);
+    void func_25C38(int, int, int, short, BOOL);
     void func_25C74(void);
     void func_25DB0(SPRITE *pSprite);
     void func_25E84(int*, int*);
-    void FollowMode(QBOOL);
+    void FollowMode(BOOL);
 
 
     void SetPos(int _x, int _y)
@@ -58,7 +58,7 @@ public:
         nZoom = z;
     }
 
-    QBOOL Mode(void)
+    BOOL Mode(void)
     {
         return bFollowMode;
     }

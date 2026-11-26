@@ -18,9 +18,9 @@
 #define _GIB_H_
 
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 
-enum GIBTYPE : int32_t {
+enum GIBTYPE {
     GIBTYPE_0 = 0,
     GIBTYPE_1,
     GIBTYPE_2,

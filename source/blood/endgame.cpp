@@ -15,14 +15,12 @@
  *
  */
 #include <stdio.h>
-#include <stdlib.h>
-#include "compat.h"
 extern "C" {
-#include "TYPES.H"
-#include "FX_MAN.H"
+#include "types.h"
+#include "fx_man.h"
 }
 #include "typedefs.h"
-#include "engine.h"
+#include "build.h"
 #include "db.h"
 #include "endgame.h"
 #include "error.h"
@@ -34,7 +32,7 @@ extern "C" {
 #include "network.h"
 #include "messages.h"
 #include "player.h"
-#include "qsound.h"
+#include "sound.h"
 #include "view.h"
 
 CEndGameMgr gEndGameMgr;
@@ -79,7 +77,7 @@ void CEndGameMgr::ProcessKeys(void)
 {
     if (int_28E3D4 == 1)
     {
-        if (gGameOptions.nGameType > GAMETYPE_0 || numplayers > 1)
+        if (gGameOptions.nGameType >= GAMETYPE_0 || numplayers > 1)
             netWaitForEveryone(0);
         Finish();
     }
@@ -88,10 +86,10 @@ void CEndGameMgr::ProcessKeys(void)
         byte ch = keyGet();
         if (ch == 0)
             return;
-        QBOOL bAlt = keystatus[bsc_LAlt] | keystatus[bsc_RAlt];
-        QBOOL bCtrl = keystatus[bsc_LCtrl] | keystatus[bsc_RCtrl];
-        QBOOL bShift = keystatus[bsc_LShift] | keystatus[bsc_RShift];
-        if (gGameOptions.nGameType > GAMETYPE_0 || numplayers > 1)
+        BOOL bAlt = keystatus[bsc_LAlt] | keystatus[bsc_RAlt];
+        BOOL bCtrl = keystatus[bsc_LCtrl] | keystatus[bsc_RCtrl];
+        BOOL bShift = keystatus[bsc_LShift] | keystatus[bsc_RShift];
+        if (gGameOptions.nGameType >= GAMETYPE_0 || numplayers > 1)
             netWaitForEveryone(0);
         Finish();
     }
@@ -159,6 +157,12 @@ void CKillMgr::Draw(void)
     char buffer[40];
     if (gGameOptions.nGameType == GAMETYPE_0)
     {
+#if APPVER_BLOODREV < AV_BR_BL111A
+        if (CCheatMgr::m_bPlayerCheated)
+        {
+            at4 = at0 = 0;
+        }
+#endif
         viewDrawText(1, "KILLS:", 75, 50, -128, 0, 0, 1);
         sprintf(buffer, "%2d", at4);
         viewDrawText(1, buffer, 160, 50, -128, 0, 0, 1);
@@ -230,6 +234,12 @@ void CSecretMgr::Found(int nType)
 void CSecretMgr::Draw(void)
 {
     char buffer[40];
+#if APPVER_BLOODREV < AV_BR_BL111A
+    if (CCheatMgr::m_bPlayerCheated)
+    {
+        at4 = at0 = at8 = 0;
+    }
+#endif
     viewDrawText(1, "SECRETS:", 75, 70, -128, 0, 0, 1);
     sprintf(buffer, "%2d", at4);
     viewDrawText(1, buffer, 160, 70, -128, 0, 0, 1);
@@ -270,5 +280,3 @@ void EndGameLoadSave::Save(void)
 }
 
 static EndGameLoadSave myLoadSave;
-
-void endgame_hook() { myLoadSave.Hook(); }
