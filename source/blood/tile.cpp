@@ -401,6 +401,7 @@ byte *tileLoadTile(int nTile)
     int hFile = hTileFile[tilefilenum[nTile]];
     lseek(hFile, tilefileoffs[nTile], SEEK_SET);
     read(hFile, node->ptr, nSize);
+    memset((byte*)node->ptr + nSize, 255, ((nSize + 15) & ~15) - nSize);
     return waloff[nTile];
 }
 

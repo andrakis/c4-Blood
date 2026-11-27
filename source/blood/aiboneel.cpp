@@ -75,9 +75,8 @@ static void BiteSeqCallback(int, int nXSprite)
     int dz = 0;
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax, 120);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type-kDudeBase];
-    DUDEINFO *pDudeInfoT = &dudeInfo[pTarget->type-kDudeBase];
     int height = (pSprite->yrepeat*pDudeInfo->atb)<<2;
-    int height2 = (pTarget->yrepeat*pDudeInfoT->atb)<<2;
+    int height2 = IsDudeSprite(pTarget) ? (pTarget->yrepeat*dudeInfo[pTarget->type-kDudeBase].atb)<<2 : height;
     dassert(pXSprite->target >= 0 && pXSprite->target < kMaxSprites, 126);
     dz = height2 - height;
     actFireVector(pSprite, 0, 0, dx, dy, dz, VECTOR_TYPE_7);

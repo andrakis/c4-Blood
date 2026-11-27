@@ -133,6 +133,8 @@ void warpInit(void)
 int CheckLink(SPRITE *pSprite)
 {
     int z1, z2;
+    if (pSprite->sectnum < 0)
+        return 0;
     int nUpper = gUpperLink[pSprite->sectnum];
     int nLower = gLowerLink[pSprite->sectnum];
     if (nUpper >= 0)
@@ -191,6 +193,8 @@ int CheckLink(SPRITE *pSprite)
 int CheckLink(long *x, long *y, long *z, int *nSector)
 {
     int z1, z2;
+    if (*nSector < 0)
+        return 0;
     int nUpper = gUpperLink[*nSector];
     int nLower = gLowerLink[*nSector];
     if (nUpper >= 0)

@@ -634,7 +634,9 @@ void CONFIG_ReadSetup( void )
    SBConfig.Emu = dummy;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "ReverseStereo",&ReverseStereo);
 
-   SCRIPT_GetNumber( scripthandle, "Controls","ControllerType",(int32*)&ControllerType);
+   dummy = ControllerType;
+   SCRIPT_GetNumber( scripthandle, "Controls","ControllerType",&dummy);
+   ControllerType = (controltype)dummy;
    SCRIPT_GetNumber( scripthandle, "Controls","TurnSpeed",&gTurnSpeed);
 
    SCRIPT_GetString( scripthandle, "Comm Setup","PlayerName",&PlayerName[0]);

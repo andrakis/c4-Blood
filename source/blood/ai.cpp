@@ -182,7 +182,7 @@ BOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
     case 217:
         if (vdh)
             return 0;
-        if (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5 && floorZ-bottom > 0x2000)
+        if ((nXSector <= 0 || (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5)) && floorZ-bottom > 0x2000)
             return 0;
         break;
     case 204:
@@ -206,7 +206,7 @@ BOOL CanMove(SPRITE *pSprite, int a2, int nAngle, int nRange)
     default:
         if (vdh)
             return 0;
-        if (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5 && floorZ - bottom > 0x2000)
+        if ((nXSector <= 0 || (!xsector[nXSector].at13_4 && !xsector[nXSector].at13_5)) && floorZ - bottom > 0x2000)
             return 0;
         break;
     }

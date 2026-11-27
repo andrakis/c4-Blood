@@ -4273,7 +4273,7 @@ static void MoveDude(SPRITE *pSprite)
                 SPRITE *pHitSprite = &sprite[nHitSprite];
                 XSPRITE *pHitXSprite = NULL;
                 // Should be pHitSprite here
-                if (pSprite->extra > 0)
+                if (pHitSprite->extra > 0)
                     pHitXSprite = &xsprite[pHitSprite->extra];
                 int nOwner = actSpriteOwnerToSpriteId(pHitSprite);
                 if (pHitSprite->statnum == 5 && !(pHitSprite->flags&kSpriteFlag5) && nOwner != pSprite->index)
@@ -6150,11 +6150,7 @@ void actFireVector(SPRITE *pShooter, int a2, int a3, int a4, int a5, int a6, VEC
             }
             if (pSprite->statnum == 6)
             {
-                int t = dudeInfo[pSprite->type-kDudeBase].at4;
-#if 0
-                if (pSprite->type == 426)
-                    t = 0;
-#endif
+                int t = IsDudeSprite(pSprite) ? dudeInfo[pSprite->type-kDudeBase].at4 : 0;
                 if (t > 0 && pVectorData->at5)
                 {
                     int t2 = divscale(pVectorData->at5, t, 8);
