@@ -18,6 +18,13 @@
 //   -shot N    write every Nth frame as shotNNNNN.ppm
 //   -keys F    play scancodes from file F: lines "FRAME SCANCODE" (hex
 //              scancode; 0x80 set is a release), as the keyboard interrupt
+//
+// c4's display build (blood-c4.c) is this file with C4BLOOD_SHOW: the same
+// machine, which then also shows its pages, takes its keys and the mouse
+// from the display and its time from the machine's clock, and leaves the
+// sound card to blood-snd.c. Those parts are the bh_ hooks blood-c4.c
+// has; built without C4BLOOD_SHOW, as B0 and c4's headless build are,
+// none of it is here.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +33,22 @@
 #include "system.h"
 #include "video.h"
 #include "sound.h"
+
+#ifdef C4BLOOD_SHOW
+// blood-c4.c's: whether the time is the machine's (not a test), and so
+static int bh_real;
+static uint64_t bh_now_ns (void);	// the machine's time since the start
+static int bh_moved (void);		// the machine's clock has moved since last asked
+static void bh_tick (void);		// the display's events and the music, now and then
+static void bh_sleep_ns (uint64_t ns);
+static void bh_mode (int w, int h);
+static void bh_frame (const unsigned char *px);
+static int bh_test (void);		// a test: -sum, -frames, -shot or -keys given
+static int bh_own (const char *arg);	// one of c4's own switches, which the game is not given
+static void bh_args (void);
+static int bh_mouse_dx, bh_mouse_dy, bh_mouse_buttons;
+static unsigned bh_pits;		// the PIT's interrupts run, for -trace
+#endif
 
 // ---- time ----
 
@@ -44,7 +67,17 @@ static void PIT_Update (void)
 	in_pit = 1;
 	cycles = ((virt_ns - pit_base_ns) * 1193182ull) / 1000000000ull;
 	if (pit_divider && pit_callback) {
+#ifdef C4BLOOD_SHOW
+		// a long wait the game did not see (a level loading, the machine
+		// busy): what was due more than half a second ago is let go, as
+		// a DOS machine's interrupts would not have piled up either
+		if (bh_real && cycles > pit_cycles && cycles - pit_cycles > 1193182ull / 2)
+			pit_cycles = cycles - 1193182ull / 2;
+#endif
 		while (pit_cycles < cycles) {
+#ifdef C4BLOOD_SHOW
+			bh_pits++;
+#endif
 			pit_callback ();
 			pit_cycles += pit_divider;
 		}
@@ -55,12 +88,34 @@ static void PIT_Update (void)
 
 void c4blood_clock_read (void)
 {
+#ifdef C4BLOOD_SHOW
+	// played: the machine's clock, in milliseconds; within the one read
+	// last, nothing is due that was not, and the game reads its clocks
+	// hundreds of times a frame
+	if (bh_real) {
+		if (!bh_moved ())
+			return;
+		virt_ns = bh_now_ns ();
+		bh_tick ();
+		PIT_Update ();
+		return;
+	}
+#endif
 	virt_ns += 1000000;
 	PIT_Update ();
 }
 
 void c4blood_delay (int ms)
 {
+#ifdef C4BLOOD_SHOW
+	if (bh_real) {
+		bh_sleep_ns ((uint64_t)(ms > 0 ? ms : 0) * 1000000);
+		virt_ns = bh_now_ns ();
+		bh_tick ();
+		PIT_Update ();
+		return;
+	}
+#endif
 	virt_ns += (uint64_t)(ms > 0 ? ms : 1) * 1000000;
 	PIT_Update ();
 }
@@ -77,6 +132,16 @@ void Sys_SetTimer (int divider, void (*handler)(void))
 void Sys_WaitVSync (void)
 {
 	uint64_t frame = 1000000000ull / 70;
+#ifdef C4BLOOD_SHOW
+	if (bh_real) {
+		uint64_t now = bh_now_ns ();
+		bh_sleep_ns ((now / frame + 1) * frame - now);
+		virt_ns = bh_now_ns ();
+		bh_tick ();
+		PIT_Update ();
+		return;
+	}
+#endif
 	virt_ns = (virt_ns / frame + 1) * frame;
 	PIT_Update ();
 }
@@ -115,6 +180,11 @@ static void feed_keys (void)
 
 void Sys_HandleEvents (void)
 {
+#ifdef C4BLOOD_SHOW
+	if (bh_real)
+		virt_ns = bh_now_ns ();
+	bh_tick ();
+#endif
 	PIT_Update ();
 }
 
@@ -125,12 +195,21 @@ void Sys_SetKeyboardHandler (void (*handler)(void))
 
 void Sys_GetMouseDelta (float *dx, float *dy)
 {
+#ifdef C4BLOOD_SHOW
+	*dx = (float)bh_mouse_dx;
+	*dy = (float)bh_mouse_dy;
+	bh_mouse_dx = bh_mouse_dy = 0;
+	return;
+#endif
 	*dx = 0;
 	*dy = 0;
 }
 
 int Sys_GetMouseButtons (void)
 {
+#ifdef C4BLOOD_SHOW
+	return bh_mouse_buttons;
+#endif
 	return 0;
 }
 
@@ -209,6 +288,9 @@ void Video_Set (int graphics, int w, int h)
 		video_buffer2 = calloc (w * h * video_pages + 15, 1);
 		video_buffer = (char *)((intptr_t)video_buffer2 & ~(intptr_t)15);
 		printf ("blood-host: video %dx%d\n", w, h);
+#ifdef C4BLOOD_SHOW
+		bh_mode (w, h);
+#endif
 	}
 }
 
@@ -244,6 +326,14 @@ void Video_BlitPage (int32_t page)
 	if (video_graphics != 0x13)
 		return;
 	px = (const unsigned char *)video_buffer + page * video_page_stride;
+#ifdef C4BLOOD_SHOW
+	bh_frame (px);
+	// played, not a test: no checksums, which would cost a frame's time
+	if (!bh_test ()) {
+		frames++;
+		return;
+	}
+#endif
 	h = fnv (2166136261u, px, video_xdim * video_ydim);
 	h = fnv (h, (const unsigned char *)video_palette, 768);
 	total = (total ^ h) * 16777619u + (uint32_t)frames;
@@ -273,10 +363,15 @@ int getvmode (void)
 
 static void at_exit (void)
 {
+#ifdef C4BLOOD_SHOW
+	if (!bh_test ())
+		return;
+#endif
 	printf ("blood-host: exit at frame %ld total %08x t=%llums\n", frames, total,
 	        (unsigned long long)(virt_ns / 1000000));
 }
 
+#ifndef C4BLOOD_SHOW
 // ---- sound: none (the game is told there is no card) ----
 
 SDL_Mutex *snd_mutex;
@@ -299,6 +394,7 @@ int Music_GetVolume (void) { return 255; }
 void Music_SetVolume (int vol) { (void)vol; }
 void Music_SetTimer (int divider, void (*handler)(void)) { (void)divider; (void)handler; }
 void Adlib_Write (int offset, int data) { (void)offset; (void)data; }
+#endif
 
 // ---- start ----
 
@@ -308,6 +404,10 @@ char **sys_argv;
 void Sys_Init (int argc, char **argv)
 {
 	int i, j;
+#ifdef C4BLOOD_SHOW
+	// played, a line of checksums only when a test asks for them
+	dosum = 0;
+#endif
 	for (i = j = 1; i < argc; i++) {
 		if (!strcmp (argv[i], "-sum") && i + 1 < argc)
 			dosum = atoi (argv[++i]);
@@ -320,7 +420,12 @@ void Sys_Init (int argc, char **argv)
 			if (!keys)
 				printf ("blood-host: no %s\n", argv[i]);
 			next_key ();
-		} else
+		}
+#ifdef C4BLOOD_SHOW
+		else if (bh_own (argv[i]))
+			;
+#endif
+		else
 			argv[j++] = argv[i];
 	}
 	argv[j] = 0;
@@ -328,6 +433,9 @@ void Sys_Init (int argc, char **argv)
 	sys_argv = argv;
 	setvbuf (stdout, 0, _IOLBF, 0);
 	atexit (at_exit);
+#ifdef C4BLOOD_SHOW
+	bh_args ();
+#endif
 	Video_Init ();
 	Video_Set (1, 720, 400);
 }

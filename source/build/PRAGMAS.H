@@ -10,6 +10,7 @@ static inline int32_t sqr(int32_t eax)
 
 static inline int32_t scale(int32_t eax, int32_t edx, int32_t ecx)
 {
+	C4_SCALE (eax, edx, ecx);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m /= ecx;
 	return (int32_t)m;
@@ -17,204 +18,238 @@ static inline int32_t scale(int32_t eax, int32_t edx, int32_t ecx)
 
 static inline int32_t mulscale(int32_t eax, int32_t edx, int32_t ecx)
 {
+	C4_MULSCALE (eax, edx, ecx & 31);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> (ecx & 31));
 }
 
 static inline int32_t mulscale1(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 1);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 1);
 }
 
 static inline int32_t mulscale2(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 2);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 2);
 }
 
 static inline int32_t mulscale3(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 3);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 3);
 }
 
 static inline int32_t mulscale4(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 4);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 4);
 }
 
 static inline int32_t mulscale5(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 5);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 5);
 }
 
 static inline int32_t mulscale6(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 6);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 6);
 }
 
 static inline int32_t mulscale7(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 7);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 7);
 }
 
 static inline int32_t mulscale8(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 8);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 8);
 }
 
 static inline int32_t mulscale9(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 9);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 9);
 }
 
 static inline int32_t mulscale10(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 10);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 10);
 }
 
 static inline int32_t mulscale11(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 11);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 11);
 }
 
 static inline int32_t mulscale12(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 12);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 12);
 }
 
 static inline int32_t mulscale13(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 13);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 13);
 }
 
 static inline int32_t mulscale14(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 14);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 14);
 }
 
 static inline int32_t mulscale15(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 15);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 15);
 }
 
 static inline int32_t mulscale16(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 16);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 16);
 }
 
 static inline int32_t mulscale17(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 17);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 17);
 }
 
 static inline int32_t mulscale18(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 18);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 18);
 }
 
 static inline int32_t mulscale19(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 19);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 19);
 }
 
 static inline int32_t mulscale20(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 20);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 20);
 }
 
 static inline int32_t mulscale21(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 21);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 21);
 }
 
 static inline int32_t mulscale22(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 22);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 22);
 }
 
 static inline int32_t mulscale23(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 23);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 23);
 }
 
 static inline int32_t mulscale24(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 24);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 24);
 }
 
 static inline int32_t mulscale25(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 25);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 25);
 }
 
 static inline int32_t mulscale26(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 26);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 26);
 }
 
 static inline int32_t mulscale27(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 27);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 27);
 }
 
 static inline int32_t mulscale28(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 28);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 28);
 }
 
 static inline int32_t mulscale29(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 29);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 29);
 }
 
 static inline int32_t mulscale30(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 30);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 30);
 }
 
 static inline int32_t mulscale31(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 31);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 31);
 }
 
 static inline int32_t mulscale32(int32_t eax, int32_t edx)
 {
+	C4_MULSCALE (eax, edx, 32);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	return (int32_t)(m >> 32);
 }
 
 static inline int32_t dmulscale(int32_t eax, int32_t edx, int32_t esi, int32_t edi, int32_t ecx)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, ecx & 31);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> (ecx & 31));
@@ -222,6 +257,7 @@ static inline int32_t dmulscale(int32_t eax, int32_t edx, int32_t esi, int32_t e
 
 static inline int32_t dmulscale1(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 1);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 1);
@@ -229,6 +265,7 @@ static inline int32_t dmulscale1(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale2(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 2);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 2);
@@ -236,6 +273,7 @@ static inline int32_t dmulscale2(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale3(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 3);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 3);
@@ -243,6 +281,7 @@ static inline int32_t dmulscale3(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale4(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 4);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 4);
@@ -250,6 +289,7 @@ static inline int32_t dmulscale4(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale5(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 5);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 5);
@@ -257,6 +297,7 @@ static inline int32_t dmulscale5(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale6(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 6);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 6);
@@ -264,6 +305,7 @@ static inline int32_t dmulscale6(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale7(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 7);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 7);
@@ -271,6 +313,7 @@ static inline int32_t dmulscale7(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale8(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 8);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 8);
@@ -278,6 +321,7 @@ static inline int32_t dmulscale8(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale9(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 9);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 9);
@@ -285,6 +329,7 @@ static inline int32_t dmulscale9(int32_t eax, int32_t edx, int32_t esi, int32_t 
 
 static inline int32_t dmulscale10(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 10);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 10);
@@ -292,6 +337,7 @@ static inline int32_t dmulscale10(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale11(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 11);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 11);
@@ -299,6 +345,7 @@ static inline int32_t dmulscale11(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale12(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 12);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 12);
@@ -306,6 +353,7 @@ static inline int32_t dmulscale12(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale13(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 13);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 13);
@@ -313,6 +361,7 @@ static inline int32_t dmulscale13(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale14(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 14);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 14);
@@ -320,6 +369,7 @@ static inline int32_t dmulscale14(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale15(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 15);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 15);
@@ -327,6 +377,7 @@ static inline int32_t dmulscale15(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale16(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 16);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 16);
@@ -334,6 +385,7 @@ static inline int32_t dmulscale16(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale17(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 17);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 17);
@@ -341,6 +393,7 @@ static inline int32_t dmulscale17(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale18(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 18);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 18);
@@ -348,6 +401,7 @@ static inline int32_t dmulscale18(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale19(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 19);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 19);
@@ -355,6 +409,7 @@ static inline int32_t dmulscale19(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale20(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 20);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 20);
@@ -362,6 +417,7 @@ static inline int32_t dmulscale20(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale21(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 21);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 21);
@@ -369,6 +425,7 @@ static inline int32_t dmulscale21(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale22(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 22);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 22);
@@ -376,6 +433,7 @@ static inline int32_t dmulscale22(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale23(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 23);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 23);
@@ -383,6 +441,7 @@ static inline int32_t dmulscale23(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale24(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 24);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 24);
@@ -390,6 +449,7 @@ static inline int32_t dmulscale24(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale25(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 25);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 25);
@@ -397,6 +457,7 @@ static inline int32_t dmulscale25(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale26(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 26);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 26);
@@ -404,6 +465,7 @@ static inline int32_t dmulscale26(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale27(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 27);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 27);
@@ -411,6 +473,7 @@ static inline int32_t dmulscale27(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale28(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 28);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 28);
@@ -418,6 +481,7 @@ static inline int32_t dmulscale28(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale29(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 29);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 29);
@@ -425,6 +489,7 @@ static inline int32_t dmulscale29(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale30(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 30);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 30);
@@ -432,6 +497,7 @@ static inline int32_t dmulscale30(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale31(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 31);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 31);
@@ -439,6 +505,7 @@ static inline int32_t dmulscale31(int32_t eax, int32_t edx, int32_t esi, int32_t
 
 static inline int32_t dmulscale32(int32_t eax, int32_t edx, int32_t esi, int32_t edi)
 {
+	C4_DMULSCALE (eax, edx, esi, edi, 32);
 	int64_t m = (int64_t)eax * (int64_t)edx;
 	m += (int64_t)esi * (int64_t)edi;
 	return (int32_t)(m >> 32);
@@ -454,198 +521,231 @@ static inline int32_t tmulscale11(int32_t a, int32_t b, int32_t c, int32_t d, in
 
 static inline int32_t divscale(int32_t eax, int32_t ebx, int32_t ecx)
 {
+	C4_DIVSCALE (eax, ebx, ecx & 31);
 	int64_t m = (int64_t)eax << (ecx & 31);
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale1(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 1);
 	int64_t m = (int64_t)eax << 1;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale2(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 2);
 	int64_t m = (int64_t)eax << 2;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale3(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 3);
 	int64_t m = (int64_t)eax << 3;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale4(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 4);
 	int64_t m = (int64_t)eax << 4;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale5(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 5);
 	int64_t m = (int64_t)eax << 5;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale6(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 6);
 	int64_t m = (int64_t)eax << 6;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale7(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 7);
 	int64_t m = (int64_t)eax << 7;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale8(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 8);
 	int64_t m = (int64_t)eax << 8;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale9(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 9);
 	int64_t m = (int64_t)eax << 9;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale10(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 10);
 	int64_t m = (int64_t)eax << 10;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale11(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 11);
 	int64_t m = (int64_t)eax << 11;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale12(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 12);
 	int64_t m = (int64_t)eax << 12;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale13(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 13);
 	int64_t m = (int64_t)eax << 13;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale14(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 14);
 	int64_t m = (int64_t)eax << 14;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale15(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 15);
 	int64_t m = (int64_t)eax << 15;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale16(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 16);
 	int64_t m = (int64_t)eax << 16;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale17(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 17);
 	int64_t m = (int64_t)eax << 17;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale18(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 18);
 	int64_t m = (int64_t)eax << 18;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale19(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 19);
 	int64_t m = (int64_t)eax << 19;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale20(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 20);
 	int64_t m = (int64_t)eax << 20;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale21(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 21);
 	int64_t m = (int64_t)eax << 21;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale22(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 22);
 	int64_t m = (int64_t)eax << 22;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale23(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 23);
 	int64_t m = (int64_t)eax << 23;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale24(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 24);
 	int64_t m = (int64_t)eax << 24;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale25(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 25);
 	int64_t m = (int64_t)eax << 25;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale26(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 26);
 	int64_t m = (int64_t)eax << 26;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale27(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 27);
 	int64_t m = (int64_t)eax << 27;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale28(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 28);
 	int64_t m = (int64_t)eax << 28;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale29(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 29);
 	int64_t m = (int64_t)eax << 29;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale30(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 30);
 	int64_t m = (int64_t)eax << 30;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale31(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 31);
 	int64_t m = (int64_t)eax << 31;
 	return (int32_t)(m / ebx);
 }
 
 static inline int32_t divscale32(int32_t eax, int32_t ebx)
 {
+	C4_DIVSCALE (eax, ebx, 32);
 	int64_t m = (int64_t)eax << 32;
 	return (int32_t)(m / ebx);
 }

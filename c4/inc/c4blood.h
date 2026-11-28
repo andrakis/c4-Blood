@@ -65,6 +65,34 @@ int getvmode (void);
 typedef struct { int quot, rem; } div_t;
 #endif
 
+// Blood's 64-bit arithmetic (the engine's PRAGMAS.H, qtools' misc.h) by the
+// machine, where it has Shadow Warrior's accelerators (c4's games/sw,
+// c4/accel.mjs; on c4pc, its src/c4pc/games/sw.c): one instruction for
+// what the int64_t C does, which c4lc makes a call to its long long
+// routines -- a third of a frame's instructions. Each function's first
+// line returns the operation when blood_accel, the module's first number,
+// says it is there (blood-c4.c asks: accel_find); elsewhere, and in gcc's
+// builds (blood-oracle.sh's C from c4cxx too: C4BLOOD_C4 is c4's builds'
+// alone), the line is nothing and the C below it runs. The operations are
+// the module's in its order (games/sw's c4/c4accel.h: SA_MULSCALE 10,
+// SA_DMULSCALE 11, SA_TMULSCALE 12, SA_SCALE 13, SA_DIVSCALE 14), each
+// the C's result for any operands, a shift from 0 to 32, a divisor not 0.
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+extern int blood_accel;
+#define C4_MULSCALE(a, b, s) if (blood_accel > 0) return __c4_opcode ((a), (b), (s), blood_accel + 10)
+#define C4_DMULSCALE(a, b, c, d, s) if (blood_accel > 0) return __c4_opcode ((a), (b), (c), (d), (s), blood_accel + 11)
+#define C4_TMULSCALE(a, b, c, d, e, f, s) \
+	if (blood_accel > 0) return __c4_opcode ((a), (b), (c), (d), (e), (f), (s), blood_accel + 12)
+#define C4_SCALE(a, b, c) if (blood_accel > 0) return __c4_opcode ((a), (b), (c), blood_accel + 13)
+#define C4_DIVSCALE(a, b, s) if (blood_accel > 0) return __c4_opcode ((a), (b), (s), blood_accel + 14)
+#else
+#define C4_MULSCALE(a, b, s)
+#define C4_DMULSCALE(a, b, c, d, s)
+#define C4_TMULSCALE(a, b, c, d, e, f, s)
+#define C4_SCALE(a, b, c)
+#define C4_DIVSCALE(a, b, s)
+#endif
+
 // DOS's file names have no case, and Blood spells them either way
 // (tables.dat for TABLES.DAT): a name that is not found as spelled is
 // looked for without case in its directory. Backslashes are slashes.

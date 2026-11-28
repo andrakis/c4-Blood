@@ -14,11 +14,33 @@ c4's port of Blood (Monolith, 1997), on the `c4` branch. `master` is
   and C++ in place of Watcom's libraries. qtools is version 1.11A, the one
   that BS111A and BP121 use.
 
-c4's C compiler, c4lc, has no C++. The plan (helios `~/gate/c4cxx/plan.md`)
-is a translator from C++ to C, c4cxx, whose output c4lc compiles. Until then,
-this branch has the host reference build.
+c4's C compiler, c4lc, has no C++: c4cxx, c4's translator from C++ to C
+(c4's `src/c4cxx`, `docs/c4cxx-plan.md`), makes C of Blood's C++ that c4lc
+compiles.
 
-## State (2026-11-26)
+## State (2026-11-28)
+
+- **On c4** Blood plays from C4IX's desktop (Go > Games > Blood, or `blood`
+  in a Terminal) with its picture, sound, music, keyboard and mouse: c4's
+  build of the game, `c4.mk` and `c4/c4-objs.sh` (every C unit through c4lc,
+  every C++ unit through c4cxx and then c4lc), with c4's platform
+  (`c4/blood-c4.c` and the files below), linked for C4IX by `c4-images.sh`
+  with the shareware beside it, all its files, in `/usr/games/blood`.
+- **`test-blood`** (c4's `make test-blood`, `c4/test-blood.sh`): that build
+  plays the shareware's demo loop inside C4IX as the host build (B0) does,
+  every frame's checksum B0's, on its virtual clock (a test: `-sum`). c4pc's
+  `test-c4pc` starts it from the desktop, sees it draw its menu, quits it by
+  the keyboard and hears its sound. c4cxx's `blood-c4lc.sh` holds the
+  headless build to B0 on the bare machine, under C4DOS and in C4IX.
+- **Speed**: about 12 frames a second of the demo loop on a machine of 200 M
+  c4 instructions a second (c4pc-host `-hz 200`), some 26 M instructions a
+  frame. The 64-bit arithmetic (`PRAGMAS.H`, qtools' `misc.h`) is Shadow
+  Warrior's accelerators where the machine has them (`c4/inc/c4blood.h`:
+  `C4_MULSCALE` and the rest), the same results as the C. The engine's
+  drawing loops (`a_asm.c`'s `hlineasm4`, `vlineasm4`, `mvlineasm4`, a
+  fifth of a frame) keep A.ASM's packed coordinates, so Shadow Warrior's
+  loops would not draw the same pixels: they would need accelerators of
+  Blood's own.
 
 - **`c4/host.sh`** builds Blood with gcc and g++ `-m32`: 31 C units and 82
   game units. `c4/blood-host.c` replaces chocolate-blood's SDL platform with
@@ -30,7 +52,7 @@ this branch has the host reference build.
 - **The shareware runs its attract demos** behind the main menu, as DOS
   Blood does: the cemetery, pickups, TNT. That they are in sync with DOS
   Blood frame for frame is not yet checked against a DOS run.
-- **Not working**: sound (none on the host); Smacker cutscenes (no decoder:
+- **Not working**: sound in the host build (it has none); Smacker cutscenes (no decoder:
   `c4/smacker.c` fails to open them, as when the CD is missing); CD audio;
   network play (`c4/netnone.cpp`: one player).
 
@@ -58,7 +80,12 @@ c4cxx and c4lc must do the same (plan §3).
 | | |
 |---|---|
 | `c4/host.sh` | the host build. Output goes to `out/host-$BLOOD_VER/blood-host` |
-| `c4/blood-host.c` | the host platform: the PIT, keyboard, VGA frame, no sound, and checksums. Its options are `-sum N`, `-frames N`, `-shot N` and `-keys FILE` |
+| `c4/blood-host.c` | the host platform: the PIT, keyboard, VGA frame, no sound, and checksums. Its options are `-sum N`, `-frames N`, `-shot N` and `-keys FILE`. c4's headless build (c4cxx's tests) is the same |
+| `c4/blood-c4.c` | c4's platform: `blood-host.c` built with `C4BLOOD_SHOW`, its time the machine's, its pages on the display, its keys and mouse from it (the browser's key codes as the PC's scan codes, into the keyboard interrupt). Given `-sum`, `-frames`, `-shot` or `-keys` it is a test, on `blood-host.c`'s virtual clock, with no sound; `-show` draws a test's pages too, `-window` plays in a window, `-trace` prints a line a second |
+| `c4/blood-gui.c`, `blood-c4ix.c`, `blood-bare.c`, `blood-plat.h` | libjs's display (as Shadow Warrior's `sw-gui.c`): on C4IX the desktop gives it way until the game ends, or a window; C4IX's starts the game in `/usr/games/blood` |
+| `c4/blood-snd.c` | the sound card: audiolib's `FX_` on its sixteen sample channels (in place of `FX_MAN.C` and its mixer), and the music, audiolib's MIDI player and AdLib driver, on its OPL, run ahead of the card's stream by `snd_wait` |
+| `c4/BLOOD.CFG` | c4's setup: VESA at 320x200, the effects on the card (`FXDevice = 0`) and the music on its OPL as an AdLib (`MusicDevice = 3`) |
+| `c4.mk`, `c4-images.sh`, `c4ix.vfs.txt`, `c4/c4-objs.sh`, `c4/test-blood.sh` | c4's build and test of the game (c4's `games/README.md`) |
 | `c4/c4blood.c`, `c4/inc/*.h` | what MSVC's and Watcom's C libraries and DOS gave the game: `dos.h`'s file search, `io.h`, `conio.h`, `i86.h`, `_splitpath2`, `itoa`, file names without case, and an SDL3 header with only the clocks' atomics, the sound mutex and a delay |
 | `c4/smacker.c`, `c4/inc/smack.h`, `svga.h` | Smacker without a decoder |
 | `c4/netnone.cpp` | the network drivers (Mpath, HEAT, TEN) when there is no network, and DPMI memory for the CD driver |
@@ -70,7 +97,9 @@ c4cxx and c4lc must do the same (plan §3).
 
 ## Running
 
-Make a directory with the game's files, and put `BLOOD.CFG` in it with
+On c4: `make blood-data c4bb-images` in c4 with this as `games/blood`, then
+`blood` in C4IX (the desktop's Go > Games > Blood). The host build: make a
+directory with the game's files, and put `BLOOD.CFG` in it with
 `ScreenMode = 1` (VESA; mode 2 writes to `0xA0000`) and `FXDevice = 13`,
 `MusicDevice = 13` (none). Then:
 

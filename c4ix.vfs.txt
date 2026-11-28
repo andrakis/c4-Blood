@@ -1,0 +1,30 @@
+# Blood (games/blood): Blood-RE's game, built by c4cxx and c4lc, with
+# Monolith's shareware episode (version 1.11) and every one of its files
+#@app Games|Blood|blood
+blood/:
+	blood.c4r: c4ix-blood.c4r
+	BLOOD.CFG: blood-BLOOD.CFG
+	BLOOD.EXE: blood-BLOOD.EXE
+	BLOOD.INI: blood-BLOOD.INI
+	BLOOD.RFF: blood-BLOOD.RFF
+	BLOOD000.DEM: blood-BLOOD000.DEM
+	BLOOD001.DEM: blood-BLOOD001.DEM
+	BLOOD002.DEM: blood-BLOOD002.DEM
+	BLOODHLP.TXT: blood-BLOODHLP.TXT
+	COMMIT.DAT: blood-COMMIT.DAT
+	COMMIT.EXE: blood-COMMIT.EXE
+	DOS4GW.EXE: blood-DOS4GW.EXE
+	GUI.RFF: blood-GUI.RFF
+	MODEM.PCK: blood-MODEM.PCK
+	MONOLITH.TXT: blood-MONOLITH.TXT
+	README.TXT: blood-README.TXT
+	SETMAIN.EXE: blood-SETMAIN.EXE
+	SETUP.EXE: blood-SETUP.EXE
+	SHARE000.ART: blood-SHARE000.ART
+	SOUNDS.RFF: blood-SOUNDS.RFF
+	SURFACE.DAT: blood-SURFACE.DAT
+	TABLES.DAT: blood-TABLES.DAT
+	TENGAME.INI: blood-TENGAME.INI
+	UNSTALL.EXE: blood-UNSTALL.EXE
+	VOXEL.DAT: blood-VOXEL.DAT
+	BUILDLIC.TXT: blood-buildlic.txt

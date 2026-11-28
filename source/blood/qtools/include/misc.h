@@ -150,6 +150,7 @@ struct VECTOR3D {
 
 static inline int dmulscale30r(int a, int b, int c, int d)
 {
+	C4_TMULSCALE (a, b, c, d, 0x20000000, 1, 30);
     int64_t mul = (int64_t)a * (int64_t)b + (int64_t)c * (int64_t)d;
     mul += 0x20000000;
     return (int)(mul >> 30);
@@ -169,6 +170,7 @@ static inline int isneg(int a)
 
 static inline int kscale(int a, int b, int c)
 {
+	C4_SCALE (a, b, c);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul / c);
 }
@@ -180,60 +182,73 @@ static inline int ksgn(int a)
 
 static inline int mulscale8(int a, int b)
 {
+	C4_MULSCALE (a, b, 8);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 8);
 }
 
 static inline int mulscale14(int a, int b)
 {
+	C4_MULSCALE (a, b, 14);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 14);
 }
 
 static inline int mulscale16(int a, int b)
 {
+	C4_MULSCALE (a, b, 16);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 16);
 }
 
 static inline int mulscale24(int a, int b)
 {
+	C4_MULSCALE (a, b, 24);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 24);
 }
 
 static inline int mulscale28(int a, int b)
 {
+	C4_MULSCALE (a, b, 28);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 28);
 }
 
 static inline int mulscale30(int a, int b)
 {
+	C4_MULSCALE (a, b, 30);
     int64_t mul = (int64_t)a * (int64_t)b;
     return (int)(mul >> 30);
 }
 
 static inline int interpolate16(int a, int b, int c)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_accel > 0)
+		return a + __c4_opcode (b - a, c, 16, blood_accel + 10);
+#endif
     int64_t mul = (int64_t)(b - a) * (int64_t)c;
     return a + (int)(mul >> 16);
 }
 
 static inline int divscale16(int a, int b)
 {
+	C4_DIVSCALE (a, b, 16);
     int64_t d = ((int64_t)a << 16) / b;
     return (int)d;
 }
 
 static inline int divscale24(int a, int b)
 {
+	C4_DIVSCALE (a, b, 24);
     int64_t d = ((int64_t)a << 24) / b;
     return (int)d;
 }
 
 static inline int divscale(int a, int b, int c)
 {
+	C4_DIVSCALE (a, b, c);
     int64_t d = ((int64_t)a << c) / b;
     return (int)d;
 }
