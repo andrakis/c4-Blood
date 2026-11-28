@@ -13,6 +13,7 @@
 #include "blood-host.c"
 #include "blood-plat.h"
 #include "accel.h"
+#include "c4accel.h"
 
 static int show;			// the pages go to the display
 static int trace;			// -trace: a line a second of the time and the frames
@@ -51,10 +52,11 @@ static void bh_args (void)
 	bh_real = !bh_test ();
 	show = bh_real || want_show;
 	ms0 = bp_ms ();
-	// the 64-bit arithmetic by Shadow Warrior's accelerators, where the
-	// machine has them (c4blood.h): played or a test, which then holds
-	// them to B0
+	// the 64-bit arithmetic by Shadow Warrior's accelerators, and the
+	// engine's drawing loops by Blood's own (c4/inc/c4accel.h), where the
+	// machine has them: played or a test, which then holds them to B0
 	blood_accel = accel_find ("sw");
+	blood_draw = accel_find ("blood");
 	if (show)
 		bp_init (want_window);
 	if (bh_real)

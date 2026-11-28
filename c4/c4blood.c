@@ -26,6 +26,9 @@
 // build, which never does
 #if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
 int blood_accel = -1;
+// ... and Blood's own, which draw the engine's innermost loops
+// (c4/inc/c4accel.h): -1 until blood-c4.c asks
+int blood_draw = -1;
 #endif
 
 // ---- file names without case ----

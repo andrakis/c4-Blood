@@ -33,14 +33,26 @@ $(BLOOD_DATA)/BLOOD.RFF:
 	@bash $(BLOOD)/c4/fetch-shareware.sh $(abspath $(BLOOD_DATA))
 PHONY += blood-data
 
-# test-blood: c4's build of Blood, with its display and sound, against
-# c4cxx's test of the headless one (src/c4cxx/blood-c4lc.sh, M7): the
-# shareware's demo loop, every frame's checksum by the host build's (B0),
-# played on its virtual clock (-sum 1) inside C4IX, and once more with its
-# pages drawn on the display (-show). c4pc's test-c4pc-blood starts it
-# from the desktop and plays it.
+# Blood's accelerators (c4/accel.mjs, and c4pc's src/c4pc/games/blood.c)
+# against a_asm.c's own loops, which c4/acceltest.c includes: on the bare
+# machine, in a directory of its own (c4-images.sh links .blood/*.c4o)
+BLOOD_TEST_CC := $(call lc32,-c 400000) -O $(IMG_G) -fno-builtin -c -conforming -funsigned-char -D __C4__ -D C4BLOOD -D C4BLOOD_C4 \
+                 -I $(BLOOD)/c4/inc -I $(BLOOD)/c4/c4inc -I $(BLOOD)/source/build -I src/c4ix/libc/include -I libjs/guest
+.blood/test/acceltest.c4o: $(BLOOD)/c4/acceltest.c $(BLOOD)/source/build/a_asm.c $(BLOOD)/c4/inc/c4accel.h \
+                           $(C4LC_LISP) .img_g | $(LC32_BIN)
+	@mkdir -p .blood/test
+	$(BLOOD_TEST_CC) $< $@ > /dev/null
+.blood/test/acceltest.c4r: .blood/test/acceltest.c4o libc-bare-objs
+	./c4rlink32 $< .libc-bare/libc-*.c4o -o $@ > /dev/null
+
+# test-blood: c4's build of Blood, with its display and sound: first its
+# accelerators against their loops, on libjs and on c4pc-host where this
+# tree has one; then the shareware's demo loop played inside C4IX (with
+# libjs's accelerators), every frame's checksum by the host build's (B0),
+# on its virtual clock (-sum 1). c4cxx's blood-c4lc.sh holds the headless
+# build to B0 too, and test-c4pc starts this one from the desktop.
 BLOOD_FRAMES ?= 300
-test-blood: blood-data c4bb-images
+test-blood: blood-data c4bb-images .blood/test/acceltest.c4r
 	@BLOOD_DIR=$(abspath $(BLOOD)) BLOOD_RUN=$(abspath $(BLOOD_DATA)) bash $(BLOOD)/c4/test-blood.sh $(BLOOD_FRAMES)
 PHONY += test-blood
 

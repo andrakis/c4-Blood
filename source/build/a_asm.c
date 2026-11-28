@@ -3,6 +3,9 @@
 // See the included license file "BUILDLIC.TXT" for license info.
 // This file has been modified from Ken Silverman's original release
 #include "compat.h"
+// c4's port: these loops by the machine, where it has Blood's accelerators
+// (c4/inc/c4accel.h, c4/accel.mjs): the same pixels and the same state after
+#include "c4accel.h"
 
 extern int32_t asm1, asm4;
 extern intptr_t asm2, asm3;
@@ -91,6 +94,26 @@ void setuphlineasm4(int32_t eax, int32_t ebx)
 
 void hlineasm4(int32_t eax, int32_t ebx, int32_t ecx, int32_t edx, int32_t esi, intptr_t edi)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_draw > 0)
+	{
+		// the step as the loop below makes it, from asm1 and asm2, and
+		// keeps it: then the rest, one instruction
+		if (eax + 1 > 8 && ebx >= 0)
+		{
+			hlineasm4_sub = (uint32_t)(asm1 << sethlinesizes_al);
+			hlineasm4_sub |= (uint32_t)asm1 >> (32 - sethlinesizes_al);
+			uint32_t h = asm2;
+			h &= ~255;
+			h |= hlineasm4_sub & 255;
+			hlineasm4_sub |= (uint64_t)h << 32;
+		}
+		blood_hline4(eax, ecx, edx, esi, edi, asm1, asm2, (int32_t)(uint32_t)hlineasm4_sub,
+			(int32_t)(uint32_t)(hlineasm4_sub >> 32), sethlinesizes_al, sethlinesizes_bl, sethlinesizes_ecx,
+			setpalookupaddress_eax);
+		return;
+	}
+#endif
 	int32_t ebp = eax + 1;
 	if (ebp > 8)
 	{
@@ -251,6 +274,10 @@ int32_t prevlineasm1(int32_t eax, intptr_t ebx, int32_t ecx, int32_t edx, intptr
 
 int32_t vlineasm1(int32_t eax, intptr_t ebx, int32_t ecx, int32_t edx, intptr_t esi, intptr_t edi)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_draw > 0)
+		return blood_vline1(eax, ebx, ecx, edx, esi, edi, setupvlineasm_al, setvlinebpl_eax);
+#endif
 	ecx++;
 	edi -= setvlinebpl_eax;
 	do
@@ -266,6 +293,10 @@ int32_t vlineasm1(int32_t eax, intptr_t ebx, int32_t ecx, int32_t edx, intptr_t 
 
 int32_t mvlineasm1(int32_t eax, intptr_t ebx, int32_t ecx, int32_t edx, intptr_t esi, intptr_t edi)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_draw > 0)
+		return blood_mvline1(eax, ebx, ecx, edx, esi, edi, setupmvlineasm_al, setvlinebpl_eax);
+#endif
 	do
 	{
 		uint32_t a = (uint32_t)edx >> setupmvlineasm_al;
@@ -321,6 +352,14 @@ int32_t tvlineasm1(int32_t eax, intptr_t ebx, int32_t ecx, int32_t edx, intptr_t
 
 void vlineasm4(int32_t ecx, intptr_t edi)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_draw > 0)
+	{
+		blood_vline4(edi, ylookup[ecx], vplce, vince, bufplce, palookupoffse, setupvlineasm_al,
+			setupvlineasm_al_n, setupvlineasm_al_n16, setupvlineasm_al_mask, setvlinebpl_eax);
+		return;
+	}
+#endif
 	intptr_t v1 = edi + ylookup[ecx];
 	edi -= v1;
 
@@ -376,6 +415,15 @@ void vlineasm4(int32_t ecx, intptr_t edi)
 
 void mvlineasm4(int32_t ecx, intptr_t edi)
 {
+#if defined(__c4_inttypes__) && defined(C4BLOOD_C4)
+	if (blood_draw > 0)
+	{
+		blood_mvline4(ecx, edi, vplce, vince, bufplce, palookupoffse, setupmvlineasm_al, setvlinebpl_eax);
+		// asm3's low byte counted the loop's blocks of 256, down to 0
+		asm3 &= ~(intptr_t)255;
+		return;
+	}
+#endif
 	uint32_t plc0 = vplce[0];
 	uint32_t plc1 = vplce[1];
 	uint32_t plc2 = vplce[2];

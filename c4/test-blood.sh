@@ -28,6 +28,21 @@ W=${W:-$R/.blood/test}
 [ -f $IMG/disk/c4ix-blood.c4r ] || { echo "test-blood: no c4ix-blood.c4r in $IMG/disk (make c4bb-images, with the data)"; exit 1; }
 [ -f $RUN/BLOOD.RFF ] || { echo "test-blood: no shareware in $RUN (make blood-data)"; exit 1; }
 mkdir -p $W
+# 0. the accelerators against a_asm.c's loops: libjs's (accel.mjs) and, where
+# this tree has c4pc-host, c4pc's (src/c4pc/games/blood.c)
+A=.blood/test/acceltest.c4r
+if [ -f $A ]; then
+	timeout 600 node libjs/cli.js -m 64 $A > $W/accel.txt 2>&1
+	grep -q "^accel: Blood's, [0-9]* cases, each as its loop has it" $W/accel.txt \
+		|| { echo "test-blood: libjs's accelerators do not draw as their loops:"; cat $W/accel.txt; exit 1; }
+	echo "test-blood: libjs: $(grep "^accel:" $W/accel.txt)"
+	if [ -x ./c4pc-host ]; then
+		timeout 600 ./c4pc-host -m 64 $A > $W/accel-pc.txt 2>&1
+		grep -q "^accel: Blood's, [0-9]* cases, each as its loop has it" $W/accel-pc.txt \
+			|| { echo "test-blood: c4pc's accelerators do not draw as their loops:"; cat $W/accel-pc.txt; exit 1; }
+		echo "test-blood: c4pc-host: $(grep "^accel:" $W/accel-pc.txt)"
+	fi
+fi
 # 1. B0, once
 if [ ! -x $W/ref/blood-host ] || [ ! -f $W/ref/rand.o ]; then
 	BLOOD_DIR=$G bash src/c4cxx/blood-b0.sh $W/ref > $W/b0.log 2>&1 || { echo "test-blood: B0 did not build"; tail -5 $W/b0.log; exit 1; }
